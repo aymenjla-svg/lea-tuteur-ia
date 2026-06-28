@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Léa — tuteur (3D)</title>
+  </head>
+  <body>
+    <canvas id="scene"></canvas>
+
+    <div class="overlay">
+      <header class="entete">
+        <h1>Léa</h1>
+        <span class="palier-3d">palier 3D</span>
+      </header>
+
+      <section class="parole" aria-live="polite">
+        <p id="parole">…</p>
+        <span id="coup" class="coup"></span>
+      </section>
+
+      <div class="progres">
+        <div class="barre-fond"><div id="barre" class="barre"></div></div>
+        <span id="pct" class="pct">0&nbsp;%</span>
+      </div>
+
+      <ol id="transcript" class="transcript" aria-label="Conversation"></ol>
+
+      <form id="form" class="saisie" autocomplete="off">
+        <input id="reponse" type="text" placeholder="Ta réponse…" aria-label="Ta réponse" />
+        <button id="envoyer" type="submit">Envoyer</button>
+        <button id="perdu" type="button" class="secondaire">Je suis perdu·e</button>
+      </form>
+
+      <button id="rejouer" class="rejouer" hidden>Nouvelle séance</button>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

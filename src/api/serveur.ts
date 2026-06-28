@@ -57,8 +57,10 @@ const PEDAGOGIE: ParametresPedagogie = {
 export interface ConfigServeur {
   readonly tenant_id: TenantId;
   readonly horloge?: Horloge;
-  /** Racine des fichiers statiques (front). Défaut : dossier `web/`. */
+  /** Racine des fichiers statiques (front SVG). Défaut : dossier `web/`. */
   readonly racineWeb?: string;
+  /** Racine du build 3D (servi sous /3d/). Défaut : `web-3d/dist/`. */
+  readonly racineWeb3d?: string;
 }
 
 const TYPES_MIME: Readonly<Record<string, string>> = {
@@ -110,6 +112,9 @@ export function creerServeurApi(config: ConfigServeur): Server {
   const horloge = config.horloge ?? horlogeSysteme;
   const racineWeb = resolve(
     config.racineWeb ?? fileURLToPath(new URL('../../web/', import.meta.url)),
+  );
+  const racineWeb3d = resolve(
+    config.racineWeb3d ?? fileURLToPath(new URL('../../web-3d/dist/', import.meta.url)),
   );
   const curriculum = curriculumDemo(tenant_id, horloge);
   const learnerModel = new HeuristicLearnerModel(tenant_id, curriculum, horloge);
@@ -175,19 +180,25 @@ export function creerServeurApi(config: ConfigServeur): Server {
       return repondreJson(res, 200, tableauDeBord(magasin));
     }
 
-    // Fallback : fichiers statiques du front (palier SVG/texte, R6).
+    // Palier 3D (Vite build) servi sous /3d/.
+    if (methode === 'GET' && (chemin === '/3d' || chemin.startsWith('/3d/'))) {
+      const rel = chemin === '/3d' || chemin === '/3d/' ? 'index.html' : chemin.slice(4);
+      return servirDepuis(racineWeb3d, res, rel);
+    }
+
+    // Fallback : fichiers statiques du front SVG/texte (R6).
     if (methode === 'GET') {
-      return servirStatique(res, chemin);
+      const relatif = chemin === '/' ? 'index.html' : chemin.replace(/^\/+/, '');
+      return servirDepuis(racineWeb, res, relatif);
     }
 
     repondreJson(res, 404, { erreur: 'route inconnue' });
   }
 
-  function servirStatique(res: ServerResponse, chemin: string): void {
-    const relatif = chemin === '/' ? 'index.html' : chemin.replace(/^\/+/, '');
-    const cible = resolve(join(racineWeb, normalize(relatif)));
-    // Anti-traversal : la cible doit rester sous la racine web.
-    if (cible !== racineWeb && !cible.startsWith(racineWeb + sep)) {
+  function servirDepuis(racine: string, res: ServerResponse, relatif: string): void {
+    const cible = resolve(join(racine, normalize(relatif)));
+    // Anti-traversal : la cible doit rester sous la racine servie.
+    if (cible !== racine && !cible.startsWith(racine + sep)) {
       return repondreJson(res, 403, { erreur: 'accès refusé' });
     }
     let contenu: Buffer;

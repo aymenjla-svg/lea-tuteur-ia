@@ -138,9 +138,20 @@ seul (R6 : moteur identique). Vérifié dans Chromium (cf. `web/apercu.png`).
 npm run serve     # puis ouvrir http://127.0.0.1:3000
 ```
 
-Le palier supérieur (avatar **3D RPM/R3F** + voix streaming) se branche derrière
-les mêmes contrats `Avatar`/`Voice` ; il nécessite un build client (Three.js) et
-des assets/clés, hors de ce dépôt.
+### Palier 3D (`web-3d/`, Three.js + Vite)
+
+Avatar **3D** stylisé (Three.js bundlé localement, aucun asset distant), animé
+par les mêmes signaux synthétiques, branché sur la **même API**. Vérifié dans
+Chromium avec WebGL (cf. `web-3d/apercu.png`).
+
+```bash
+cd web-3d && npm install && npm run build   # → web-3d/dist/
+cd .. && npm run serve                       # http://127.0.0.1:3000/3d/
+```
+
+Le seam **Ready Player Me** (GLB + morph targets pour les visèmes) est documenté
+dans `web-3d/README.md` ; il demande un asset/réseau hors de ce dépôt. La **voix
+streaming** se branche derrière le contrat `Voice` (clés TTS/STT requises).
 
 ## Développement
 
