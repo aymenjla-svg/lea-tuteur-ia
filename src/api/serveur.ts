@@ -30,6 +30,7 @@ import type {
   SessionId,
   TenantId,
 } from '../contracts/index.js';
+import type { ActionPedagogique } from '../engine/index.js';
 import {
   catalogueErreursDemo,
   curriculumDemo,
@@ -42,6 +43,8 @@ import {
   MoteurLecon,
   nouvelId,
   OBJ_ADDITION,
+  Planificateur,
+  REF_BO,
   tableauDeBord,
   VerifierStandard,
 } from '../engine/index.js';
@@ -76,6 +79,8 @@ interface CorpsDemarrer {
   readonly eleve_id?: string;
   readonly persona_id?: string;
   readonly objectif_id?: string;
+  /** Si `true` et sans `objectif_id` : le Planificateur choisit la cible (DAG). */
+  readonly auto?: boolean;
 }
 
 function lireJson(req: IncomingMessage): Promise<unknown> {
@@ -118,6 +123,11 @@ export function creerServeurApi(config: ConfigServeur): Server {
   );
   const curriculum = curriculumDemo(tenant_id, horloge);
   const learnerModel = new HeuristicLearnerModel(tenant_id, curriculum, horloge);
+  const planificateur = new Planificateur(
+    curriculum,
+    learnerModel,
+    PEDAGOGIE.seuil_maitrise,
+  );
   const magasin = new MagasinMemoire();
   const moteur = new MoteurLecon({
     tenant_id,
@@ -146,17 +156,46 @@ export function creerServeurApi(config: ConfigServeur): Server {
       return repondreJson(res, 200, { ok: true });
     }
 
+    // Prochaine action pédagogique (DAG) pour un élève.
+    const ma = /^\/eleves\/([^/]+)\/prochaine-action$/.exec(chemin);
+    if (methode === 'GET' && ma) {
+      const eleve_id = id<EleveId>(decodeURIComponent(ma[1] as string));
+      const action = await planificateur.prochaineAction(
+        eleve_id,
+        REF_BO,
+        horloge.maintenant(),
+      );
+      return repondreJson(res, 200, { action });
+    }
+
     if (methode === 'POST' && chemin === '/sessions') {
       const corps = (await lireJson(req)) as CorpsDemarrer;
+      const eleve_id = corps.eleve_id ? id<EleveId>(corps.eleve_id) : id<EleveId>('eleve-api');
+
+      // Choix de l'objectif : explicite > planifié (auto) > défaut.
+      let objectif_initial: ObjectifId;
+      let action: ActionPedagogique | undefined;
+      if (corps.objectif_id) {
+        objectif_initial = id<ObjectifId>(corps.objectif_id);
+      } else if (corps.auto) {
+        action = await planificateur.prochaineAction(eleve_id, REF_BO, horloge.maintenant());
+        if (action.type === 'rien') {
+          return repondreJson(res, 200, { action, message: 'Tout est maîtrisé — rien à travailler.' });
+        }
+        objectif_initial = action.objectif_id;
+      } else {
+        objectif_initial = OBJ_ADDITION;
+      }
+
       const session_id = nouvelId<SessionId>();
       const contexte: ContexteSession = {
         session_id,
-        eleve_id: (corps.eleve_id ? id<EleveId>(corps.eleve_id) : id<EleveId>('eleve-api')),
-        persona_id: (corps.persona_id ? id<PersonaId>(corps.persona_id) : id<PersonaId>('persona-lea')),
-        objectif_initial: corps.objectif_id ? id<ObjectifId>(corps.objectif_id) : OBJ_ADDITION,
+        eleve_id,
+        persona_id: corps.persona_id ? id<PersonaId>(corps.persona_id) : id<PersonaId>('persona-lea'),
+        objectif_initial,
       };
       const etat = await moteur.demarrer(contexte);
-      return repondreJson(res, 201, { session_id, etat });
+      return repondreJson(res, 201, { session_id, etat, ...(action ? { action } : {}) });
     }
 
     const m = /^\/sessions\/([^/]+)\/repondre$/.exec(chemin);

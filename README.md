@@ -121,7 +121,7 @@ choisi par les **paramètres** de la persona (§7), pas par un prompt.
 | `Planificateur` | `planning/planificateur.ts` | prochaine action (réviser → travailler/consolider), parcours topologique du DAG, plan diagnostique |
 | `ExerciceAEtapes` | `planning/exercice-a-etapes.ts` | exercices multi-étapes (D5) |
 | `politiqueEvaluation` | `planning/eval-types.ts` | 3 types d'éval (diagnostique/formative/sommative) |
-| API HTTP | `api/serveur.ts` | `/sessions`, `/sessions/:id/repondre`, `/dashboard`, `/health` (node:http) |
+| API HTTP | `api/serveur.ts` | `/sessions` (+ `auto` planifié), `/sessions/:id/repondre`, `/eleves/:id/prochaine-action`, `/dashboard`, `/health` (node:http) |
 | YAML loader | `curriculum/yaml-loader.ts` + `content/*.yaml` | curriculum **versionné** (§6), validé au chargement |
 
 Contenu de départ : `content/bo-cycle3-maths.yaml` (BO cycle 3 — tables,

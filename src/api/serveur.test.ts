@@ -65,6 +65,21 @@ test('parcours complet via HTTP jusqu’à la maîtrise + dashboard', async () =
   assert.ok(tb.taux_reussite > 0);
 });
 
+test('GET /eleves/:id/prochaine-action : à froid → travailler le prérequis (DAG)', async () => {
+  const res = await fetch(base + '/eleves/eleve-plan/prochaine-action');
+  assert.equal(res.status, 200);
+  const data = (await res.json()) as { action: { type: string; objectif_id?: string } };
+  assert.equal(data.action.type, 'travailler');
+  assert.equal(data.action.objectif_id, 'obj-tables-addition');
+});
+
+test('POST /sessions {auto:true} démarre sur l’objectif planifié', async () => {
+  const { code, data } = await post('/sessions', { eleve_id: 'eleve-plan2', auto: true });
+  assert.equal(code, 201);
+  assert.equal(data.action.type, 'travailler');
+  assert.match(data.etat.question_courante.enonce, /7 \+ 8/); // prérequis : tables
+});
+
 test('sert le front : GET / → HTML', async () => {
   const res = await fetch(base + '/');
   assert.equal(res.status, 200);
