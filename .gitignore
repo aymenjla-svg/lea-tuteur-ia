@@ -1,0 +1,15 @@
+# Dépendances
+node_modules/
+
+# Build
+dist/
+
+# Logs & divers
+*.log
+npm-debug.log*
+.DS_Store
+
+# Env / secrets (D6/R3 : clé éditeur en env backend, jamais commitée)
+.env
+.env.*
+!.env.example

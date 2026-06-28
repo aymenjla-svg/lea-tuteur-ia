@@ -1,0 +1,22 @@
+{
+  "name": "lea-tuteur-ia",
+  "version": "0.0.0",
+  "description": "Léa — tuteur IA incarné. Phase 0 : contrats uniquement (le LLM parle, le moteur déterministe sait/vérifie/tient le cadre).",
+  "type": "module",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=20"
+  },
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "clean": "rm -rf dist"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.4"
+  }
+}
