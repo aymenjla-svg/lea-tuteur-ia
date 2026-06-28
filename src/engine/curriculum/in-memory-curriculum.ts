@@ -149,6 +149,8 @@ export function curriculumDemo(
           modalite: 'textuel',
           enonce: 'Combien font 27 + 48 ?',
           attendu: { valeur: 75, tolerance: 0 },
+          // 65 = oubli de la retenue (7+8=15 → on écrit 5 sans reporter le 1).
+          pieges: [{ valeur: 65, erreur_type_id: 'oubli_retenue' }],
         },
         indice: 'Additionne d’abord les dizaines (20 + 40), puis les unités (7 + 8).',
       },

@@ -1,12 +1,14 @@
 /**
- * VerifierStandard — implémentation déterministe du Verifier (D1, §1.1).
+ * VerifierStandard — vérificateur déterministe multi-type (D1, §1.1).
  *
- * Phase 1 : familles `numeric` et `qcm` (texte seul). `symbolic` et `libre`
- * sont déclinés explicitement (renvoient un Verdict « non vérifiable ici »)
- * plutôt que de prétendre valider — on ne valide JAMAIS du faux (§1.1).
+ * Couvre les 4 familles du §4 :
+ *  - `numeric`  : tolérance + diagnostic d'erreur-type via les « pièges » prof.
+ *  - `qcm`      : sélection exacte ; un distracteur peut révéler une erreur-type.
+ *  - `symbolic` : équivalence par échantillonnage numérique (cf. expression.ts).
+ *  - `libre`    : grille de critères par mots-clés (correction déterministe).
  *
- * Aucun Verdict n'est forgé à la main : on passe par `creerVerdict`, seul
- * constructeur autorisé (cf. contracts/verifier.ts).
+ * On ne valide JAMAIS du faux (§1.1) : tout passe par `creerVerdict`, et en cas
+ * de doute (entrée illisible, critère non vérifiable) le verdict est `false`.
  */
 
 import { creerVerdict } from '../../contracts/verifier.js';
@@ -17,9 +19,16 @@ import type {
   Verifier,
   VerifierKind,
 } from '../../contracts/index.js';
+import { normaliser } from '../core.js';
+import { equivalentes } from './expression.js';
 
 export class VerifierStandard implements Verifier {
-  readonly kinds: readonly VerifierKind[] = ['numeric', 'qcm'];
+  readonly kinds: readonly VerifierKind[] = [
+    'numeric',
+    'qcm',
+    'symbolic',
+    'libre',
+  ];
 
   async verifier(question: Question, reponse: ReponseEleve): Promise<Verdict> {
     switch (question.kind) {
@@ -28,12 +37,9 @@ export class VerifierStandard implements Verifier {
       case 'qcm':
         return this.#qcm(question, reponse);
       case 'symbolic':
+        return this.#symbolic(question, reponse);
       case 'libre':
-        return creerVerdict({
-          correct: false,
-          criteres_satisfaits: [],
-          diagnostic: `Famille « ${question.kind} » non vérifiable en Phase 1.`,
-        });
+        return this.#libre(question, reponse);
     }
   }
 
@@ -51,16 +57,18 @@ export class VerifierStandard implements Verifier {
         diagnostic: 'La réponse attendue est un nombre.',
       });
     }
-    const ecart = Math.abs(valeur - question.attendu.valeur);
-    const correct = ecart <= question.attendu.tolerance;
-    if (correct) {
+    if (Math.abs(valeur - question.attendu.valeur) <= question.attendu.tolerance) {
       return creerVerdict({ correct: true, criteres_satisfaits: ['valeur'] });
     }
+    // Diagnostic d'erreur-type via les pièges prof-authored (R1).
+    const piege = (question.pieges ?? []).find(
+      (p) => Math.abs(valeur - p.valeur) <= (p.tolerance ?? 0),
+    );
     const unite = question.attendu.unite ? ` ${question.attendu.unite}` : '';
     return creerVerdict({
       correct: false,
       criteres_satisfaits: [],
-      erreur_type_id: 'ecart_numerique',
+      erreur_type_id: piege?.erreur_type_id ?? 'ecart_numerique',
       diagnostic: `Valeur attendue : ${question.attendu.valeur}${unite}.`,
     });
   }
@@ -85,11 +93,73 @@ export class VerifierStandard implements Verifier {
     if (correct) {
       return creerVerdict({ correct: true, criteres_satisfaits: ['selection'] });
     }
+    // Erreur-type si l'élève a choisi un distracteur identifié.
+    const distracteur = question.options.find(
+      (o) => choisies.has(o.id) && !bonnes.has(o.id) && o.erreur_type_id,
+    );
     return creerVerdict({
       correct: false,
       criteres_satisfaits: [],
-      erreur_type_id: 'selection_incorrecte',
+      erreur_type_id: distracteur?.erreur_type_id ?? 'selection_incorrecte',
       diagnostic: 'La sélection ne correspond pas aux bonnes réponses.',
     });
+  }
+
+  #symbolic(
+    question: Extract<Question, { kind: 'symbolic' }>,
+    reponse: ReponseEleve,
+  ): Verdict {
+    const candidat = (reponse.texte ?? '').trim();
+    if (candidat === '') {
+      return creerVerdict({
+        correct: false,
+        criteres_satisfaits: [],
+        erreur_type_id: 'reponse_vide',
+        diagnostic: 'Aucune expression fournie.',
+      });
+    }
+    const ok = equivalentes(
+      question.attendu.expression,
+      candidat,
+      question.attendu.variables,
+    );
+    if (ok) {
+      return creerVerdict({ correct: true, criteres_satisfaits: ['equivalence'] });
+    }
+    return creerVerdict({
+      correct: false,
+      criteres_satisfaits: [],
+      erreur_type_id: 'expression_non_equivalente',
+      diagnostic: 'L’expression n’est pas équivalente à celle attendue.',
+    });
+  }
+
+  #libre(
+    question: Extract<Question, { kind: 'libre' }>,
+    reponse: ReponseEleve,
+  ): Verdict {
+    const texte = normaliser(reponse.texte ?? '');
+    const satisfaits: string[] = [];
+    for (const critere of question.criteres) {
+      const motsCles = critere.mots_cles ?? [];
+      // Sans mots-clés, le critère n'est pas vérifiable déterministiquement :
+      // on ne le valide PAS (§1.1) — l'évaluation LLM viendra plus tard (P3).
+      const ok =
+        motsCles.length > 0 &&
+        motsCles.every((m) => texte.includes(normaliser(m)));
+      if (ok) satisfaits.push(critere.id);
+    }
+    const requis = question.criteres.filter((c) => c.requis);
+    const correct = requis.every((c) => satisfaits.includes(c.id));
+    return creerVerdict(
+      correct
+        ? { correct: true, criteres_satisfaits: satisfaits }
+        : {
+            correct: false,
+            criteres_satisfaits: satisfaits,
+            erreur_type_id: 'criteres_manquants',
+            diagnostic: 'Certains éléments attendus manquent dans la réponse.',
+          },
+    );
   }
 }

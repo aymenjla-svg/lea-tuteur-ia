@@ -16,7 +16,8 @@
     "build": "tsc",
     "clean": "rm -rf dist",
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
-    "demo": "node --import tsx src/demo.ts"
+    "demo": "node --import tsx src/demo.ts",
+    "demo:avance": "node --import tsx src/demo-avance.ts"
   },
   "devDependencies": {
     "@types/node": "^22.5.0",

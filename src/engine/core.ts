@@ -67,6 +67,35 @@ export function id<T extends string>(valeur: string): T {
 }
 
 /* ------------------------------------------------------------------------- */
+/* Aléatoire déterministe & texte                                             */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * Générateur pseudo-aléatoire déterministe (mulberry32). Reproductible à
+ * partir d'une graine — indispensable pour des exercices paramétrés et des
+ * tests stables (Math.random est proscrit côté moteur).
+ */
+export function rngDepuisGraine(graine: number): () => number {
+  let a = graine >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) | 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4_294_967_296;
+  };
+}
+
+/** Normalise une chaîne : minuscules, sans accents, espaces compactés. */
+export function normaliser(texte: string): string {
+  return texte
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+/* ------------------------------------------------------------------------- */
 /* Compétences (les 6 du référentiel BO, §6)                                  */
 /* ------------------------------------------------------------------------- */
 

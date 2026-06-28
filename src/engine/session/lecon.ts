@@ -20,10 +20,12 @@
  */
 
 import type {
+  CatalogueErreurs,
   ContexteSession,
   CoupTuteur,
   Curriculum,
   EleveId,
+  ErreurTypeId,
   ExerciceTemplateId,
   LearnerModel,
   MaitriseEffective,
@@ -79,6 +81,8 @@ export interface DependancesLecon {
   readonly magasin: MagasinMemoire;
   readonly horloge: Horloge;
   readonly pedagogie: ParametresPedagogie;
+  /** Optionnel : catalogue d'erreurs-types pour parler la remédiation (§6). */
+  readonly catalogueErreurs?: CatalogueErreurs;
 }
 
 export class MoteurLecon {
@@ -150,7 +154,36 @@ export class MoteurLecon {
     // 4) Progression : choix du coup suivant.
     return verdict.correct
       ? this.#surSucces(session_id, session)
-      : this.#surEchec(session_id, session);
+      : this.#surEchec(session_id, session, verdict);
+  }
+
+  /**
+   * Coup `reviser` (D4 : répétition espacée). Sélectionne un objectif dû pour
+   * révision (maîtrise effective retombée sous le seuil après decay) et le
+   * propose. Renvoie `null` s'il n'y a rien à réviser.
+   */
+  async reviser(session_id: SessionId): Promise<EtatLecon | null> {
+    const session = this.#session(session_id);
+    const dus = await this.deps.learnerModel.objectifsAReviser(
+      session.eleve_id,
+      this.deps.horloge.maintenant(),
+    );
+    const cible = dus[0];
+    if (!cible) return null;
+
+    session.termine = false;
+    await this.#charger(session, cible.objectif_id);
+    const coup: CoupTuteur = { type: 'reviser', objectif_id: cible.objectif_id };
+    await this.#emettre(session_id, 'revision_proposee', {
+      objectif_id: cible.objectif_id,
+      p: cible.probabilite_effective,
+    });
+    const texte = await this.#direTuteur(
+      session_id,
+      `Petit rappel pour ancrer ce qu’on a vu. ${session.question.enonce}`,
+      coup,
+    );
+    return this.#etat(session_id, session, texte, coup);
   }
 
   /** Clôt explicitement la session (coup `clore`). */
@@ -226,6 +259,7 @@ export class MoteurLecon {
   async #surEchec(
     session_id: SessionId,
     session: SessionInterne,
+    verdict: Verdict,
   ): Promise<EtatLecon> {
     session.echecs += 1;
 
@@ -234,21 +268,35 @@ export class MoteurLecon {
       return this.#appliquerLevier(session_id, session);
     }
 
-    // Pas encore bloqué : on re-propose avec un indice (jamais la solution).
+    // On ne PRONONCE pas le `diagnostic` du verifier (il révèle la valeur
+    // attendue ; il reste dans le Verdict pour la télémétrie). On guide par la
+    // remédiation de l'erreur-type détectée, sinon par l'indice — tremplin,
+    // pas refuge (P1).
+    const aide = await this.#aideRemediation(verdict, session.indice);
     const coup: CoupTuteur = {
       type: 'proposer',
       objectif_id: session.objectif_courant,
     };
-    // On ne PRONONCE pas le `diagnostic` du verifier : il révèle la valeur
-    // attendue (il reste dans le Verdict pour la télémétrie / erreurs-types).
-    // On guide par l'indice — tremplin, pas refuge (P1).
-    const indice = session.indice ? ` Indice : ${session.indice}` : '';
     const texte = await this.#direTuteur(
       session_id,
-      `Pas tout à fait, ce n’est pas la bonne réponse.${indice} Réessaie : ${session.question.enonce}`,
+      `Pas tout à fait, ce n’est pas la bonne réponse.${aide} Réessaie : ${session.question.enonce}`,
       coup,
     );
     return this.#etat(session_id, session, texte, coup);
+  }
+
+  /** Remédiation parlée : erreur-type du catalogue si disponible, sinon indice. */
+  async #aideRemediation(
+    verdict: Verdict,
+    indice: string | undefined,
+  ): Promise<string> {
+    if (verdict.erreur_type_id && this.deps.catalogueErreurs) {
+      const erreur = await this.deps.catalogueErreurs.obtenir(
+        verdict.erreur_type_id as ErreurTypeId,
+      );
+      if (erreur) return ` ${erreur.remediation}`;
+    }
+    return indice ? ` Indice : ${indice}` : '';
   }
 
   async #appliquerLevier(

@@ -14,6 +14,7 @@ import {
   OBJ_ADDITION,
   OBJ_PREREQ,
 } from '../curriculum/in-memory-curriculum.js';
+import { catalogueErreursDemo } from '../erreurs/catalogue-erreurs.js';
 import { HorlogeManuelle, id } from '../core.js';
 import { HeuristicLearnerModel } from '../learner-model/heuristic-learner-model.js';
 import { MagasinMemoire } from '../persistence/in-memory-store.js';
@@ -29,7 +30,7 @@ const pedagogie: ParametresPedagogie = {
   intensite_encouragement: 0.7,
 };
 
-function banc() {
+function banc(options: { avecCatalogue?: boolean } = {}) {
   const tenant_id = id<TenantId>('t');
   const horloge = new HorlogeManuelle(new Date('2026-06-28T09:00:00.000Z'));
   const curriculum = curriculumDemo(tenant_id, horloge);
@@ -43,6 +44,9 @@ function banc() {
     magasin,
     horloge,
     pedagogie,
+    ...(options.avecCatalogue
+      ? { catalogueErreurs: catalogueErreursDemo(tenant_id, horloge) }
+      : {}),
   });
   const session_id = id<SessionId>('s');
   const contexte: ContexteSession = {
@@ -105,6 +109,29 @@ test('succès répétés → maîtrise atteinte → coup clore + session termin�
   assert.ok(magasin.tentatives.length >= 1);
   assert.ok(magasin.evenements.evenements.some((e) => e.type === 'objectif_maitrise'));
   assert.ok(magasin.evenements.evenements.every((e) => e.tenant_id === 't'));
+});
+
+test('erreur-type détectée → le tuteur parle la remédiation (pas la réponse)', async () => {
+  const { moteur, contexte, session_id } = banc({ avecCatalogue: true });
+  await moteur.demarrer(contexte);
+  const etat = await moteur.repondre(session_id, '65'); // oubli de la retenue
+  assert.match(etat.texte_tuteur, /colonne/i); // remédiation du catalogue
+  assert.doesNotMatch(etat.texte_tuteur, /\b75\b/); // ne révèle pas la réponse
+});
+
+test('coup reviser : propose un objectif dû après decay, sinon null', async () => {
+  const { moteur, contexte, session_id, horloge } = banc();
+  let etat = await moteur.demarrer(contexte);
+  for (let i = 0; i < 6 && !etat.termine; i++) {
+    etat = await moteur.repondre(session_id, '75');
+  }
+  // Juste après, rien à réviser.
+  assert.equal(await moteur.reviser(session_id), null);
+  // Un mois plus tard, la maîtrise a décru → objectif dû.
+  horloge.avancer(30 * 86_400_000);
+  const revision = await moteur.reviser(session_id);
+  assert.ok(revision);
+  assert.equal(revision?.dernier_coup.type, 'reviser');
 });
 
 test('détresse pendant la leçon → alerte persistée + événement safety', async () => {

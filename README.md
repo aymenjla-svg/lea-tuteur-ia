@@ -9,26 +9,35 @@ le SPEC.** Ce README décrit l'état du code, pas la stratégie.
 
 ---
 
-## État : Phase 1 — Tranche verticale (texte seul)
+## État : Phases 0 → 2 + seams 3/4
 
 Le SPEC impose de procéder **par tranches verticales, jamais la largeur
-d'abord** (§12). Deux couches sont en place :
+d'abord** (§12). En place :
 
-- **Phase 0** — les **contrats** du §4 (`src/contracts/`) : interfaces pures,
-  zéro implémentation (P3 : tout remplaçable sans réécriture).
-- **Phase 1** — une **tranche verticale minuscule** (`src/engine/`) : 1 objectif,
-  texte seul, sans avatar/voix/BKT, qui exécute la boucle complète
+- **Phase 0** — **contrats** du §4 (`src/contracts/`) : interfaces pures, zéro
+  implémentation (P3 : tout remplaçable sans réécriture).
+- **Phase 1** — **tranche verticale** (texte seul) : la boucle complète
 
   ```
-  proposer(template prof) → verifier(code dur) → maj maîtrise (heuristique)
-  → persister (tentative + events) → progression (coup suivant)
+  proposer(template prof) → verifier(code dur) → maj maîtrise → persister(events) → progression
   ```
 
-  avec `tenant_id`/timestamps/`events`/`SafetyFilter` **dès maintenant** (§13).
+- **Phase 2** — **moteur complet** : BKT, verifier multi-type (numeric · qcm ·
+  symbolic · libre), erreurs-types, banque d'exercices paramétrée, révision
+  espacée, RAG, dashboard.
+- **Phases 3/4 (seams)** — implémentations de présence et d'échelle **faisables
+  en backend** : personas (3 facettes), avatars texte/SVG, voix « texte »,
+  attention désactivée, **LLMGateway** avec résolution de provider conforme
+  (§1.7), registre multi-tenant.
 
-Tout vit à la racine du dépôt. Pile : monolithe modulaire **Node/TypeScript**
-(D8), ESM `NodeNext`, `strict` + `noUncheckedIndexedAccess` +
-`exactOptionalPropertyTypes` + `verbatimModuleSyntax`.
+> ⚠️ **Non « terminable » dans ce dépôt backend** : l'incarnation réelle
+> (avatar 3D RPM/R3F, voix streaming premium, LLM live) exige un **frontend** et
+> des **providers avec clés**. Tout est posé derrière les contrats, prêt à
+> brancher — mais c'est hors périmètre d'un repo Node headless.
+
+Pile : monolithe modulaire **Node/TypeScript** (D8), ESM `NodeNext`, `strict` +
+`noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` +
+`verbatimModuleSyntax`. **46 tests**, `typecheck` vert.
 
 ### Invariants gravés dans les types (SPEC §1, §13)
 
@@ -49,6 +58,8 @@ Tout vit à la racine du dépôt. Pile : monolithe modulaire **Node/TypeScript**
 | *(primitives)* | `src/contracts/common.ts` | IDs typés (branded), `TenantScoped`, `Timestamped`, `Aggregate`, `ModeIA`, `Region`, `ComplianceContext`, `Modalite`, `Competence`, `Result`, `DomainEvent`/`EventSink` |
 | **Verifier** | `src/contracts/verifier.ts` | Outil code dur n°1 (D1). Kinds `numeric\|symbolic\|qcm\|libre`. Seul producteur de `Verdict` (§1.1) |
 | **Curriculum** | `src/contracts/curriculum.ts` | DAG d'objectifs atomiques (D2), `Prerequis`, `ExerciceTemplate` (origine prof/llm, `representations[]` R7) |
+| **CatalogueErreurs** | `src/contracts/erreurs.ts` | `ErreurType` (méprises fréquentes, remédiation) — §5/§6 |
+| **RAG** | `src/contracts/rag.ts` | `Embedder` + `RetrievalIndex` tenant-scopé (seam pgvector, §5) |
 | **LearnerModel** | `src/contracts/learner-model.ts` | Heuristique → BKT (D3/R2), decay appliqué **au calcul** (D4), `ProfilCompetences` (6 compétences) |
 | **SafetyFilter** | `src/contracts/safety-filter.ts` | Filtre sortie + détresse → `SafetyAlert` (R5), escalade adulte |
 | **LLMGateway** | `src/contracts/llm-gateway.ts` | Multi-rôle, `mode_ia`, stream agentique (`ToolSpec`/`ToolCall`), provider résolu via conformité (D6/R3) |
@@ -75,21 +86,38 @@ appelants. Persistance en mémoire pour l'instant (→ Postgres/RLS en Phase 2).
 | `MoteurLecon` | `session/lecon.ts` | (préfigure `ConversationOrchestrator`) | boucle déterministe, coups R7, 2 outils code dur |
 
 La boucle gère déjà l'**adaptation R7** : sous le `seuil_blocage` de la persona,
-le tuteur re-propose avec indice ; au-delà, il joue un **levier** (`simplifier`
-vers le prérequis · `reformuler` · `changer_de_modalité`) choisi par les
-**paramètres** de la persona (§7), pas par un prompt.
+le tuteur re-propose avec indice/remédiation d'erreur-type ; au-delà, il joue un
+**levier** (`simplifier` vers le prérequis · `reformuler` · `changer_de_modalité`)
+choisi par les **paramètres** de la persona (§7), pas par un prompt.
+
+## Implémentations Phase 2 & seams 3/4
+
+| Implémentation | Fichier | Apport |
+|---|---|---|
+| `BktLearnerModel` | `learner-model/bkt-learner-model.ts` | BKT 4 paramètres (D3/R2), **même contrat** que l'heuristique → interchangeable |
+| `VerifierStandard` (étendu) | `verifier/verifier-standard.ts` + `expression.ts` | 4 familles : `symbolic` par échantillonnage numérique, `libre` par grille de mots-clés |
+| erreurs-types | `erreurs/catalogue-erreurs.ts` | `CatalogueErreurs` + pièges prof-authored (R1) → remédiation parlée |
+| `Banque` | `curriculum/banque.ts` | templates paramétrés (D5), générateur déterministe avec pièges |
+| RAG | `rag/in-memory-rag.ts` | `Embedder` bouchon + index cosinus tenant-scopé (seam pgvector) |
+| `tableauDeBord` | `dashboard/dashboard.ts` | projection d'indicateurs depuis la télémétrie (D13) |
+| personas | `persona/catalogue-personas.ts` | catalogue 3 facettes + matching (§7, H2) |
+| avatars | `presence/avatars.ts` | `TextAvatar` / `SvgAvatar` (R6) — signaux synthétiques, jamais de caméra (§1.4) |
+| voix/attention | `presence/voix-texte.ts` | `Voice` mode texte + `AttentionSource` désactivée |
+| `LLMGatewayStub` | `llm/llm-gateway-stub.ts` | **résolution de provider sous conformité (§1.7)** — mineur ⇒ conforme + no-train |
+| `RegistreTenants` | `scale/registre-tenants.ts` | multi-tenant : `mode_ia`, région, `no_train` forcé pour mineur |
 
 ## Développement
 
 ```bash
 npm install        # devDeps : typescript, tsx, @types/node
 npm run typecheck  # tsc --noEmit — DOIT passer sans erreur
-npm test           # 20 tests (node:test via tsx) — verifier, learner, safety, boucle
-npm run demo       # joue une séance complète en texte (dialogue + télémétrie)
+npm test           # 46 tests (node:test via tsx)
+npm run demo       # séance de leçon complète en texte (dialogue + télémétrie)
+npm run demo:avance # capacités P2/P3/P4 (banque, BKT, symbolic, RAG, conformité, dashboard)
 npm run build      # compile vers dist/ (déclarations incluses)
 ```
 
-> Aucune dépendance **runtime** : le moteur Phase 1 est du TypeScript pur.
+> Aucune dépendance **runtime** : le moteur est du TypeScript pur.
 
 ---
 
@@ -99,11 +127,14 @@ npm run build      # compile vers dist/ (déclarations incluses)
   avatar/voix/BKT : `proposer`(template d'exo prof) → `verifier`(code) → màj
   heuristique → persister → progression. Avec `tenant_id`/timestamps/`events`/
   `SafetyFilter` minimal en place.
-- **P2 — Moteur complet.** BKT + decay, tous les coups, banque + verifier
-  multi-type, erreurs-types, RAG, dashboard.
-- **P3 — Présence.** SVG → RPM/R3F, voix streaming, attention, personas.
-- **P4 — Échelle.** Notions, multi-curriculum, multi-tenant durci,
-  multi-région, `mode_ia`, marketplace personas.
+- **P2 — Moteur complet.** ✅ _Fait._ BKT + decay, coups R7 + révision, banque +
+  verifier multi-type, erreurs-types, RAG, dashboard.
+- **P3 — Présence.** ⏳ _Seams en place_ (personas, avatar texte/SVG, voix
+  texte, attention désactivée). _Reste_ : avatar 3D RPM/R3F + voix streaming
+  premium → **frontend web** (Three.js/R3F) + providers TTS/STT.
+- **P4 — Échelle.** ⏳ _Seams en place_ (`LLMGateway` conforme, registre
+  tenants, `mode_ia`). _Reste_ : Postgres + RLS réel (remplace la persistance
+  mémoire), multi-région, marketplace personas.
 
 ## Hors-périmètre v1 (§14)
 
