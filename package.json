@@ -20,6 +20,9 @@
     "demo:avance": "node --import tsx src/demo-avance.ts",
     "serve": "node --import tsx src/serve.ts"
   },
+  "dependencies": {
+    "yaml": "^2.5.0"
+  },
   "devDependencies": {
     "@types/node": "^22.5.0",
     "tsx": "^4.19.0",

@@ -35,9 +35,14 @@ d'abord** (§12). En place :
 > des **providers avec clés**. Tout est posé derrière les contrats, prêt à
 > brancher — mais c'est hors périmètre d'un repo Node headless.
 
+En plus : **boucle agentique réelle** (`ConversationOrchestrator` + LLM
+scriptable, 2 outils code dur), **planificateur** de progression (DAG),
+**exercices à étapes**, **3 types d'éval**, **API HTTP** JSON, **curriculum
+YAML versionné** et **CI**.
+
 Pile : monolithe modulaire **Node/TypeScript** (D8), ESM `NodeNext`, `strict` +
 `noUncheckedIndexedAccess` + `exactOptionalPropertyTypes` +
-`verbatimModuleSyntax`. **46 tests**, `typecheck` vert.
+`verbatimModuleSyntax`. **69 tests**, `typecheck` vert.
 
 ### Invariants gravés dans les types (SPEC §1, §13)
 
@@ -106,18 +111,36 @@ choisi par les **paramètres** de la persona (§7), pas par un prompt.
 | `LLMGatewayStub` | `llm/llm-gateway-stub.ts` | **résolution de provider sous conformité (§1.7)** — mineur ⇒ conforme + no-train |
 | `RegistreTenants` | `scale/registre-tenants.ts` | multi-tenant : `mode_ia`, région, `no_train` forcé pour mineur |
 
+## Boucle agentique, planification, API & contenu
+
+| Brique | Fichier | Rôle |
+|---|---|---|
+| `ConversationOrchestrateur` | `orchestrator/conversation-orchestrator.ts` | boucle agentique réelle (D1/R4) ; exécute les 2 outils code dur ; le LLM ne voit jamais l'attendu (§1.1) ; cadre déterministe |
+| `LLMTuteurScripte` | `orchestrator/llm-scripte.ts` | « LLM » déterministe pour tester la boucle sans provider live |
+| `Planificateur` | `planning/planificateur.ts` | prochaine action (réviser → travailler/consolider), parcours topologique du DAG, plan diagnostique |
+| `ExerciceAEtapes` | `planning/exercice-a-etapes.ts` | exercices multi-étapes (D5) |
+| `politiqueEvaluation` | `planning/eval-types.ts` | 3 types d'éval (diagnostique/formative/sommative) |
+| API HTTP | `api/serveur.ts` | `/sessions`, `/sessions/:id/repondre`, `/dashboard`, `/health` (node:http) |
+| YAML loader | `curriculum/yaml-loader.ts` + `content/*.yaml` | curriculum **versionné** (§6), validé au chargement |
+
+Contenu de départ : `content/bo-cycle3-maths.yaml` (BO cycle 3 — tables,
+addition/soustraction/multiplication posées, DAG + pièges → erreurs-types).
+
 ## Développement
 
 ```bash
-npm install        # devDeps : typescript, tsx, @types/node
+npm install        # dep : yaml · devDeps : typescript, tsx, @types/node
 npm run typecheck  # tsc --noEmit — DOIT passer sans erreur
-npm test           # 46 tests (node:test via tsx)
+npm test           # 69 tests (node:test via tsx)
 npm run demo       # séance de leçon complète en texte (dialogue + télémétrie)
 npm run demo:avance # capacités P2/P3/P4 (banque, BKT, symbolic, RAG, conformité, dashboard)
+npm run serve      # API HTTP du moteur (PORT=3000)
 npm run build      # compile vers dist/ (déclarations incluses)
 ```
 
-> Aucune dépendance **runtime** : le moteur est du TypeScript pur.
+> Unique dépendance runtime : `yaml` (chargement du curriculum versionné, §6).
+> CI : `.github/workflows/ci.yml` (typecheck + tests). Hook web optionnel :
+> `.claude/settings.sample.json` (à copier en `.claude/settings.json`).
 
 ---
 

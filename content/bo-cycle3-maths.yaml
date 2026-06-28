@@ -1,0 +1,115 @@
+# Curriculum versionné — BO cycle 3, mathématiques (calcul posé).
+# Source de vérité du contenu (R1 : contenu = actif stratégique).
+# Chargé par src/engine/curriculum/yaml-loader.ts.
+
+referentiel:
+  id: ref-bo-cycle3-maths
+  libelle: "BO — cycle 3, mathématiques (calcul posé)"
+  version: "2026.06"
+
+objectifs:
+  # --- Calcul mental : prérequis racines ------------------------------------
+  - id: obj-tables-addition
+    libelle: "Connaître les compléments et tables d'addition"
+    notion: "Calcul mental"
+    competences: [calculer]
+    templates:
+      - id: tmpl-tables-add-7-8
+        origine: prof
+        statut: valide
+        etapes:
+          - ordre: 1
+            indice: "Pense à 7 + 8 = 7 + 3 + 5."
+            question:
+              kind: numeric
+              modalite: textuel
+              enonce: "Combien font 7 + 8 ?"
+              attendu: { valeur: 15, tolerance: 0 }
+    explications:
+      - id: expl-tables-add
+        modalite: textuel
+        contenu: "Décompose pour atteindre 10, puis ajoute le reste."
+
+  - id: obj-tables-multiplication
+    libelle: "Connaître les tables de multiplication"
+    notion: "Calcul mental"
+    competences: [calculer]
+    templates:
+      - id: tmpl-tables-mult-6-7
+        origine: prof
+        statut: valide
+        etapes:
+          - ordre: 1
+            indice: "6 × 7, c'est 6 × 7 = 42."
+            question:
+              kind: numeric
+              modalite: textuel
+              enonce: "Combien font 6 × 7 ?"
+              attendu: { valeur: 42, tolerance: 0 }
+
+  # --- Addition posée -------------------------------------------------------
+  - id: obj-addition-posee
+    libelle: "Additionner deux nombres à deux chiffres"
+    notion: "Addition posée"
+    competences: [calculer, chercher]
+    prerequis: [obj-tables-addition]
+    templates:
+      - id: tmpl-add-27-48
+        origine: prof
+        statut: valide
+        etapes:
+          - ordre: 1
+            indice: "Additionne les unités, puis les dizaines, sans oublier la retenue."
+            question:
+              kind: numeric
+              modalite: textuel
+              enonce: "Combien font 27 + 48 ?"
+              attendu: { valeur: 75, tolerance: 0 }
+              pieges:
+                - { valeur: 65, erreur_type_id: oubli_retenue }
+    explications:
+      - id: expl-add-colonnes
+        modalite: textuel
+        contenu: "Aligne les unités puis les dizaines ; si une colonne dépasse 9, retiens 1."
+
+  # --- Soustraction posée ---------------------------------------------------
+  - id: obj-soustraction-posee
+    libelle: "Soustraire deux nombres à deux chiffres avec emprunt"
+    notion: "Soustraction posée"
+    competences: [calculer, raisonner]
+    prerequis: [obj-tables-addition]
+    templates:
+      - id: tmpl-sous-52-27
+        origine: prof
+        statut: valide
+        etapes:
+          - ordre: 1
+            indice: "5 unités moins 7 : on emprunte une dizaine."
+            question:
+              kind: numeric
+              modalite: textuel
+              enonce: "Combien font 52 − 27 ?"
+              attendu: { valeur: 25, tolerance: 0 }
+              pieges:
+                - { valeur: 35, erreur_type_id: oubli_emprunt }
+
+  # --- Multiplication posée -------------------------------------------------
+  - id: obj-multiplication-posee
+    libelle: "Multiplier un nombre à deux chiffres par un chiffre"
+    notion: "Multiplication posée"
+    competences: [calculer, chercher, raisonner]
+    prerequis: [obj-tables-multiplication, obj-addition-posee]
+    templates:
+      - id: tmpl-mult-23-4
+        origine: prof
+        statut: valide
+        etapes:
+          - ordre: 1
+            indice: "4 × 3 = 12 (je pose 2, je retiens 1), puis 4 × 2 = 8, plus la retenue."
+            question:
+              kind: numeric
+              modalite: textuel
+              enonce: "Combien font 23 × 4 ?"
+              attendu: { valeur: 92, tolerance: 0 }
+              pieges:
+                - { valeur: 82, erreur_type_id: oubli_retenue }
