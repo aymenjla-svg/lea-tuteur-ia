@@ -9,12 +9,22 @@ le SPEC.** Ce README décrit l'état du code, pas la stratégie.
 
 ---
 
-## État : Phase 0 — Contrats uniquement
+## État : Phase 1 — Tranche verticale (texte seul)
 
-Conformément au phasage du SPEC (§12 : « jamais la largeur d'abord »), cette
-première étape ne contient **que les interfaces TypeScript** des contrats du §4.
-**Aucune implémentation** — principe **P3** : tout derrière des contrats,
-remplaçable sans réécriture.
+Le SPEC impose de procéder **par tranches verticales, jamais la largeur
+d'abord** (§12). Deux couches sont en place :
+
+- **Phase 0** — les **contrats** du §4 (`src/contracts/`) : interfaces pures,
+  zéro implémentation (P3 : tout remplaçable sans réécriture).
+- **Phase 1** — une **tranche verticale minuscule** (`src/engine/`) : 1 objectif,
+  texte seul, sans avatar/voix/BKT, qui exécute la boucle complète
+
+  ```
+  proposer(template prof) → verifier(code dur) → maj maîtrise (heuristique)
+  → persister (tentative + events) → progression (coup suivant)
+  ```
+
+  avec `tenant_id`/timestamps/`events`/`SafetyFilter` **dès maintenant** (§13).
 
 Tout vit à la racine du dépôt. Pile : monolithe modulaire **Node/TypeScript**
 (D8), ESM `NodeNext`, `strict` + `noUncheckedIndexedAccess` +
@@ -50,24 +60,45 @@ Tout vit à la racine du dépôt. Pile : monolithe modulaire **Node/TypeScript**
 
 ---
 
+## Implémentations Phase 1 (`src/engine/`)
+
+Chaque brique implémente un contrat du §4 — remplaçable (P3) sans toucher les
+appelants. Persistance en mémoire pour l'instant (→ Postgres/RLS en Phase 2).
+
+| Implémentation | Fichier | Contrat | Notes |
+|---|---|---|---|
+| `VerifierStandard` | `verifier/verifier-standard.ts` | `Verifier` | `numeric` + `qcm` ; seul à produire un `Verdict` (§1.1) |
+| `HeuristicLearnerModel` | `learner-model/heuristic-learner-model.ts` | `LearnerModel` | heuristique honnête v1 ; **decay au calcul** (D4) ; profil 6 compétences |
+| `InMemoryCurriculum` + `curriculumDemo` | `curriculum/in-memory-curriculum.ts` | `Curriculum` | DAG en mémoire ; seed 1 objectif + 1 prérequis, template **prof** (R1) |
+| `MinimalSafetyFilter` | `safety/minimal-safety-filter.ts` | `SafetyFilter` | filtre de sortie (anti-humiliation §1.3) + détresse → `SafetyAlert` escaladée (R5) |
+| `MagasinMemoire` | `persistence/in-memory-store.ts` | dépôts + `EventSink` | tentatives, alertes, tours de dialogue, `events` (§13) |
+| `MoteurLecon` | `session/lecon.ts` | (préfigure `ConversationOrchestrator`) | boucle déterministe, coups R7, 2 outils code dur |
+
+La boucle gère déjà l'**adaptation R7** : sous le `seuil_blocage` de la persona,
+le tuteur re-propose avec indice ; au-delà, il joue un **levier** (`simplifier`
+vers le prérequis · `reformuler` · `changer_de_modalité`) choisi par les
+**paramètres** de la persona (§7), pas par un prompt.
+
 ## Développement
 
 ```bash
-npm install        # 1 devDependency : typescript
+npm install        # devDeps : typescript, tsx, @types/node
 npm run typecheck  # tsc --noEmit — DOIT passer sans erreur
+npm test           # 20 tests (node:test via tsx) — verifier, learner, safety, boucle
+npm run demo       # joue une séance complète en texte (dialogue + télémétrie)
 npm run build      # compile vers dist/ (déclarations incluses)
 ```
 
-> Aucune dépendance runtime en Phase 0 : ce ne sont que des types.
+> Aucune dépendance **runtime** : le moteur Phase 1 est du TypeScript pur.
 
 ---
 
 ## Prochaines étapes (phasage §12)
 
-- **P1 — Tranche verticale minuscule.** 1 objectif, texte seul, sans
+- **P1 — Tranche verticale minuscule.** ✅ _Fait._ 1 objectif, texte seul, sans
   avatar/voix/BKT : `proposer`(template d'exo prof) → `verifier`(code) → màj
   heuristique → persister → progression. Avec `tenant_id`/timestamps/`events`/
-  `SafetyFilter` minimal **dès maintenant**.
+  `SafetyFilter` minimal en place.
 - **P2 — Moteur complet.** BKT + decay, tous les coups, banque + verifier
   multi-type, erreurs-types, RAG, dashboard.
 - **P3 — Présence.** SVG → RPM/R3F, voix streaming, attention, personas.
