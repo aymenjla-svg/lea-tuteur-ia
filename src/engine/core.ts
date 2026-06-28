@@ -130,3 +130,51 @@ export class CollecteurEvenements implements EventSink {
     this.evenements.push(evenement);
   }
 }
+
+/* ------------------------------------------------------------------------- */
+/* Canal asynchrone — flux push/pull (parole streamée ↔ entrées élève, R4)    */
+/* ------------------------------------------------------------------------- */
+
+/**
+ * File asynchrone à producteur/consommateur unique. `pousser` dépose une
+ * valeur ; le consommateur la récupère via l'itérateur asynchrone (ou
+ * `prochain`). Sert à streamer la parole immédiatement (R4) et à attendre les
+ * réponses de l'élève sans bloquer la boucle agentique.
+ */
+export class Canal<T> implements AsyncIterable<T> {
+  #file: T[] = [];
+  #attente: Array<(r: IteratorResult<T>) => void> = [];
+  #ferme = false;
+
+  pousser(valeur: T): void {
+    if (this.#ferme) return;
+    const attendu = this.#attente.shift();
+    if (attendu) attendu({ value: valeur, done: false });
+    else this.#file.push(valeur);
+  }
+
+  fermer(): void {
+    if (this.#ferme) return;
+    this.#ferme = true;
+    let attendu = this.#attente.shift();
+    while (attendu) {
+      attendu({ value: undefined as never, done: true });
+      attendu = this.#attente.shift();
+    }
+  }
+
+  prochain(): Promise<IteratorResult<T>> {
+    const v = this.#file.shift();
+    if (v !== undefined) return Promise.resolve({ value: v, done: false });
+    if (this.#ferme) return Promise.resolve({ value: undefined as never, done: true });
+    return new Promise((res) => this.#attente.push(res));
+  }
+
+  async *[Symbol.asyncIterator](): AsyncIterator<T> {
+    for (;;) {
+      const r = await this.prochain();
+      if (r.done) return;
+      yield r.value;
+    }
+  }
+}

@@ -16,6 +16,8 @@ export * from './erreurs/catalogue-erreurs.js';
 export * from './safety/minimal-safety-filter.js';
 export * from './persistence/in-memory-store.js';
 export * from './session/lecon.js';
+export * from './orchestrator/llm-scripte.js';
+export * from './orchestrator/conversation-orchestrator.js';
 export * from './rag/in-memory-rag.js';
 export * from './dashboard/dashboard.js';
 export * from './persona/catalogue-personas.js';
