@@ -1,0 +1,206 @@
+/* Léa — palette calme (sécurité psychologique, P1). */
+:root {
+  --fond: #f4f7fb;
+  --carte: #ffffff;
+  --encre: #1f2937;
+  --doux: #6b7280;
+  --accent: #4f7cc4;
+  --accent-doux: #dbe6f6;
+  --ok: #4caf83;
+  --ombre: 0 6px 24px rgba(31, 41, 55, 0.08);
+  --rayon: 18px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--fond);
+  color: var(--encre);
+  display: flex;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.app {
+  width: 100%;
+  max-width: 520px;
+  background: var(--carte);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre);
+  padding: 22px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.entete h1 {
+  margin: 0;
+  font-size: 1.5rem;
+  letter-spacing: 0.5px;
+}
+.palier {
+  font-size: 0.8rem;
+  color: var(--doux);
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.palier select {
+  border: 1px solid var(--accent-doux);
+  border-radius: 10px;
+  padding: 4px 8px;
+  background: var(--fond);
+  color: var(--encre);
+}
+
+.scene {
+  display: flex;
+  justify-content: center;
+}
+.visage {
+  width: 160px;
+  height: 160px;
+  filter: drop-shadow(0 4px 10px rgba(31, 41, 55, 0.12));
+}
+
+.parole {
+  background: var(--accent-doux);
+  border-radius: var(--rayon);
+  padding: 14px 16px;
+  min-height: 48px;
+  position: relative;
+}
+.parole p {
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.45;
+}
+.coup {
+  display: inline-block;
+  margin-top: 8px;
+  font-size: 0.72rem;
+  color: var(--accent);
+  background: #fff;
+  border-radius: 999px;
+  padding: 2px 10px;
+}
+.coup:empty {
+  display: none;
+}
+
+.progres {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.barre-fond {
+  flex: 1;
+  height: 10px;
+  background: var(--fond);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid var(--accent-doux);
+}
+.barre {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--ok));
+  transition: width 0.6s ease;
+}
+.pct {
+  font-size: 0.8rem;
+  color: var(--doux);
+  min-width: 38px;
+  text-align: right;
+}
+
+.transcript {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  max-height: 180px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.transcript li {
+  padding: 8px 12px;
+  border-radius: 12px;
+  font-size: 0.92rem;
+  max-width: 85%;
+}
+.transcript .tuteur {
+  background: var(--accent-doux);
+  align-self: flex-start;
+}
+.transcript .eleve {
+  background: var(--fond);
+  border: 1px solid var(--accent-doux);
+  align-self: flex-end;
+}
+
+.saisie {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.saisie input {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px 14px;
+  border: 1px solid var(--accent-doux);
+  border-radius: 12px;
+  font-size: 1rem;
+}
+.saisie button {
+  padding: 12px 16px;
+  border: none;
+  border-radius: 12px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+.saisie button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.saisie .secondaire {
+  background: #fff;
+  color: var(--accent);
+  border: 1px solid var(--accent-doux);
+}
+
+.rejouer {
+  align-self: center;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 12px;
+  background: var(--ok);
+  color: #fff;
+  font-size: 1rem;
+  cursor: pointer;
+}
+
+.note {
+  margin: 0;
+  text-align: center;
+  font-size: 0.74rem;
+  color: var(--doux);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .barre {
+    transition: none;
+  }
+}

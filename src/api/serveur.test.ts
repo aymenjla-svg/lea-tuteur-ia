@@ -65,6 +65,24 @@ test('parcours complet via HTTP jusqu’à la maîtrise + dashboard', async () =
   assert.ok(tb.taux_reussite > 0);
 });
 
+test('sert le front : GET / → HTML', async () => {
+  const res = await fetch(base + '/');
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('content-type') ?? '', /text\/html/);
+  assert.match(await res.text(), /<title>Léa/);
+});
+
+test('sert les assets : GET /app.js → JavaScript', async () => {
+  const res = await fetch(base + '/app.js');
+  assert.equal(res.status, 200);
+  assert.match(res.headers.get('content-type') ?? '', /javascript/);
+});
+
+test('pas d’accès hors de web/ : GET /package.json → 404', async () => {
+  const res = await fetch(base + '/package.json');
+  assert.equal(res.status, 404);
+});
+
 test('réponse sur session inconnue → 404', async () => {
   const { code } = await post('/sessions/inconnue/repondre', { texte: '75' });
   assert.equal(code, 404);

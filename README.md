@@ -126,6 +126,22 @@ choisi par les **paramètres** de la persona (§7), pas par un prompt.
 Contenu de départ : `content/bo-cycle3-maths.yaml` (BO cycle 3 — tables,
 addition/soustraction/multiplication posées, DAG + pièges → erreurs-types).
 
+## Frontend (palier 2D/SVG, R6)
+
+Client web **sans build ni dépendance**, servi par l'API (`web/`). Démarre une
+séance, parle (avatar SVG animé par visèmes/regard **synthétiques** — jamais de
+caméra, §1.4), affiche le transcript écrit (P1 : écrit de plein droit), la barre
+de maîtrise et un bouton « Je suis perdu·e ». Sélecteur de palier SVG ⇄ texte
+seul (R6 : moteur identique). Vérifié dans Chromium (cf. `web/apercu.png`).
+
+```bash
+npm run serve     # puis ouvrir http://127.0.0.1:3000
+```
+
+Le palier supérieur (avatar **3D RPM/R3F** + voix streaming) se branche derrière
+les mêmes contrats `Avatar`/`Voice` ; il nécessite un build client (Three.js) et
+des assets/clés, hors de ce dépôt.
+
 ## Développement
 
 ```bash

@@ -17,6 +17,9 @@
 
 import { createServer, type IncomingMessage, type ServerResponse } from 'node:http';
 import type { Server } from 'node:http';
+import { readFileSync } from 'node:fs';
+import { extname, join, normalize, resolve, sep } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import type {
   ContexteSession,
@@ -54,7 +57,18 @@ const PEDAGOGIE: ParametresPedagogie = {
 export interface ConfigServeur {
   readonly tenant_id: TenantId;
   readonly horloge?: Horloge;
+  /** Racine des fichiers statiques (front). Défaut : dossier `web/`. */
+  readonly racineWeb?: string;
 }
+
+const TYPES_MIME: Readonly<Record<string, string>> = {
+  '.html': 'text/html; charset=utf-8',
+  '.js': 'text/javascript; charset=utf-8',
+  '.css': 'text/css; charset=utf-8',
+  '.svg': 'image/svg+xml',
+  '.json': 'application/json; charset=utf-8',
+  '.ico': 'image/x-icon',
+};
 
 interface CorpsDemarrer {
   readonly eleve_id?: string;
@@ -94,6 +108,9 @@ function repondreJson(res: ServerResponse, code: number, data: unknown): void {
 export function creerServeurApi(config: ConfigServeur): Server {
   const tenant_id = config.tenant_id;
   const horloge = config.horloge ?? horlogeSysteme;
+  const racineWeb = resolve(
+    config.racineWeb ?? fileURLToPath(new URL('../../web/', import.meta.url)),
+  );
   const curriculum = curriculumDemo(tenant_id, horloge);
   const learnerModel = new HeuristicLearnerModel(tenant_id, curriculum, horloge);
   const magasin = new MagasinMemoire();
@@ -158,6 +175,32 @@ export function creerServeurApi(config: ConfigServeur): Server {
       return repondreJson(res, 200, tableauDeBord(magasin));
     }
 
+    // Fallback : fichiers statiques du front (palier SVG/texte, R6).
+    if (methode === 'GET') {
+      return servirStatique(res, chemin);
+    }
+
     repondreJson(res, 404, { erreur: 'route inconnue' });
+  }
+
+  function servirStatique(res: ServerResponse, chemin: string): void {
+    const relatif = chemin === '/' ? 'index.html' : chemin.replace(/^\/+/, '');
+    const cible = resolve(join(racineWeb, normalize(relatif)));
+    // Anti-traversal : la cible doit rester sous la racine web.
+    if (cible !== racineWeb && !cible.startsWith(racineWeb + sep)) {
+      return repondreJson(res, 403, { erreur: 'accès refusé' });
+    }
+    let contenu: Buffer;
+    try {
+      contenu = readFileSync(cible);
+    } catch {
+      return repondreJson(res, 404, { erreur: 'fichier introuvable' });
+    }
+    res.writeHead(200, {
+      'content-type': TYPES_MIME[extname(cible)] ?? 'application/octet-stream',
+      'content-length': contenu.byteLength,
+      'cache-control': 'no-store',
+    });
+    res.end(contenu);
   }
 }
