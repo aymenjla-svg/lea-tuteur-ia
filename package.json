@@ -17,7 +17,8 @@
     "clean": "rm -rf dist",
     "test": "node --import tsx --test \"src/**/*.test.ts\"",
     "demo": "node --import tsx src/demo.ts",
-    "demo:avance": "node --import tsx src/demo-avance.ts"
+    "demo:avance": "node --import tsx src/demo-avance.ts",
+    "serve": "node --import tsx src/serve.ts"
   },
   "devDependencies": {
     "@types/node": "^22.5.0",
