@@ -123,6 +123,8 @@ export interface Explication extends Aggregate {
 /** Accès en lecture au DAG curriculaire. Implémentation remplaçable (P3). */
 export interface Curriculum {
   obtenirObjectif(id: ObjectifId): Promise<Objectif | null>;
+  /** Tous les objectifs d'un référentiel (pour le parcours / planification). */
+  objectifs(referentiel_id: ReferentielId): Promise<readonly Objectif[]>;
   /** Prérequis directs d'un objectif (arêtes entrantes du DAG). */
   prerequisDirects(id: ObjectifId): Promise<readonly Objectif[]>;
   /** Objectifs dont `id` est prérequis (arêtes sortantes — la suite). */

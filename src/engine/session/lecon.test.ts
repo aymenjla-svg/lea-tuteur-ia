@@ -30,7 +30,12 @@ const pedagogie: ParametresPedagogie = {
   intensite_encouragement: 0.7,
 };
 
-function banc(options: { avecCatalogue?: boolean } = {}) {
+function banc(
+  options: {
+    avecCatalogue?: boolean;
+    type_evaluation?: import('../../contracts/index.js').TypeEvaluation;
+  } = {},
+) {
   const tenant_id = id<TenantId>('t');
   const horloge = new HorlogeManuelle(new Date('2026-06-28T09:00:00.000Z'));
   const curriculum = curriculumDemo(tenant_id, horloge);
@@ -47,6 +52,7 @@ function banc(options: { avecCatalogue?: boolean } = {}) {
     ...(options.avecCatalogue
       ? { catalogueErreurs: catalogueErreursDemo(tenant_id, horloge) }
       : {}),
+    ...(options.type_evaluation ? { type_evaluation: options.type_evaluation } : {}),
   });
   const session_id = id<SessionId>('s');
   const contexte: ContexteSession = {
@@ -117,6 +123,17 @@ test('erreur-type détectée → le tuteur parle la remédiation (pas la répons
   const etat = await moteur.repondre(session_id, '65'); // oubli de la retenue
   assert.match(etat.texte_tuteur, /colonne/i); // remédiation du catalogue
   assert.doesNotMatch(etat.texte_tuteur, /\b75\b/); // ne révèle pas la réponse
+});
+
+test('éval sommative : pas d’aide à l’échec + tentative typée sommative (D2)', async () => {
+  const { moteur, contexte, session_id, magasin } = banc({
+    avecCatalogue: true,
+    type_evaluation: 'sommative',
+  });
+  await moteur.demarrer(contexte);
+  const etat = await moteur.repondre(session_id, '65'); // erreur oubli_retenue
+  assert.doesNotMatch(etat.texte_tuteur, /colonne|Indice/); // aucune aide en sommatif
+  assert.equal(magasin.tentatives[0]?.type_evaluation, 'sommative');
 });
 
 test('coup reviser : propose un objectif dû après decay, sinon null', async () => {

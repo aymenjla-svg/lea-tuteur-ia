@@ -38,10 +38,12 @@ import type {
   SessionId,
   TenantId,
   Tentative,
+  TypeEvaluation,
   Verdict,
   Verifier,
 } from '../../contracts/index.js';
 import { evenement, type Horloge, nouvelId } from '../core.js';
+import { politiqueEvaluation } from '../planning/eval-types.js';
 import type { MagasinMemoire } from '../persistence/in-memory-store.js';
 
 /* Petit alias local : le type des leviers, extrait du répertoire R7. */
@@ -83,6 +85,8 @@ export interface DependancesLecon {
   readonly pedagogie: ParametresPedagogie;
   /** Optionnel : catalogue d'erreurs-types pour parler la remédiation (§6). */
   readonly catalogueErreurs?: CatalogueErreurs;
+  /** Type d'évaluation (D2) ; défaut `formative` (avec aide). */
+  readonly type_evaluation?: TypeEvaluation;
 }
 
 export class MoteurLecon {
@@ -271,8 +275,10 @@ export class MoteurLecon {
     // On ne PRONONCE pas le `diagnostic` du verifier (il révèle la valeur
     // attendue ; il reste dans le Verdict pour la télémétrie). On guide par la
     // remédiation de l'erreur-type détectée, sinon par l'indice — tremplin,
-    // pas refuge (P1).
-    const aide = await this.#aideRemediation(verdict, session.indice);
+    // pas refuge (P1). En éval diagnostique/sommative, pas d'aide (on mesure).
+    const aide = politiqueEvaluation(this.#typeEval()).aide
+      ? await this.#aideRemediation(verdict, session.indice)
+      : '';
     const coup: CoupTuteur = {
       type: 'proposer',
       objectif_id: session.objectif_courant,
@@ -364,7 +370,7 @@ export class MoteurLecon {
       eleve_id: session.eleve_id,
       objectif_id: session.objectif_courant,
       template_id: session.template_id,
-      type_evaluation: 'formative',
+      type_evaluation: this.#typeEval(),
       verdict,
       horodatage: t,
       cree_le: t,
@@ -504,6 +510,10 @@ export class MoteurLecon {
         this.deps.horloge.maintenant(),
       ),
     );
+  }
+
+  #typeEval(): TypeEvaluation {
+    return this.deps.type_evaluation ?? 'formative';
   }
 
   #session(session_id: SessionId): SessionInterne {

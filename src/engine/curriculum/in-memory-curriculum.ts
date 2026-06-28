@@ -18,6 +18,7 @@ import type {
   ObjectifId,
   Prerequis,
   Referentiel,
+  ReferentielId,
   TenantId,
 } from '../../contracts/index.js';
 import { type Horloge, id } from '../core.js';
@@ -47,6 +48,14 @@ export class InMemoryCurriculum implements Curriculum {
 
   async obtenirObjectif(idObjectif: ObjectifId): Promise<Objectif | null> {
     return this.#objectifs.get(idObjectif) ?? null;
+  }
+
+  async objectifs(
+    referentiel_id: ReferentielId,
+  ): Promise<readonly Objectif[]> {
+    return [...this.#objectifs.values()].filter(
+      (o) => o.referentiel_id === referentiel_id,
+    );
   }
 
   async prerequisDirects(idObjectif: ObjectifId): Promise<readonly Objectif[]> {
@@ -92,6 +101,7 @@ export class InMemoryCurriculum implements Curriculum {
 /* ------------------------------------------------------------------------- */
 
 /** Identifiants stables du seed (déterministes pour démos & tests). */
+export const REF_BO = id<ReferentielId>('ref-bo-cycle3-maths');
 export const OBJ_ADDITION = id<ObjectifId>('obj-addition-2-chiffres');
 export const OBJ_PREREQ = id<ObjectifId>('obj-tables-addition');
 
@@ -105,7 +115,7 @@ export function curriculumDemo(
 
   const referentiel: Referentiel = {
     ...meta,
-    id: id('ref-bo-cycle3-maths'),
+    id: REF_BO,
     libelle: 'BO — cycle 3, mathématiques',
     version: '2026.06',
   };
