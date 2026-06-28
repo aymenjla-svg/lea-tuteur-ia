@@ -178,10 +178,25 @@ function traduireMessages(messages: readonly MessageLLM[]): {
       continue;
     }
     vider();
-    out.push({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: [{ type: 'text', text: m.contenu }],
-    });
+    if (m.role === 'assistant') {
+      // Parole + blocs `tool_use` appariés (aux `tool_result` qui suivront).
+      const blocs: Anthropic.ContentBlockParam[] = [];
+      if (m.contenu) blocs.push({ type: 'text', text: m.contenu });
+      for (const appel of m.tool_calls ?? []) {
+        blocs.push({
+          type: 'tool_use',
+          id: appel.id,
+          name: appel.nom,
+          input: appel.arguments,
+        });
+      }
+      out.push({
+        role: 'assistant',
+        content: blocs.length > 0 ? blocs : [{ type: 'text', text: m.contenu }],
+      });
+    } else {
+      out.push({ role: 'user', content: [{ type: 'text', text: m.contenu }] });
+    }
   }
   vider();
 

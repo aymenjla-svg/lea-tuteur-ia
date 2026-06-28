@@ -79,6 +79,7 @@ interface MessageLLM {
   readonly role: 'system' | 'user' | 'assistant' | 'tool';
   readonly contenu: string;
   readonly tool_call_id?: string;
+  readonly tool_calls?: readonly ToolCall[];
 }
 
 interface SessionInterne {
@@ -224,7 +225,15 @@ export class ConversationOrchestrateur implements ConversationOrchestrator {
         }
       }
 
-      if (parole) session.messages.push({ role: 'assistant', contenu: parole });
+      // On enregistre le tour assistant AVEC ses appels d'outils : l'historique
+      // reste fidèle pour un provider réel (blocs tool_use ↔ tool_result).
+      if (parole || appels.length > 0) {
+        session.messages.push({
+          role: 'assistant',
+          contenu: parole,
+          ...(appels.length > 0 ? { tool_calls: appels } : {}),
+        });
+      }
 
       if (raison === 'tool' && appels.length > 0) {
         for (const appel of appels) {

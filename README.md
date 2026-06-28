@@ -139,14 +139,16 @@ const gateway = new AnthropicLLMGateway({ conformeMineur: true }); // ANTHROPIC_
 const orch = new ConversationOrchestrateur({ /* … */, gateway, /* … */ });
 ```
 
-Requiert `ANTHROPIC_API_KEY` (cf. `.env.example`) + réseau → **non exécuté/testé
-ici** (seule la résolution de provider §1.7 est testée). Détail conforme à la
-référence API : pas de `temperature`/`budget_tokens` (400 sur Opus 4.8),
-`thinking` omis (latence R4). **Limite assumée** : un aller-retour d'outil
-Anthropic complet exige des blocs `tool_use` appariés dans l'historique ; le
-contrat `MessageLLM` minimal couvre le chemin parole — les tours d'outils
-LLM-pilotés bout-à-bout demandent d'enrichir le contrat (documenté dans le
-fichier).
+Requiert `ANTHROPIC_API_KEY` (cf. `.env.example`) + réseau pour une **exécution
+live**. Détail conforme à la référence API : pas de `temperature`/`budget_tokens`
+(400 sur Opus 4.8), `thinking` omis (latence R4).
+
+Le contrat `MessageLLM` porte désormais les `tool_calls` d'un tour assistant :
+l'orchestrateur enregistre les appels, et le gateway les traduit en blocs
+`tool_use` Anthropic **appariés** aux `tool_result` — l'aller-retour d'outil est
+donc fidèle de bout en bout. Le **mapping streaming + traduction est testé hors
+réseau** (faux client injecté), en plus de la résolution de provider §1.7. Seule
+la requête HTTP réelle reste non exécutée ici (clé requise).
 
 ## Frontend (palier 2D/SVG, R6)
 

@@ -26,6 +26,12 @@ export interface MessageLLM {
   readonly contenu: string;
   /** Pour les messages `tool` : id de l'appel d'outil corrélé. */
   readonly tool_call_id?: string;
+  /**
+   * Pour un message `assistant` qui appelle des outils : les appels émis lors
+   * de ce tour. Indispensable pour reconstituer un historique fidèle côté
+   * provider (ex. blocs `tool_use` Anthropic appariés aux `tool_result`).
+   */
+  readonly tool_calls?: readonly ToolCall[];
 }
 
 /* ------------------------------------------------------------------------- */
