@@ -28,4 +28,5 @@ export * from './persona/catalogue-personas.js';
 export * from './presence/avatars.js';
 export * from './presence/voix-texte.js';
 export * from './llm/llm-gateway-stub.js';
+export * from './llm/anthropic-gateway.js';
 export * from './scale/registre-tenants.js';

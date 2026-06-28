@@ -117,6 +117,7 @@ choisi par les **paramètres** de la persona (§7), pas par un prompt.
 |---|---|---|
 | `ConversationOrchestrateur` | `orchestrator/conversation-orchestrator.ts` | boucle agentique réelle (D1/R4) ; exécute les 2 outils code dur ; le LLM ne voit jamais l'attendu (§1.1) ; cadre déterministe |
 | `LLMTuteurScripte` | `orchestrator/llm-scripte.ts` | « LLM » déterministe pour tester la boucle sans provider live |
+| `AnthropicLLMGateway` | `llm/anthropic-gateway.ts` | gateway **réel** (SDK Anthropic, `claude-opus-4-8`, streaming) ; résolution conforme §1.7 |
 | `Planificateur` | `planning/planificateur.ts` | prochaine action (réviser → travailler/consolider), parcours topologique du DAG, plan diagnostique |
 | `ExerciceAEtapes` | `planning/exercice-a-etapes.ts` | exercices multi-étapes (D5) |
 | `politiqueEvaluation` | `planning/eval-types.ts` | 3 types d'éval (diagnostique/formative/sommative) |
@@ -125,6 +126,27 @@ choisi par les **paramètres** de la persona (§7), pas par un prompt.
 
 Contenu de départ : `content/bo-cycle3-maths.yaml` (BO cycle 3 — tables,
 addition/soustraction/multiplication posées, DAG + pièges → erreurs-types).
+
+### Brancher un vrai LLM
+
+`AnthropicLLMGateway` implémente le contrat `LLMGateway` avec le SDK officiel
+(`claude-opus-4-8`, streaming, function-calling). Il se substitue au LLM
+scriptable dans l'orchestrateur (P3) :
+
+```ts
+import { AnthropicLLMGateway } from './engine/index.js';
+const gateway = new AnthropicLLMGateway({ conformeMineur: true }); // ANTHROPIC_API_KEY (env)
+const orch = new ConversationOrchestrateur({ /* … */, gateway, /* … */ });
+```
+
+Requiert `ANTHROPIC_API_KEY` (cf. `.env.example`) + réseau → **non exécuté/testé
+ici** (seule la résolution de provider §1.7 est testée). Détail conforme à la
+référence API : pas de `temperature`/`budget_tokens` (400 sur Opus 4.8),
+`thinking` omis (latence R4). **Limite assumée** : un aller-retour d'outil
+Anthropic complet exige des blocs `tool_use` appariés dans l'historique ; le
+contrat `MessageLLM` minimal couvre le chemin parole — les tours d'outils
+LLM-pilotés bout-à-bout demandent d'enrichir le contrat (documenté dans le
+fichier).
 
 ## Frontend (palier 2D/SVG, R6)
 

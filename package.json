@@ -21,6 +21,7 @@
     "serve": "node --import tsx src/serve.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.69.0",
     "yaml": "^2.5.0"
   },
   "devDependencies": {
