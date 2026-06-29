@@ -113,3 +113,62 @@ objectifs:
               attendu: { valeur: 92, tolerance: 0 }
               pieges:
                 - { valeur: 82, erreur_type_id: oubli_retenue }
+
+  # --- Fractions ------------------------------------------------------------
+  - id: obj-fraction-reconnaitre
+    libelle: "Reconnaître numérateur et dénominateur d'une fraction"
+    notion: "Fractions"
+    competences: [representer]
+    templates:
+      - id: tmpl-frac-denominateur
+        origine: prof
+        statut: valide
+        etapes:
+          - ordre: 1
+            indice: "Le dénominateur est le nombre du bas, sous la barre."
+            question:
+              kind: numeric
+              modalite: textuel
+              enonce: "Dans la fraction 3/4, quel est le dénominateur ?"
+              attendu: { valeur: 4, tolerance: 0 }
+
+  - id: obj-fraction-addition
+    libelle: "Additionner deux fractions de même dénominateur"
+    notion: "Fractions"
+    competences: [calculer, raisonner]
+    prerequis: [obj-fraction-reconnaitre, obj-addition-posee]
+    templates:
+      - id: tmpl-frac-add
+        origine: prof
+        statut: valide
+        etapes:
+          - ordre: 1
+            indice: "On garde le dénominateur et on additionne les numérateurs."
+            question:
+              kind: numeric
+              modalite: textuel
+              enonce: "1/5 + 3/5 = ?/5 — donne le numérateur du résultat."
+              attendu: { valeur: 4, tolerance: 0 }
+              pieges:
+                - { valeur: 8, erreur_type_id: additionne_denominateurs }
+
+  # --- Périmètre ------------------------------------------------------------
+  - id: obj-perimetre-rectangle
+    libelle: "Calculer le périmètre d'un rectangle"
+    notion: "Périmètre"
+    competences: [calculer, modeliser]
+    prerequis: [obj-addition-posee, obj-multiplication-posee]
+    templates:
+      - id: tmpl-perimetre
+        origine: prof
+        statut: valide
+        etapes:
+          - ordre: 1
+            indice: "Périmètre = 2 × (longueur + largeur)."
+            question:
+              kind: numeric
+              modalite: textuel
+              enonce: "Périmètre d'un rectangle de 5 cm sur 3 cm ?"
+              attendu: { valeur: 16, tolerance: 0, unite: "cm" }
+              pieges:
+                - { valeur: 15, erreur_type_id: confond_perimetre_aire }

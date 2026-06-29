@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Léa — tableau de bord éducateur</title>
+    <link rel="stylesheet" href="/styles.css" />
+    <style>
+      .app { max-width: 760px; }
+      .cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; }
+      .carte { background: var(--fond); border: 1px solid var(--accent-doux); border-radius: 14px; padding: 14px; }
+      .carte .val { font-size: 1.6rem; font-weight: 700; color: var(--accent); }
+      .carte .lib { font-size: 0.78rem; color: var(--doux); margin-top: 2px; }
+      .bloc h2 { font-size: 0.95rem; margin: 18px 0 8px; }
+      .liste { display: flex; flex-direction: column; gap: 6px; }
+      .ligne { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; }
+      .ligne .nom { flex: 0 0 200px; color: var(--encre); }
+      .jauge { flex: 1; height: 10px; background: var(--fond); border: 1px solid var(--accent-doux); border-radius: 999px; overflow: hidden; }
+      .jauge > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--ok)); }
+      .ligne .n { flex: 0 0 36px; text-align: right; color: var(--doux); font-size: 0.82rem; }
+      .vide { color: var(--doux); font-size: 0.88rem; }
+      .rafraichir { align-self: flex-start; }
+    </style>
+  </head>
+  <body>
+    <main class="app">
+      <header class="entete">
+        <h1>Léa — tableau de bord</h1>
+        <button id="rafraichir" class="rejouer rafraichir">Rafraîchir</button>
+      </header>
+
+      <section class="cartes" id="cartes" aria-live="polite"></section>
+
+      <section class="bloc">
+        <h2>Erreurs-types rencontrées</h2>
+        <div class="liste" id="erreurs"></div>
+      </section>
+
+      <section class="bloc">
+        <h2>Télémétrie (événements)</h2>
+        <div class="liste" id="events"></div>
+      </section>
+
+      <p class="note">Données tenant-scopées · télémétrie complète dès le jour 1 (§13).</p>
+    </main>
+    <script src="/dashboard.js" type="module"></script>
+  </body>
+</html>

@@ -20,15 +20,30 @@ function charger() {
   return { horloge, curriculum, referentiel_id };
 }
 
-test('charge le contenu BO cycle 3 : 5 objectifs + DAG', async () => {
+test('charge le contenu BO cycle 3 : 8 objectifs + DAG', async () => {
   const { curriculum, referentiel_id } = charger();
   const objs = await curriculum.objectifs(referentiel_id);
-  assert.equal(objs.length, 5);
+  assert.equal(objs.length, 8);
 
   const mult = id<ObjectifId>('obj-multiplication-posee');
   const prereqs = (await curriculum.prerequisDirects(mult)).map((o) => o.id);
   assert.ok(prereqs.includes(id<ObjectifId>('obj-tables-multiplication')));
   assert.ok(prereqs.includes(id<ObjectifId>('obj-addition-posee')));
+
+  // Le périmètre dépend (transitivement) de l'addition et de la multiplication.
+  const peri = await curriculum.prerequisDirects(id<ObjectifId>('obj-perimetre-rectangle'));
+  assert.equal(peri.length, 2);
+});
+
+test('contenu : une question de fraction se vérifie via le code dur', async () => {
+  const { curriculum } = charger();
+  const tmpl = await curriculum.templatesPourObjectif(id<ObjectifId>('obj-fraction-addition'));
+  const q = tmpl[0]?.etapes[0]?.question;
+  assert.ok(q && q.kind === 'numeric');
+  if (q?.kind === 'numeric') {
+    assert.equal((await new VerifierStandard().verifier(q, { texte: '4' })).correct, true);
+    assert.equal(q.pieges?.[0]?.erreur_type_id, 'additionne_denominateurs');
+  }
 });
 
 test('questions et pièges (erreurs-types) chargés correctement', async () => {

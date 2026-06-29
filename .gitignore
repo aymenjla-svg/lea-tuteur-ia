@@ -13,3 +13,7 @@ npm-debug.log*
 .env
 .env.*
 !.env.example
+
+# Skills tierces installées via `npx skills add` (réinstallables via skills-lock.json)
+.agents/
+.claude/skills/

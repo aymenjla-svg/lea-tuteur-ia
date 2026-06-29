@@ -159,8 +159,12 @@ de maîtrise et un bouton « Je suis perdu·e ». Sélecteur de palier SVG ⇄ t
 seul (R6 : moteur identique). Vérifié dans Chromium (cf. `web/apercu.png`).
 
 ```bash
-npm run serve     # puis ouvrir http://127.0.0.1:3000
+npm run serve     # puis ouvrir http://127.0.0.1:3000  (tableau de bord : /dashboard.html)
 ```
+
+Un **tableau de bord éducateur** (`web/dashboard.html`) lit `/dashboard` et
+affiche tentatives, taux de réussite, erreurs-types et télémétrie (D13) —
+vérifié dans Chromium (`web/apercu-dashboard.png`).
 
 ### Palier 3D (`web-3d/`, Three.js + Vite)
 

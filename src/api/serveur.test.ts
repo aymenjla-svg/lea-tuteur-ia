@@ -93,6 +93,12 @@ test('sert les assets : GET /app.js → JavaScript', async () => {
   assert.match(res.headers.get('content-type') ?? '', /javascript/);
 });
 
+test('sert le tableau de bord éducateur : GET /dashboard.html → HTML', async () => {
+  const res = await fetch(base + '/dashboard.html');
+  assert.equal(res.status, 200);
+  assert.match(await res.text(), /tableau de bord/i);
+});
+
 test('pas d’accès hors de web/ : GET /package.json → 404', async () => {
   const res = await fetch(base + '/package.json');
   assert.equal(res.status, 404);
