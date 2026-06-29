@@ -42,10 +42,31 @@ deux skills sont installées (`supabase`, `supabase-postgres-best-practices`).
 > UUID (`gen_random_uuid()`), ou passer ces colonnes en `text` si l'on veut
 > conserver des identifiants lisibles.
 
-## Statut & limites
+## Statut : VALIDÉ contre Postgres 16 ✓
 
-Ce fichier **n'a pas été exécuté** dans cet environnement (aucune base
-disponible / MCP Supabase non connecté à cette session). À appliquer demain via
-le MCP Supabase. Le mapping `verdict` (objet riche en mémoire) est aplati en
-`correct` + `erreur_type_id` dans `tentatives` — suffisant pour la maîtrise et
-le dashboard.
+Le schéma a été **appliqué et vérifié sur un Postgres 16 réel** (local) :
+- les 17 tables, triggers `modifie_le`, RLS (`FORCE`) et index se créent sans
+  erreur ;
+- l'**isolation RLS** est prouvée : avec un rôle non-superuser, le tenant courant
+  (`set_config('app.current_tenant', …)`) ne voit que ses lignes, un autre
+  tenant en voit 0 ;
+- le **`PgStore`** (`src/engine/persistence/pg-store.ts`) persiste une vraie
+  session du moteur (write-through depuis `MagasinMemoire`) : tentatives,
+  alertes, tours de dialogue, events.
+
+Reproduire : lancer un Postgres puis `npm run db:verify` (cf. en-tête de
+`db/verify-local.mjs` pour la config `DATABASE_URL`/`PG*`).
+
+> Les `id`/`tenant_id` sont en `text` (identifiants brandés du moteur) ; la RLS
+> repose sur le GUC `app.current_tenant` (connexion service backend). Sur
+> Supabase, se connecter avec un rôle **non** bypass-RLS (pas `service_role`).
+
+Le mapping `verdict` (objet riche en mémoire) est aplati en `correct` +
+`erreur_type_id` dans `tentatives` — suffisant pour la maîtrise et le dashboard.
+
+## Appliquer sur Supabase (demain, MCP connecté)
+
+`supabase/migrations/20260629000000_lea_init.sql` est la migration de départ
+(miroir validé de `db/schema.sql`). Une fois le MCP Supabase authentifié :
+`execute_sql` (itératif) ou `apply_migration` / `supabase db push`, puis activer
+`pgvector` pour la colonne `embedding`.

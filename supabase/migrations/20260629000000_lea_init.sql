@@ -1,3 +1,6 @@
+-- Migration initiale Léa (Supabase / Postgres). Validée contre Postgres 16.
+-- Miroir de db/schema.sql ; régénérer via 'supabase db pull' après application.
+
 -- =============================================================================
 -- Léa — schéma Postgres multi-tenant (D7, §5, §13).
 --

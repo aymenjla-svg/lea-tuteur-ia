@@ -88,6 +88,7 @@ appelants. Persistance en mémoire pour l'instant (→ Postgres/RLS en Phase 2).
 | `InMemoryCurriculum` + `curriculumDemo` | `curriculum/in-memory-curriculum.ts` | `Curriculum` | DAG en mémoire ; seed 1 objectif + 1 prérequis, template **prof** (R1) |
 | `MinimalSafetyFilter` | `safety/minimal-safety-filter.ts` | `SafetyFilter` | filtre de sortie (anti-humiliation §1.3) + détresse → `SafetyAlert` escaladée (R5) |
 | `MagasinMemoire` | `persistence/in-memory-store.ts` | dépôts + `EventSink` | tentatives, alertes, tours de dialogue, `events` (§13) |
+| `PgStore` | `persistence/pg-store.ts` | persistance Postgres/Supabase | write-through + RLS par tenant — **schéma + store validés contre Postgres 16** (`npm run db:verify`) |
 | `MoteurLecon` | `session/lecon.ts` | (préfigure `ConversationOrchestrator`) | boucle déterministe, coups R7, 2 outils code dur |
 
 La boucle gère déjà l'**adaptation R7** : sous le `seuil_blocage` de la persona,
