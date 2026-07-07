@@ -135,37 +135,80 @@
   var REF_BO = id("ref-bo-cycle3-maths");
   var OBJ_ADDITION = id("obj-addition-2-chiffres");
   var OBJ_PREREQ = id("obj-tables-addition");
-  function curriculumDemo(tenant_id2, horloge2) {
+
+  // src/engine/erreurs/catalogue-erreurs.ts
+  var _parId;
+  var InMemoryCatalogueErreurs = class {
+    constructor() {
+      __privateAdd(this, _parId, /* @__PURE__ */ new Map());
+    }
+    ajouter(e) {
+      __privateGet(this, _parId).set(e.id, e);
+    }
+    async obtenir(idErreur) {
+      return __privateGet(this, _parId).get(idErreur) ?? null;
+    }
+    async pourObjectif(objectif_id) {
+      return [...__privateGet(this, _parId).values()].filter(
+        (e) => e.objectif_id === objectif_id
+      );
+    }
+  };
+  _parId = new WeakMap();
+
+  // src/engine/curriculum/physique.ts
+  var REF_PHYSIQUE = id("ref-bo-pc-cycle4");
+  var OBJ_VITESSE = id("obj-vitesse");
+  var OBJ_VITESSE_PREREQ = id("obj-vitesse-relation");
+  var OBJ_POIDS = id("obj-poids");
+  var OBJ_OHM = id("obj-ohm");
+  function curriculumPhysique(tenant_id2, horloge2) {
     const t = horloge2.maintenant();
     const meta = { tenant_id: tenant_id2, cree_le: t, modifie_le: t };
     const referentiel = {
       ...meta,
-      id: REF_BO,
-      libelle: "BO \u2014 cycle 3, math\xE9matiques",
-      version: "2026.06"
+      id: REF_PHYSIQUE,
+      libelle: "BO \u2014 Physique-Chimie, cycle 4",
+      version: "2020.07"
     };
     const c = new InMemoryCurriculum();
     c.ajouterObjectif({
       ...meta,
-      id: OBJ_PREREQ,
+      id: OBJ_VITESSE_PREREQ,
       referentiel_id: referentiel.id,
-      libelle: "Conna\xEEtre les compl\xE9ments et tables d\u2019addition",
-      notion: "Calcul mental",
-      competences: ["calculer"]
+      libelle: "Relier vitesse, distance et dur\xE9e",
+      notion: "Mouvements et interactions",
+      competences: ["modeliser", "calculer"]
     });
     c.ajouterObjectif({
       ...meta,
-      id: OBJ_ADDITION,
+      id: OBJ_VITESSE,
       referentiel_id: referentiel.id,
-      libelle: "Additionner deux nombres \xE0 deux chiffres",
-      notion: "Addition pos\xE9e",
-      competences: ["calculer", "chercher"]
+      libelle: "Calculer une vitesse (v = d/t)",
+      notion: "Mouvements et interactions",
+      competences: ["modeliser", "calculer"]
     });
-    c.ajouterPrerequis({ ...meta, objectif_id: OBJ_ADDITION, prerequis_id: OBJ_PREREQ });
+    c.ajouterObjectif({
+      ...meta,
+      id: OBJ_POIDS,
+      referentiel_id: referentiel.id,
+      libelle: "Calculer un poids (P = m\xB7g) et le distinguer de la masse",
+      notion: "Mouvements et interactions",
+      competences: ["raisonner", "calculer"]
+    });
+    c.ajouterObjectif({
+      ...meta,
+      id: OBJ_OHM,
+      referentiel_id: referentiel.id,
+      libelle: "Exploiter la loi d\u2019Ohm (U = R\xB7I)",
+      notion: "L\u2019\xE9nergie, ses transferts et ses conversions",
+      competences: ["modeliser", "calculer"]
+    });
+    c.ajouterPrerequis({ ...meta, objectif_id: OBJ_VITESSE, prerequis_id: OBJ_VITESSE_PREREQ });
     c.ajouterTemplate({
       ...meta,
-      id: id("tmpl-addition-27-48"),
-      objectif_id: OBJ_ADDITION,
+      id: id("tmpl-vitesse-relation-12-4"),
+      objectif_id: OBJ_VITESSE_PREREQ,
       origine: "prof",
       statut: "valide",
       parametres: [],
@@ -175,22 +218,22 @@
           question: {
             kind: "numeric",
             modalite: "textuel",
-            enonce: "Combien font 27 + 48 ?",
-            attendu: { valeur: 75, tolerance: 0 },
-            // 65 = oubli de la retenue (7+8=15 → on écrit 5 sans reporter le 1).
-            pieges: [{ valeur: 65, erreur_type_id: "oubli_retenue" }]
+            enonce: "Un pi\xE9ton parcourt 12 m en 4 s. Quelle est sa vitesse, en m/s ?",
+            attendu: { valeur: 3, tolerance: 0 },
+            // 48 = distance × durée (au lieu de ÷).
+            pieges: [{ valeur: 48, erreur_type_id: "multiplie_au_lieu_de_diviser" }]
           },
-          indice: "Additionne d\u2019abord les dizaines (20 + 40), puis les unit\xE9s (7 + 8)."
+          indice: "La vitesse est une distance divis\xE9e par une dur\xE9e."
         }
       ],
       representations: [
-        { modalite: "textuel", texte: "Pose l\u2019addition en colonnes, unit\xE9s sous unit\xE9s." }
+        { modalite: "textuel", texte: "Divise la distance (12 m) par la dur\xE9e (4 s)." }
       ]
     });
     c.ajouterTemplate({
       ...meta,
-      id: id("tmpl-tables-7-8"),
-      objectif_id: OBJ_PREREQ,
+      id: id("tmpl-vitesse-150-3"),
+      objectif_id: OBJ_VITESSE,
       origine: "prof",
       statut: "valide",
       parametres: [],
@@ -200,22 +243,135 @@
           question: {
             kind: "numeric",
             modalite: "textuel",
-            enonce: "Combien font 7 + 8 ?",
-            attendu: { valeur: 15, tolerance: 0 }
+            enonce: "Une voiture parcourt 150 km en 3 h. Quelle est sa vitesse moyenne, en km/h ?",
+            attendu: { valeur: 50, tolerance: 0 },
+            pieges: [
+              // 450 = 150 × 3 (multiplie au lieu de diviser).
+              { valeur: 450, erreur_type_id: "multiplie_au_lieu_de_diviser" },
+              // 0.02 = 3 ÷ 150 (division inversée).
+              { valeur: 0.02, erreur_type_id: "inverse_division" }
+            ]
           },
-          indice: "Pense \xE0 7 + 8 = 7 + 3 + 5."
+          indice: "Divise la distance par la dur\xE9e : v = d \xF7 t."
         }
       ],
-      representations: [{ modalite: "textuel", texte: "Compte sur tes doigts si besoin." }]
+      representations: [
+        { modalite: "textuel", texte: "\xC9cris v = d / t, remplace d et t, puis calcule." }
+      ]
+    });
+    c.ajouterTemplate({
+      ...meta,
+      id: id("tmpl-poids-5kg"),
+      objectif_id: OBJ_POIDS,
+      origine: "prof",
+      statut: "valide",
+      parametres: [],
+      etapes: [
+        {
+          ordre: 1,
+          question: {
+            kind: "numeric",
+            modalite: "textuel",
+            enonce: "Sur Terre (g = 10 N/kg), quel est le poids d\u2019un objet de masse 5 kg, en newtons ?",
+            attendu: { valeur: 50, tolerance: 0 },
+            pieges: [
+              // 5 = on rend la masse (confusion masse / poids).
+              { valeur: 5, erreur_type_id: "confond_masse_poids" },
+              // 0.5 = m ÷ g (relation inversée).
+              { valeur: 0.5, erreur_type_id: "inverse_relation" }
+            ]
+          },
+          indice: "Le poids s\u2019obtient avec P = m \xD7 g."
+        }
+      ],
+      representations: [
+        { modalite: "textuel", texte: "La masse est en kg, le poids en N : P = m \xD7 g." }
+      ]
+    });
+    c.ajouterTemplate({
+      ...meta,
+      id: id("tmpl-ohm-30-2"),
+      objectif_id: OBJ_OHM,
+      origine: "prof",
+      statut: "valide",
+      parametres: [],
+      etapes: [
+        {
+          ordre: 1,
+          question: {
+            kind: "numeric",
+            modalite: "textuel",
+            enonce: "Un conducteur ohmique de r\xE9sistance 30 \u03A9 est parcouru par un courant de 2 A. Quelle est la tension \xE0 ses bornes, en volts ?",
+            attendu: { valeur: 60, tolerance: 0 },
+            pieges: [
+              // 15 = R ÷ I (relation inversée).
+              { valeur: 15, erreur_type_id: "inverse_relation" },
+              // 32 = R + I (additionne au lieu de multiplier).
+              { valeur: 32, erreur_type_id: "additionne_au_lieu_de_multiplier" }
+            ]
+          },
+          indice: "La loi d\u2019Ohm relie tension, r\xE9sistance et intensit\xE9 : U = R \xD7 I."
+        }
+      ],
+      representations: [
+        { modalite: "textuel", texte: "U (V) = R (\u03A9) \xD7 I (A)." }
+      ]
     });
     c.ajouterExplication({
       ...meta,
-      id: id("expl-addition-colonnes"),
-      objectif_id: OBJ_ADDITION,
+      id: id("expl-vitesse"),
+      objectif_id: OBJ_VITESSE,
       modalite: "textuel",
-      contenu: "Pour additionner deux nombres \xE0 deux chiffres, aligne les unit\xE9s puis les dizaines. Additionne les unit\xE9s ; si tu d\xE9passes 9, tu retiens 1."
+      contenu: "La vitesse moyenne est la distance parcourue divis\xE9e par la dur\xE9e du trajet : v = d / t. Si d est en kilom\xE8tres et t en heures, alors v est en km/h."
     });
     return c;
+  }
+  function catalogueErreursPhysique(tenant_id2, horloge2) {
+    const t = horloge2.maintenant();
+    const meta = { tenant_id: tenant_id2, cree_le: t, modifie_le: t };
+    const cat = new InMemoryCatalogueErreurs();
+    const erreurs = [
+      {
+        id: "multiplie_au_lieu_de_diviser",
+        libelle: "Multiplication au lieu d\u2019une division",
+        description: "Une grandeur-quotient (comme la vitesse) est obtenue par une division.",
+        remediation: "Ici il faut diviser, pas multiplier : une vitesse est une distance divis\xE9e par une dur\xE9e."
+      },
+      {
+        id: "inverse_division",
+        libelle: "Division invers\xE9e",
+        description: "Le dividende et le diviseur ont \xE9t\xE9 \xE9chang\xE9s.",
+        remediation: "V\xE9rifie l\u2019ordre : on divise la distance par la dur\xE9e, pas l\u2019inverse."
+      },
+      {
+        id: "confond_masse_poids",
+        libelle: "Confusion masse / poids",
+        description: "La masse (en kg) et le poids (en N) sont deux grandeurs diff\xE9rentes.",
+        remediation: "La masse (kg) et le poids (N) sont diff\xE9rents : le poids se calcule avec P = m \xD7 g."
+      },
+      {
+        id: "inverse_relation",
+        libelle: "Relation utilis\xE9e \xE0 l\u2019envers",
+        description: "La relation a \xE9t\xE9 appliqu\xE9e dans le mauvais sens.",
+        remediation: "Reprends la relation et isole bien la grandeur cherch\xE9e avant de calculer."
+      },
+      {
+        id: "additionne_au_lieu_de_multiplier",
+        libelle: "Addition au lieu d\u2019une multiplication",
+        description: "Les grandeurs de la relation se multiplient, elles ne s\u2019additionnent pas.",
+        remediation: "Dans cette relation, les grandeurs se multiplient : relis la formule attentivement."
+      },
+      {
+        id: "ecart_numerique",
+        libelle: "\xC9cart num\xE9rique",
+        description: "Le r\xE9sultat est \xE9loign\xE9 de la valeur attendue.",
+        remediation: "V\xE9rifie chaque \xE9tape de ton calcul et les unit\xE9s, sans te presser."
+      }
+    ];
+    for (const e of erreurs) {
+      cat.ajouter({ ...meta, id: id(e.id), libelle: e.libelle, description: e.description, remediation: e.remediation });
+    }
+    return cat;
   }
 
   // src/engine/learner-model/heuristic-learner-model.ts
@@ -737,46 +893,6 @@
     );
   };
 
-  // src/engine/erreurs/catalogue-erreurs.ts
-  var _parId;
-  var InMemoryCatalogueErreurs = class {
-    constructor() {
-      __privateAdd(this, _parId, /* @__PURE__ */ new Map());
-    }
-    ajouter(e) {
-      __privateGet(this, _parId).set(e.id, e);
-    }
-    async obtenir(idErreur) {
-      return __privateGet(this, _parId).get(idErreur) ?? null;
-    }
-    async pourObjectif(objectif_id) {
-      return [...__privateGet(this, _parId).values()].filter(
-        (e) => e.objectif_id === objectif_id
-      );
-    }
-  };
-  _parId = new WeakMap();
-  function catalogueErreursDemo(tenant_id2, horloge2) {
-    const t = horloge2.maintenant();
-    const meta = { tenant_id: tenant_id2, cree_le: t, modifie_le: t };
-    const cat = new InMemoryCatalogueErreurs();
-    cat.ajouter({
-      ...meta,
-      id: id("oubli_retenue"),
-      libelle: "Oubli de la retenue",
-      description: "Lorsqu\u2019une colonne d\xE9passe 9, la retenue n\u2019est pas report\xE9e sur la colonne suivante.",
-      remediation: "Quand le total d\u2019une colonne d\xE9passe 9, n\u2019oublie pas d\u2019ajouter 1 \xE0 la colonne de gauche."
-    });
-    cat.ajouter({
-      ...meta,
-      id: id("ecart_numerique"),
-      libelle: "\xC9cart num\xE9rique",
-      description: "Le r\xE9sultat est \xE9loign\xE9 de la valeur attendue.",
-      remediation: "V\xE9rifie chaque \xE9tape de ton calcul, sans te presser."
-    });
-    return cat;
-  }
-
   // src/engine/planning/eval-types.ts
   var POLITIQUES = {
     diagnostique: { aide: false, repetition: false, score_final: false },
@@ -1143,7 +1259,7 @@
   };
   var tenant_id = id("tenant-demo");
   var horloge = new HorlogeManuelle(/* @__PURE__ */ new Date("2026-06-28T09:00:00.000Z"));
-  var curriculum = curriculumDemo(tenant_id, horloge);
+  var curriculum = curriculumPhysique(tenant_id, horloge);
   var learnerModel = new HeuristicLearnerModel(tenant_id, curriculum, horloge);
   var magasin = new MagasinMemoire();
   var moteur = new MoteurLecon({
@@ -1155,7 +1271,7 @@
     magasin,
     horloge,
     pedagogie: PEDAGOGIE,
-    catalogueErreurs: catalogueErreursDemo(tenant_id, horloge)
+    catalogueErreurs: catalogueErreursPhysique(tenant_id, horloge)
   });
   async function creerSession() {
     const session_id = nouvelId();
@@ -1163,7 +1279,7 @@
       session_id,
       eleve_id: id("eleve-demo"),
       persona_id: id("persona-lea"),
-      objectif_initial: OBJ_ADDITION
+      objectif_initial: OBJ_VITESSE
     };
     const etat = await moteur.demarrer(contexte);
     return { session_id, etat };
@@ -1185,10 +1301,10 @@
       session_id,
       eleve_id: id("eleve-demo"),
       persona_id: id("persona-lea"),
-      objectif_initial: OBJ_ADDITION
+      objectif_initial: OBJ_VITESSE
     };
     let etat = await moteur.demarrer(contexte);
-    for (const t of ["70", "60", "15", "75", "75", "75", "75"]) {
+    for (const t of ["450", "450", "3", "50", "50", "50", "50"]) {
       if (etat.termine) break;
       horloge.avancer(3e4);
       etat = await moteur.repondre(session_id, t);

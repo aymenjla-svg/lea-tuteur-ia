@@ -11,6 +11,7 @@ export * from './verifier/expression.js';
 export * from './learner-model/heuristic-learner-model.js';
 export * from './learner-model/bkt-learner-model.js';
 export * from './curriculum/in-memory-curriculum.js';
+export * from './curriculum/physique.js';
 export * from './curriculum/yaml-loader.js';
 export * from './curriculum/banque.js';
 export * from './erreurs/catalogue-erreurs.js';

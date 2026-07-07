@@ -32,8 +32,8 @@ import type {
 } from '../contracts/index.js';
 import type { ActionPedagogique } from '../engine/index.js';
 import {
-  catalogueErreursDemo,
-  curriculumDemo,
+  catalogueErreursPhysique,
+  curriculumPhysique,
   HeuristicLearnerModel,
   type Horloge,
   horlogeSysteme,
@@ -42,9 +42,9 @@ import {
   MinimalSafetyFilter,
   MoteurLecon,
   nouvelId,
-  OBJ_ADDITION,
+  OBJ_VITESSE,
   Planificateur,
-  REF_BO,
+  REF_PHYSIQUE,
   tableauDeBord,
   VerifierStandard,
 } from '../engine/index.js';
@@ -121,7 +121,7 @@ export function creerServeurApi(config: ConfigServeur): Server {
   const racineWeb3d = resolve(
     config.racineWeb3d ?? fileURLToPath(new URL('../../web-3d/dist/', import.meta.url)),
   );
-  const curriculum = curriculumDemo(tenant_id, horloge);
+  const curriculum = curriculumPhysique(tenant_id, horloge);
   const learnerModel = new HeuristicLearnerModel(tenant_id, curriculum, horloge);
   const planificateur = new Planificateur(
     curriculum,
@@ -138,7 +138,7 @@ export function creerServeurApi(config: ConfigServeur): Server {
     magasin,
     horloge,
     pedagogie: PEDAGOGIE,
-    catalogueErreurs: catalogueErreursDemo(tenant_id, horloge),
+    catalogueErreurs: catalogueErreursPhysique(tenant_id, horloge),
   });
 
   return createServer((req, res) => {
@@ -162,7 +162,7 @@ export function creerServeurApi(config: ConfigServeur): Server {
       const eleve_id = id<EleveId>(decodeURIComponent(ma[1] as string));
       const action = await planificateur.prochaineAction(
         eleve_id,
-        REF_BO,
+        REF_PHYSIQUE,
         horloge.maintenant(),
       );
       return repondreJson(res, 200, { action });
@@ -178,13 +178,13 @@ export function creerServeurApi(config: ConfigServeur): Server {
       if (corps.objectif_id) {
         objectif_initial = id<ObjectifId>(corps.objectif_id);
       } else if (corps.auto) {
-        action = await planificateur.prochaineAction(eleve_id, REF_BO, horloge.maintenant());
+        action = await planificateur.prochaineAction(eleve_id, REF_PHYSIQUE, horloge.maintenant());
         if (action.type === 'rien') {
           return repondreJson(res, 200, { action, message: 'Tout est maîtrisé — rien à travailler.' });
         }
         objectif_initial = action.objectif_id;
       } else {
-        objectif_initial = OBJ_ADDITION;
+        objectif_initial = OBJ_VITESSE;
       }
 
       const session_id = nouvelId<SessionId>();

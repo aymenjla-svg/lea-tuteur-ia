@@ -74,12 +74,21 @@ function parler(texte) {
   parleJusqua = performance.now() + duree;
 }
 
-// Extrait « 27 + 48 » d'un énoncé pour l'écrire au tableau, sinon l'énoncé brut.
+// Relation de physique à afficher à la craie, selon l'objectif courant.
+const FORMULES = {
+  'obj-vitesse': 'v = d / t',
+  'obj-vitesse-relation': 'v = d / t',
+  'obj-poids': 'P = m × g',
+  'obj-ohm': 'U = R × I',
+};
+
+// Écrit au tableau la relation travaillée ; à défaut, une opération de l'énoncé.
 function pourLeTableau(etat) {
+  const f = FORMULES[etat.objectif_courant];
+  if (f) return f;
   const enonce = etat.question_courante?.enonce ?? '';
   const m = enonce.match(/(\d+\s*[+\-×x*/]\s*\d+)/);
-  if (m) return `${m[1].replace(/\s+/g, ' ')} = ?`;
-  return enonce.replace(/^.*?:\s*/, '').slice(0, 40);
+  return m ? `${m[1].replace(/\s+/g, ' ')} = ?` : '';
 }
 
 function rendre(etat) {

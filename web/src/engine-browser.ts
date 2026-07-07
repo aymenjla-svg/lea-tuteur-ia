@@ -27,14 +27,14 @@ import type {
 } from '../../src/contracts/index.js';
 import { id, nouvelId, HorlogeManuelle } from '../../src/engine/core.js';
 import {
-  curriculumDemo,
-  OBJ_ADDITION,
-} from '../../src/engine/curriculum/in-memory-curriculum.js';
+  curriculumPhysique,
+  catalogueErreursPhysique,
+  OBJ_VITESSE,
+} from '../../src/engine/curriculum/physique.js';
 import { HeuristicLearnerModel } from '../../src/engine/learner-model/heuristic-learner-model.js';
 import { MagasinMemoire } from '../../src/engine/persistence/in-memory-store.js';
 import { MinimalSafetyFilter } from '../../src/engine/safety/minimal-safety-filter.js';
 import { VerifierStandard } from '../../src/engine/verifier/verifier-standard.js';
-import { catalogueErreursDemo } from '../../src/engine/erreurs/catalogue-erreurs.js';
 import { MoteurLecon } from '../../src/engine/session/lecon.js';
 import { tableauDeBord } from '../../src/engine/dashboard/dashboard.js';
 
@@ -47,11 +47,11 @@ const PEDAGOGIE: ParametresPedagogie = {
 };
 
 const tenant_id = id<TenantId>('tenant-demo');
-// Horloge déterministe (comme la démo Phase 1) : la banque d'exercices est
-// alors reproductible (1er exercice 27+48=75, prérequis 7+8=15), ce qui rend le
-// visu stable et permet une amorce de démo aux réponses connues.
+// Horloge déterministe : contenu reproductible (1er exercice vitesse
+// 150 km / 3 h = 50 km/h, prérequis 12 m / 4 s = 3 m/s), ce qui rend le visu
+// stable et permet une amorce de démo aux réponses connues.
 const horloge = new HorlogeManuelle(new Date('2026-06-28T09:00:00.000Z'));
-const curriculum = curriculumDemo(tenant_id, horloge);
+const curriculum = curriculumPhysique(tenant_id, horloge);
 const learnerModel = new HeuristicLearnerModel(tenant_id, curriculum, horloge);
 const magasin = new MagasinMemoire();
 const moteur = new MoteurLecon({
@@ -63,7 +63,7 @@ const moteur = new MoteurLecon({
   magasin,
   horloge,
   pedagogie: PEDAGOGIE,
-  catalogueErreurs: catalogueErreursDemo(tenant_id, horloge),
+  catalogueErreurs: catalogueErreursPhysique(tenant_id, horloge),
 });
 
 async function creerSession(): Promise<{ session_id: string; etat: unknown }> {
@@ -72,7 +72,7 @@ async function creerSession(): Promise<{ session_id: string; etat: unknown }> {
     session_id,
     eleve_id: id<EleveId>('eleve-demo'),
     persona_id: id<PersonaId>('persona-lea'),
-    objectif_initial: OBJ_ADDITION as ObjectifId,
+    objectif_initial: OBJ_VITESSE as ObjectifId,
   };
   const etat = await moteur.demarrer(contexte);
   return { session_id, etat };
@@ -102,12 +102,12 @@ async function amorcerDemo(): Promise<void> {
     session_id,
     eleve_id: id<EleveId>('eleve-demo'),
     persona_id: id<PersonaId>('persona-lea'),
-    objectif_initial: OBJ_ADDITION as ObjectifId,
+    objectif_initial: OBJ_VITESSE as ObjectifId,
   };
   let etat = await moteur.demarrer(contexte);
-  // Séquence connue (cf. démo Phase 1) : 27+48=75. Deux erreurs (70, 60) → levier
-  // R7, prérequis 7+8=15, puis bonnes réponses jusqu'à la maîtrise.
-  for (const t of ['70', '60', '15', '75', '75', '75', '75']) {
+  // Séquence connue (physique) : 150 km en 3 h → 50 km/h. Deux erreurs (450 =
+  // 150×3) → levier R7, prérequis 12 m/4 s = 3 m/s, puis bonnes réponses.
+  for (const t of ['450', '450', '3', '50', '50', '50', '50']) {
     if ((etat as { termine?: boolean }).termine) break;
     horloge.avancer(30_000);
     etat = await moteur.repondre(session_id, t);
