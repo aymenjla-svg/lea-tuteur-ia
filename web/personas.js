@@ -51,39 +51,63 @@ export function personaParId(id) {
 // --- Cheveux (arrière = derrière la tête, avant = frange à mèches) -----------
 // Repère : visage centré ~ (100,108), yeux à y≈112 (pivots d'animation).
 
+// Chevelure ARRIÈRE (derrière la tête/le corps) : masse longue qui encadre.
 function cheveuxArriere(p) {
   switch (p.coiffe) {
     case 'longs':
-      return `<path d="M34 92 Q26 178 46 214 L60 206 Q48 150 54 100 Z" fill="${p.cheveux2}"/>
-              <path d="M166 92 Q174 178 154 214 L140 206 Q152 150 146 100 Z" fill="${p.cheveux2}"/>`;
+      return `<path d="M40 96 Q22 170 40 226 L70 224 Q52 168 58 104 Z" fill="${p.cheveux2}"/>
+              <path d="M160 96 Q178 170 160 226 L130 224 Q148 168 142 104 Z" fill="${p.cheveux2}"/>
+              <path d="M46 100 Q34 168 52 214 L60 210 Q48 160 56 108 Z" fill="${p.cheveux}" opacity="0.5"/>`;
     case 'queue':
-      return `<path d="M146 66 Q198 92 196 176 Q180 150 158 152 Q174 108 146 88 Z" fill="${p.cheveux2}"/>
-              <path d="M150 70 Q188 96 188 168 Q176 150 160 150 Q170 112 150 90 Z" fill="${p.cheveux}"/>`;
+      // queue-de-cheval latérale (haute) + petite masse arrière
+      return `<path d="M150 82 Q214 108 206 214 Q186 176 156 172 Q182 122 148 100 Z" fill="${p.cheveux2}"/>
+              <path d="M152 86 Q202 112 196 196 Q182 168 160 166 Q178 126 150 104 Z" fill="${p.cheveux}"/>
+              <path d="M160 110 Q192 140 190 190 Q182 168 168 164 Q180 138 160 120 Z" fill="#ffffff" opacity="0.14"/>
+              <path d="M40 98 Q30 156 50 190 L58 176 Q48 134 54 108 Z" fill="${p.cheveux2}"/>`;
     case 'courts':
+      return `<path d="M46 96 Q40 138 60 168 L66 146 Q54 120 58 104 Z" fill="${p.cheveux2}"/>
+              <path d="M154 96 Q160 138 140 168 L134 146 Q146 120 142 104 Z" fill="${p.cheveux2}"/>`;
     case 'carre':
     default:
-      return `<path d="M40 92 Q38 152 58 180 L64 150 Q54 118 58 96 Z" fill="${p.cheveux2}"/>
-              <path d="M160 92 Q162 152 142 180 L136 150 Q146 118 142 96 Z" fill="${p.cheveux2}"/>`;
+      // carré net (bob) jusqu'à la mâchoire
+      return `<path d="M42 96 Q36 150 54 174 L70 170 Q56 130 58 104 Z" fill="${p.cheveux2}"/>
+              <path d="M158 96 Q164 150 146 174 L130 170 Q144 130 142 104 Z" fill="${p.cheveux2}"/>`;
   }
 }
 
-// Frange à mèches pointues (bord dentelé), avec reflet + ombre de front.
+// Chevelure AVANT : couronne volumineuse + mèches balayées (asymétriques,
+// bords lisses), reflet en bandeau et ombre portée sur le front.
 function cheveuxAvant(p, s) {
-  const base =
-    p.coiffe === 'carre'
-      ? `M40 100 Q42 46 100 42 Q158 46 160 100 Q152 66 130 62 L134 96
-         Q120 62 100 60 Q80 62 66 96 L70 62 Q48 66 40 100 Z`
-      : `M40 100 Q44 44 100 40 Q156 44 160 100
-         Q150 68 132 64 L140 98 Q126 64 112 62 L118 92 Q106 60 100 60
-         Q94 60 82 92 L88 62 Q74 64 60 98 L68 64 Q50 68 40 100 Z`;
+  // Mèches longues qui encadrent le visage (devant les oreilles) selon la coupe.
+  const meches =
+    p.coiffe === 'courts'
+      ? ''
+      : p.coiffe === 'carre'
+        ? `<path d="M46 96 Q44 140 62 168 Q56 132 60 100 Z" fill="${p.cheveux}"/>
+           <path d="M154 96 Q156 140 138 168 Q144 132 140 100 Z" fill="${p.cheveux}"/>`
+        : `<path d="M46 94 Q40 150 52 194 Q58 150 60 100 Z" fill="${p.cheveux}"/>
+           <path d="M154 94 Q160 150 148 194 Q142 150 140 100 Z" fill="${p.cheveux}"/>`;
   return `
+    ${meches}
     <!-- ombre portée de la frange sur le front -->
-    <path d="M52 92 Q100 108 148 92 Q140 74 100 76 Q60 74 52 92 Z" fill="#00000012"/>
-    <path d="${base}" fill="${p.cheveux}"/>
-    <!-- mèche foncée (profondeur) -->
-    <path d="M40 100 Q52 62 84 60 L74 92 Q58 70 40 100 Z" fill="${p.cheveux2}" opacity="0.55"/>
-    <!-- reflet -->
-    <path d="M96 50 Q118 50 138 66 Q120 58 100 60 Q86 60 80 70 Q86 54 96 50 Z" fill="#ffffff" opacity="0.22"/>`;
+    <path d="M54 84 Q100 104 146 84 Q140 68 100 70 Q60 68 54 84 Z" fill="#00000016"/>
+    <!-- couronne + frange balayée sur le côté (mèches nettes) -->
+    <path d="M42 104
+             C38 52 66 34 100 34
+             C136 34 164 52 158 104
+             C157 88 150 76 140 74
+             C144 90 138 100 126 102
+             C130 86 120 76 108 78
+             C112 94 104 100 92 100
+             C98 84 86 74 74 78
+             C78 92 70 98 60 98
+             C66 82 56 78 50 84
+             C46 90 43 96 42 104 Z" fill="${p.cheveux}"/>
+    <!-- mèche foncée (profondeur, côté gauche) -->
+    <path d="M42 104 C45 62 64 44 92 40 C72 52 60 76 60 98 C54 86 46 92 42 104 Z" fill="${p.cheveux2}" opacity="0.45"/>
+    <!-- reflet en bandeau (brillance) -->
+    <path d="M58 62 Q100 42 142 62 Q118 52 100 52 Q80 52 58 62 Z" fill="#ffffff" opacity="0.22"/>
+    <path d="M74 50 Q94 42 114 47 Q98 46 86 52 Q79 50 74 50 Z" fill="#ffffff" opacity="0.28"/>`;
 }
 
 /**
@@ -100,26 +124,28 @@ export function avatarSVG(p, uid = '') {
   // Un œil manga complet, paramétré par le centre x (miroir pour l'autre œil).
   const oeil = (cx, dir) => {
     const o = -dir; // sens « vers l'extérieur » : gauche→-1, droite→+1
-    const ext = cx + o * 15; // coin externe de l'œil
+    const G = dir > 0 ? 'G' : 'D';
     return `
-      <ellipse cx="${cx}" cy="112" rx="16" ry="19" fill="#fff"/>
-      <g clip-path="url(#clip${dir > 0 ? 'G' : 'D'}${s})">
-        <g id="iris${dir > 0 ? 'G' : 'D'}${s}">
-          <circle cx="${cx}" cy="115" r="14" fill="${p.iris}"/>
-          <path d="M${cx - 14} 111 A14 14 0 0 1 ${cx + 14} 111 A14 18 0 0 0 ${cx - 14} 111 Z" fill="#000000" opacity="0.28"/>
-          <circle cx="${cx}" cy="115" r="14" fill="none" stroke="#00000028" stroke-width="2.5"/>
-          <circle cx="${cx}" cy="117" r="6.2" fill="#141010"/>
-          <ellipse cx="${cx - 5}" cy="107" rx="4.6" ry="5.4" fill="#fff"/>
-          <circle cx="${cx + 6}" cy="122" r="2.3" fill="#fff" opacity="0.85"/>
+      <!-- blanc de l'œil (amande) -->
+      <path d="M${cx - 15} 111 Q${cx} 99 ${cx + 15} 111 Q${cx} 124 ${cx - 15} 111 Z" fill="#f7f9fc"/>
+      <g clip-path="url(#clip${G}${s})">
+        <g id="iris${G}${s}">
+          <circle cx="${cx}" cy="114" r="13" fill="${p.iris}"/>
+          <!-- ombrage haut de l'iris -->
+          <path d="M${cx - 13} 111 A13 13 0 0 1 ${cx + 13} 111 A13 16 0 0 0 ${cx - 13} 111 Z" fill="#000000" opacity="0.26"/>
+          <!-- lueur basse -->
+          <path d="M${cx - 10} 120 A11 11 0 0 0 ${cx + 10} 120 A13 13 0 0 1 ${cx - 10} 120 Z" fill="#ffffff" opacity="0.16"/>
+          <circle cx="${cx}" cy="114" r="13" fill="none" stroke="#00000022" stroke-width="2"/>
+          <circle cx="${cx}" cy="115" r="5.6" fill="#17110e"/>
+          <!-- reflets -->
+          <ellipse cx="${cx - 4.5}" cy="108" rx="4.4" ry="5.2" fill="#fff"/>
+          <circle cx="${cx + 5.5}" cy="119" r="2" fill="#fff" opacity="0.9"/>
         </g>
       </g>
-      <!-- eyeliner (paupière haute) : arc doux, sans écraser le regard -->
-      <path d="M${cx - 15} 110 Q${cx} 100 ${cx + 15} 109" fill="none" stroke="#2a1f18" stroke-width="3.8" stroke-linecap="round"/>
-      <!-- cils au coin externe (pointent vers l'extérieur) -->
-      <path d="M${ext} 108 q${o * 6} -4 ${o * 9} -6" fill="none" stroke="#2a1f18" stroke-width="2.6" stroke-linecap="round"/>
-      <path d="M${ext + o * 1} 112 q${o * 6} -1 ${o * 9} -3" fill="none" stroke="#2a1f18" stroke-width="1.8" stroke-linecap="round"/>
-      <!-- pli de paupière inférieure (léger) -->
-      <path d="M${cx - 11} 127 Q${cx} 131 ${cx + 11} 126" fill="none" stroke="#c98f77" stroke-width="1.3" opacity="0.45" stroke-linecap="round"/>`;
+      <!-- trait de paupière haute + virgule (« wing ») au coin externe -->
+      <path d="M${cx + 14} 112 Q${cx} 100 ${cx - 15} 110 l ${o * 3.5} -3.5" fill="none" stroke="#241a15" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+      <!-- ligne de cils inférieure (fine) -->
+      <path d="M${cx - 10} 120 Q${cx} 124 ${cx + 10} 120" fill="none" stroke="#7a5a4a" stroke-width="1.3" opacity="0.55" stroke-linecap="round"/>`;
   };
   const lunettes = p.lunettes
     ? `<g stroke="#20242c" stroke-width="2.6" fill="#ffffff10">
@@ -139,44 +165,63 @@ export function avatarSVG(p, uid = '') {
       <stop offset="0%" stop-color="#ffffff" stop-opacity="0.30"/>
       <stop offset="70%" stop-color="#ffffff" stop-opacity="0"/>
     </radialGradient>
-    <clipPath id="clipG${s}"><ellipse cx="74" cy="112" rx="16" ry="19"/></clipPath>
-    <clipPath id="clipD${s}"><ellipse cx="126" cy="112" rx="16" ry="19"/></clipPath>
+    <clipPath id="clipG${s}"><path d="M59 111 Q74 99 89 111 Q74 124 59 111 Z"/></clipPath>
+    <clipPath id="clipD${s}"><path d="M111 111 Q126 99 141 111 Q126 124 111 111 Z"/></clipPath>
+    <linearGradient id="coat${s}" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e8edf5"/>
+    </linearGradient>
   </defs>
 
-  <!-- Corps (respiration) -->
+  <!-- Corps : col roulé (couleur du prof) + blouse de laborantin -->
   <g id="corps${s}">
-    <path d="M36 240 Q40 186 76 174 L124 174 Q160 186 164 240 Z" fill="${p.tenue}"/>
-    <path d="M76 174 Q100 198 124 174 L119 169 Q100 186 81 169 Z" fill="${p.tenue2}"/>
-    <path d="M88 154 h24 v20 q-12 10 -24 0 Z" fill="${p.peau}"/>
-    <path d="M88 154 h24 v6 q-12 7 -24 0 Z" fill="#00000018"/>
+    <!-- cou -->
+    <path d="M88 168 Q88 186 100 190 Q112 186 112 168 Z" fill="${p.peau}"/>
+    <path d="M88 170 Q100 182 112 170 L112 165 Q100 174 88 165 Z" fill="#00000018"/>
+    <!-- épaules / col roulé -->
+    <path d="M30 240 Q34 196 74 184 L126 184 Q166 196 170 240 Z" fill="${p.tenue}"/>
+    <path d="M74 184 Q100 202 126 184 Q124 176 100 178 Q76 176 74 184 Z" fill="${p.tenue2}"/>
+    <path d="M80 182 Q100 196 120 182" fill="none" stroke="#0000001a" stroke-width="1.6"/>
+    <!-- blouse (revers ouverts) -->
+    <path d="M30 240 Q33 200 72 185 L98 214 L82 240 Z" fill="url(#coat${s})"/>
+    <path d="M170 240 Q167 200 128 185 L102 214 L118 240 Z" fill="url(#coat${s})"/>
+    <path d="M72 185 L98 214 L92 216 L70 190 Z" fill="#00000010"/>
+    <path d="M128 185 L102 214 L108 216 L130 190 Z" fill="#00000010"/>
   </g>
 
   <!-- Tête (inclinaison/rebond via #visageG) -->
   <g id="visageG${s}">
     ${cheveuxArriere(p)}
-    <ellipse cx="41" cy="114" rx="7.5" ry="11" fill="${p.peau}"/>
-    <ellipse cx="159" cy="114" rx="7.5" ry="11" fill="${p.peau}"/>
-    <!-- visage manga (menton affiné) -->
-    <path d="M46 106 Q44 54 100 50 Q156 54 154 106 Q152 140 128 160 Q112 174 100 176 Q88 174 72 160 Q48 140 46 106 Z" fill="${p.peau}"/>
-    <path d="M46 106 Q44 54 100 50 Q156 54 154 106 Q152 140 128 160 Q112 174 100 176 Q88 174 72 160 Q48 140 46 106 Z" fill="url(#skin${s})"/>
-    <!-- ombres de mâchoire -->
-    <path d="M72 158 Q100 172 128 158 Q118 168 100 170 Q82 168 72 158 Z" fill="#00000010"/>
+    <!-- oreilles -->
+    <path d="M44 108 Q36 110 38 122 Q40 132 50 130 Z" fill="${p.peau}"/>
+    <path d="M156 108 Q164 110 162 122 Q160 132 150 130 Z" fill="${p.peau}"/>
+    <path d="M46 114 Q42 116 44 124" fill="none" stroke="#00000022" stroke-width="1.4"/>
+    <path d="M154 114 Q158 116 156 124" fill="none" stroke="#00000022" stroke-width="1.4"/>
+    <!-- visage (ovale allongé, menton fin façon anime) -->
+    <path d="M50 104 C50 64 72 50 100 50 C128 50 150 64 150 104 C150 134 138 158 118 172 C110 179 104 183 100 184 C96 183 90 179 82 172 C62 158 50 134 50 104 Z" fill="${p.peau}"/>
+    <path d="M50 104 C50 64 72 50 100 50 C128 50 150 64 150 104 C150 134 138 158 118 172 C110 179 104 183 100 184 C96 183 90 179 82 172 C62 158 50 134 50 104 Z" fill="url(#skin${s})"/>
+    <!-- ombres de mâchoire / pommettes -->
+    <path d="M78 166 Q100 178 122 166 Q112 176 100 178 Q88 176 78 166 Z" fill="#00000010"/>
+    <path d="M54 108 Q52 130 66 146 Q58 126 60 108 Z" fill="#00000008"/>
 
-    <circle id="joueG${s}" cx="66" cy="130" r="12" fill="url(#joueGrad${s})" opacity="0"/>
-    <circle id="joueD${s}" cx="134" cy="130" r="12" fill="url(#joueGrad${s})" opacity="0"/>
+    <circle id="joueG${s}" cx="70" cy="132" r="11" fill="url(#joueGrad${s})" opacity="0"/>
+    <circle id="joueD${s}" cx="130" cy="132" r="11" fill="url(#joueGrad${s})" opacity="0"/>
 
     <g id="oeilG${s}">${oeil(74, 1)}</g>
     <g id="oeilD${s}">${oeil(126, -1)}</g>
 
-    <path id="sourcilG${s}" d="M58 85 Q74 78 90 84" stroke="${p.cheveux2}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
-    <path id="sourcilD${s}" d="M110 84 Q126 78 142 85" stroke="${p.cheveux2}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <path id="sourcilG${s}" d="M58 86 Q74 80 90 85" stroke="${p.cheveux2}" stroke-width="2.8" fill="none" stroke-linecap="round"/>
+    <path id="sourcilD${s}" d="M110 85 Q126 80 142 86" stroke="${p.cheveux2}" stroke-width="2.8" fill="none" stroke-linecap="round"/>
 
-    <!-- nez -->
-    <path d="M101 122 q3.5 7 -3 10" stroke="#00000026" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <!-- nez (arête + narine, discret) -->
+    <path d="M102 118 Q106 130 99 134" fill="none" stroke="#00000024" stroke-width="1.5" stroke-linecap="round"/>
+    <path d="M99 134 q-3 1 -4 -1" fill="none" stroke="#00000018" stroke-width="1.2" stroke-linecap="round"/>
 
-    <path id="sourire${s}" d="M84 144 Q100 156 116 144" stroke="#b5544a" stroke-width="3" fill="none" stroke-linecap="round" opacity="0"/>
-    <ellipse id="bouche${s}" cx="100" cy="146" rx="8.5" ry="3" fill="#b5544a"/>
-    <path d="M92 145 q8 4 16 0" stroke="#00000018" stroke-width="1.2" fill="none"/>
+    <!-- bouche (lèvres fines) -->
+    <path id="sourire${s}" d="M84 144 Q100 156 116 144" stroke="#c06a5e" stroke-width="2.6" fill="none" stroke-linecap="round" opacity="0"/>
+    <ellipse id="bouche${s}" cx="100" cy="146" rx="7.5" ry="2.6" fill="#c06a5e"/>
+    <path d="M91 145 q9 4 18 0" stroke="#00000016" stroke-width="1.1" fill="none"/>
+    <path d="M93 150 q7 3 14 0" stroke="#ffffff" stroke-width="1" opacity="0.25" fill="none"/>
 
     ${cheveuxAvant(p, s)}
     ${lunettes}
