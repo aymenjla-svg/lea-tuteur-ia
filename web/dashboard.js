@@ -23,10 +23,19 @@ function lignes(conteneur, entrees, max) {
     .join('');
 }
 
+// Moteur embarqué (GitHub Pages) ou API HTTP (backend) — cf. app.js.
+const EMBARQUE = typeof window !== 'undefined' && window.LeaEngine;
+
 async function charger() {
   let tb;
   try {
-    tb = await (await fetch('/dashboard')).json();
+    if (EMBARQUE) {
+      // Sans backend, on amorce une session de démo pour peupler la télémétrie.
+      await window.LeaEngine.amorcerDemo();
+      tb = window.LeaEngine.dashboard();
+    } else {
+      tb = await (await fetch('/dashboard')).json();
+    }
   } catch (e) {
     $('#cartes').innerHTML = `<p class="vide">Erreur : ${e.message}</p>`;
     return;

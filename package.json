@@ -19,7 +19,8 @@
     "demo": "node --import tsx src/demo.ts",
     "demo:avance": "node --import tsx src/demo-avance.ts",
     "serve": "node --import tsx src/serve.ts",
-    "db:verify": "node --import tsx db/verify-local.mjs"
+    "db:verify": "node --import tsx db/verify-local.mjs",
+    "build:web": "esbuild web/src/engine-browser.ts --bundle --format=iife --platform=browser --target=es2020 --outfile=web/lea-engine.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.69.0",
@@ -29,6 +30,7 @@
   "devDependencies": {
     "@types/node": "^22.5.0",
     "@types/pg": "^8.11.0",
+    "esbuild": "^0.24.0",
     "tsx": "^4.19.0",
     "typescript": "^5.5.4"
   }

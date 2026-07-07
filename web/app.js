@@ -62,10 +62,17 @@ function rendre(etat) {
   if (!fini) $('#reponse').focus();
 }
 
+// Le moteur peut tourner soit dans l'onglet (build statique GitHub Pages, où
+// window.LeaEngine est présent), soit derrière l'API HTTP (déploiement backend).
+// Même moteur déterministe dans les deux cas (R6) : seul le transport change.
+const EMBARQUE = typeof window !== 'undefined' && window.LeaEngine;
+
 async function demarrer() {
   $('#transcript').replaceChildren();
   try {
-    const d = await api('/sessions', 'POST', {});
+    const d = EMBARQUE
+      ? await window.LeaEngine.creerSession()
+      : await api('/sessions', 'POST', {});
     sessionId = d.session_id;
     rendre(d.etat);
   } catch (e) {
@@ -77,7 +84,9 @@ async function repondre(texte) {
   if (!sessionId || texte.trim() === '') return;
   ajouterTour('eleve', texte);
   try {
-    const d = await api(`/sessions/${sessionId}/repondre`, 'POST', { texte });
+    const d = EMBARQUE
+      ? await window.LeaEngine.repondre(sessionId, texte)
+      : await api(`/sessions/${sessionId}/repondre`, 'POST', { texte });
     rendre(d.etat);
   } catch (e) {
     $('#parole').textContent = 'Oups : ' + e.message;

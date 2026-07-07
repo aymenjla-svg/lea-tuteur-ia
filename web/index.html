@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Léa — tuteur</title>
     <link rel="icon" href="data:," />
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app">
@@ -71,8 +71,13 @@
       <p class="note">
         Répétition illimitée, sans jugement. La vidéo ne quitte jamais l'appareil.
       </p>
+      <p class="note"><a href="dashboard.html">→ Tableau de bord éducateur</a></p>
     </main>
 
-    <script src="/app.js" type="module"></script>
+    <!-- Moteur déterministe embarqué (visu statique) — définit window.LeaEngine
+         avant app.js. Absent d'un déploiement backend : app.js bascule alors
+         automatiquement sur l'API HTTP. -->
+    <script src="lea-engine.js"></script>
+    <script src="app.js" type="module"></script>
   </body>
 </html>
