@@ -69,31 +69,29 @@ async function moteurRepondre(texte) {
 
 /* --- Accueil (modules) ---------------------------------------------------- */
 
-// Accent « signature » : rouge éditorial sur l'accueil, couleur du module en leçon.
+// Accent néon signature : cyan sur l'accueil, couleur du module en leçon.
 function theme(couleur) {
-  document.documentElement.style.setProperty('--hot', couleur);
+  document.documentElement.style.setProperty('--neon', couleur);
 }
-const HOT_DEFAUT = '#e5361f';
+const NEON_DEFAUT = '#37e0ff';
 
-function etoilesTexte(pct) {
+function etoilesMission(pct) {
   const n = etoiles(pct);
-  return `<span class="idx-stars">${'★'.repeat(n)}<span class="off">${'★'.repeat(3 - n)}</span></span>`;
+  return `<span class="mission-etoiles">${'★'.repeat(n)}<span class="off">${'★'.repeat(3 - n)}</span></span>`;
 }
 
-/* --- Figures (stats) + classe (adaptation à l'âge) ----------------------- */
+/* --- Stats (HUD) + classe (adaptation à l'âge) --------------------------- */
 
 function construireStats() {
-  $('#mhSerie').textContent = String(niveauJeu());
   $('#stats').innerHTML =
-    `<span class="fig"><b>${xp()}</b><i>XP</i></span>` +
-    `<span class="fig"><b>${serie()}</b><i>Série</i></span>` +
-    `<span class="fig"><b>N${niveauJeu()}</b><i>Niveau</i></span>`;
+    `<span class="chip">🔥 <b>${serie()}</b><small>série</small></span>` +
+    `<span class="chip">⭐ <b>${xp()}</b><small>XP</small></span>` +
+    `<span class="chip lvl"><b>N${niveauJeu()}</b><small>niv.</small></span>`;
 }
 
 function construireNiveauSeg() {
   const seg = $('#niveauSeg');
   const courant = niveauCourant();
-  $('#mhClasse').textContent = courant ? courant.label : 'Classe ?';
   seg.replaceChildren();
   for (const n of NIVEAUX) {
     const b = document.createElement('button');
@@ -105,13 +103,11 @@ function construireNiveauSeg() {
   }
 }
 
-/* --- Feature (une) + choix du prof --------------------------------------- */
+/* --- Hero (hologramme) + choix du prof ----------------------------------- */
 
 function construireHero() {
-  $('#featureNom').textContent = persona.nom;
-  $('#featureStyle').textContent = persona.style;
   $('#heroAvatar').innerHTML = avatarSVG(persona);
-  $('#ouvrirProfs').textContent = 'Changer de prof ↴';
+  $('#ouvrirProfs').textContent = `Prof : ${persona.nom} ${persona.emoji} · changer`;
 }
 
 function construireProfChips() {
@@ -139,34 +135,38 @@ function choisirProf(id) {
   construireProfChips();
 }
 
-/* --- Sommaire (modules en index numéroté) + « continuer » ---------------- */
+/* --- Missions (modules) + « continuer » ---------------------------------- */
 
 function construireModules() {
   const grille = $('#modulesGrille');
   const prog = chargerProgress();
   grille.replaceChildren();
   const actifs = MODULES.filter((m) => !m.verrouille).length;
-  $('#modCount').textContent = `${actifs} en accès · ${MODULES.length - actifs} à venir`;
+  $('#modCount').textContent = `${actifs} débloquées · ${MODULES.length - actifs} à venir`;
 
   MODULES.forEach((m, i) => {
     const pct = progressModule(m, prog);
     const num = String(i + 1).padStart(2, '0');
-    const li = document.createElement('li');
-    li.className = 'idx' + (m.verrouille ? ' verrouille' : '');
-    li.style.setProperty('--c', m.couleur);
-    li.innerHTML =
-      `<span class="idx-num">${num}</span>` +
-      `<span class="idx-body">` +
-      `<span class="idx-titre">${m.titre}</span>` +
-      `<span class="idx-resume">${m.resume}</span>` +
-      `</span>` +
-      `<span class="idx-meta">` +
+    const carte = document.createElement('button');
+    carte.type = 'button';
+    carte.className = 'mission' + (m.verrouille ? ' verrouille' : '');
+    carte.style.setProperty('--c', m.couleur);
+    carte.disabled = !!m.verrouille;
+    carte.innerHTML =
+      `<span class="reticle tl"></span><span class="reticle tr"></span>` +
+      `<span class="reticle bl"></span><span class="reticle br"></span>` +
+      `<div class="mission-top"><span class="mission-ico">${m.icone}</span><span class="mission-num">${num}</span></div>` +
+      `<div class="mission-titre">${m.titre}</div>` +
+      `<div class="mission-sub">${m.resume}</div>` +
+      (m.verrouille ? '' : `<div class="mission-bar"><span style="width:${pct}%"></span></div>`) +
+      `<div class="mission-pied">` +
       (m.verrouille
-        ? `<span class="idx-avenir">À venir</span>`
-        : `<span class="idx-pct">${pct}<i>%</i></span>${etoilesTexte(pct)}`) +
-      `</span>`;
-    if (!m.verrouille) li.addEventListener('click', () => ouvrirModule(m));
-    grille.append(li);
+        ? `<span class="mission-verr">🔒 Verrouillée</span>`
+        : `<span class="mission-pct">${pct}% ${etoilesMission(pct)}</span>` +
+          `<span class="mission-go">${pct >= 100 ? 'REJOUER' : pct > 0 ? 'REPRENDRE' : 'LANCER'} →</span>`) +
+      `</div>`;
+    if (!m.verrouille) carte.addEventListener('click', () => ouvrirModule(m));
+    grille.append(carte);
   });
   majContinuer(prog);
 }
@@ -177,12 +177,12 @@ function majContinuer(prog = chargerProgress()) {
   if (!cible) { btn.hidden = true; return; }
   const pct = progressModule(cible, prog);
   btn.hidden = false;
-  btn.textContent = `${pct > 0 ? 'Reprendre' : 'Commencer'} · ${cible.titre} →`;
+  btn.textContent = `${pct > 0 ? 'Reprendre' : 'Lancer'} · ${cible.titre} →`;
   btn.onclick = () => ouvrirModule(cible);
 }
 
 function construireAccueil() {
-  theme(HOT_DEFAUT); // accent signature sur l'accueil
+  theme(NEON_DEFAUT); // accent néon signature sur l'accueil
   appliquerVibe();
   construireStats();
   construireNiveauSeg();

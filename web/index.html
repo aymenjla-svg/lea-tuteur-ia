@@ -11,52 +11,34 @@
     <main class="app">
       <!-- ============================ ACCUEIL ============================ -->
       <section id="accueil" class="accueil">
-        <!-- Masthead façon revue scientifique -->
-        <header class="masthead">
-          <div class="mh-top">
-            <h1 class="mh-logo">LÉA</h1>
-            <span class="mh-issue">N<sup>o</sup>&nbsp;<span id="mhSerie">1</span></span>
-          </div>
-          <div class="mh-rule"></div>
-          <div class="mh-meta">
-            <span class="mh-tag">Physique</span>
-            <span class="mh-dot">/</span>
-            <span class="mh-tag">Cycle 4</span>
-            <span class="mh-dot">/</span>
-            <span class="mh-tag" id="mhClasse">—</span>
-            <span class="mh-figs" id="stats"></span>
-          </div>
+        <header class="hud-top">
+          <div class="logo">LÉA <span class="logo-dot"></span></div>
+          <div class="stats" id="stats"></div>
         </header>
 
-        <!-- Une (feature) -->
-        <section class="feature">
-          <div class="feature-txt">
-            <span class="kicker">Ton professeur</span>
-            <h2 class="feature-nom" id="featureNom">Léa</h2>
-            <span class="feature-style" id="featureStyle"></span>
-            <div class="niveau-select">
-              <span class="kicker">Classe</span>
-              <div class="ns-seg" id="niveauSeg" role="tablist"></div>
-            </div>
-            <button id="continuer" class="cta" type="button" hidden></button>
-            <button id="ouvrirProfs" class="lien-edito" type="button">Changer de prof ↴</button>
+        <div class="hero">
+          <div class="hero-holo" id="heroAvatar"></div>
+          <div class="hero-txt">
+            <span class="eyebrow">Physique · Cycle 4</span>
+            <h1 class="hero-h">Prêt·e pour l'expérience&nbsp;?</h1>
+            <div class="classe-seg" id="niveauSeg" role="tablist"></div>
+            <button id="continuer" class="btn-neon" type="button" hidden></button>
+            <button id="ouvrirProfs" class="link" type="button">Changer de prof</button>
           </div>
-          <div class="feature-avatar" id="heroAvatar"></div>
-        </section>
+        </div>
 
         <div id="profPicker" class="prof-picker" hidden>
-          <span class="kicker">Choisis ton prof</span>
+          <span class="eyebrow">Choisis ton prof</span>
           <div id="profChips" class="pp-chips"></div>
         </div>
 
-        <!-- Sommaire (les modules, en index numéroté) -->
-        <div class="index-head">
-          <span class="kicker">Sommaire</span>
-          <span class="kicker" id="modCount"></span>
+        <div class="sec-head">
+          <span class="eyebrow">Missions</span>
+          <span class="sec-count" id="modCount"></span>
         </div>
-        <ol id="modulesGrille" class="index"></ol>
+        <div id="modulesGrille" class="missions"></div>
 
-        <p class="note accueil-note"><a href="dashboard.html">Tableau de bord éducateur →</a></p>
+        <p class="note"><a href="dashboard.html">Tableau de bord éducateur →</a></p>
       </section>
 
       <!-- ============================= LEÇON ============================= -->
@@ -71,7 +53,7 @@
           <button id="voix" type="button" class="icone-btn" hidden aria-pressed="false" title="Activer la voix" aria-label="Activer la voix">🔊</button>
         </header>
 
-        <div class="fig-label">Fig. — le professeur au tableau</div>
+        <div class="fig-label">◦ Salle d'expérience — en direct</div>
         <section id="scene" class="scene" aria-hidden="true">
           <div class="tableau">
             <span id="tableauFormule" class="tableau-formule"></span>
