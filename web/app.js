@@ -4,7 +4,7 @@
 // SYNTHÉTIQUES (visèmes/regard) — jamais de caméra (§1.4). Même moteur à tous
 // les paliers (R6). L'expression est imposée par le déterministe (A1).
 
-import { PERSONAS, personaParId, avatarSVG } from './personas.js';
+import { PERSONAS, MATIERE, personaParId, avatarSVG } from './personas.js';
 
 const $ = (sel) => document.querySelector(sel);
 const reduireMouvement = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -144,7 +144,7 @@ function construireChoix() {
     carte.innerHTML =
       `<div class="choix-avatar">${avatarSVG(p, p.id)}</div>` +
       `<div class="choix-nom">${p.nom} <span class="choix-emoji">${p.emoji}</span></div>` +
-      `<div class="choix-matiere">${p.matiere}</div>` +
+      `<div class="choix-matiere">${p.style}</div>` +
       `<div class="choix-tag">${p.tagline}</div>`;
     carte.addEventListener('click', () => choisirProf(p.id));
     grille.append(carte);
@@ -156,7 +156,7 @@ function choisirProf(id) {
   document.documentElement.style.setProperty('--accent', persona.accent);
   $('#avatarHost').innerHTML = avatarSVG(persona);
   $('#titre').textContent = persona.nom;
-  $('#sousTitre').textContent = `prof de ${persona.matiere.toLowerCase()}`;
+  $('#sousTitre').textContent = `prof de ${MATIERE.toLowerCase()} · ${persona.style.toLowerCase()}`;
   $('#changerProf').hidden = false;
   $('#choix').classList.add('cache');
   expression = 'happy';

@@ -6,32 +6,37 @@
 // moteur, mêmes invariants (R6). L'avatar expose des IDs stables pour que
 // l'animation (app.js) les pilote quel que soit le persona.
 
-/** Catalogue des profs sélectionnables. `coiffe` choisit un gabarit de cheveux. */
+// v1 = PHYSIQUE uniquement (les autres matières viendront dans une autre appli).
+// Le choix ne porte donc PAS sur la matière mais sur le STYLE du prof : même
+// programme de physique pour tous, présence/personnalité différentes (§7).
+export const MATIERE = 'Physique';
+
+/** Catalogue des profs (styles). `coiffe` choisit un gabarit de cheveux. */
 export const PERSONAS = [
   {
-    id: 'persona-lea', nom: 'Léa', matiere: 'Maths', emoji: '➗',
-    tagline: 'Douce et patiente. Adore les nombres.',
+    id: 'persona-lea', nom: 'Léa', style: 'Douce & patiente', emoji: '🌸',
+    tagline: 'Explique calmement, te laisse tout le temps qu’il faut.',
     peau: '#ffdcc0', cheveux: '#8a5a3b', cheveux2: '#6f4529',
     tenue: '#e0a83e', tenue2: '#c8902c', iris: '#5a9e6f', accent: '#e0a83e',
     coiffe: 'longs',
   },
   {
-    id: 'persona-noe', nom: 'Noé', matiere: 'Sciences', emoji: '🔬',
-    tagline: 'Curieux, plein d’énergie. Tout est une expérience.',
+    id: 'persona-noe', nom: 'Noé', style: 'Énergique & curieux', emoji: '⚡',
+    tagline: 'Transforme chaque notion de physique en expérience.',
     peau: '#f3c9a0', cheveux: '#3a2f2a', cheveux2: '#241d19',
     tenue: '#f2f4f8', tenue2: '#d6dbe4', iris: '#7a5230', accent: '#4a90d9',
     coiffe: 'courts',
   },
   {
-    id: 'persona-mila', nom: 'Mila', matiere: 'Français', emoji: '📖',
-    tagline: 'Créative et chaleureuse. Aime les histoires.',
+    id: 'persona-mila', nom: 'Mila', style: 'Créative & imagée', emoji: '🎨',
+    tagline: 'Fait comprendre avec des images et des exemples concrets.',
     peau: '#ffd9c2', cheveux: '#c86fa6', cheveux2: '#a8558a',
     tenue: '#b06ab3', tenue2: '#98549b', iris: '#8e5bd0', accent: '#b06ab3',
     coiffe: 'queue',
   },
   {
-    id: 'persona-kenji', nom: 'Kenji', matiere: 'Histoire', emoji: '🏛️',
-    tagline: 'Calme et sage. Raconte le passé comme personne.',
+    id: 'persona-kenji', nom: 'Kenji', style: 'Calme & rigoureux', emoji: '🧭',
+    tagline: 'Avance étape par étape, en posant bien les bases.',
     peau: '#f0c49a', cheveux: '#20242c', cheveux2: '#12151b',
     tenue: '#3f6f8f', tenue2: '#2f556e', iris: '#4a5568', accent: '#2e8b74',
     coiffe: 'carre', lunettes: true,
