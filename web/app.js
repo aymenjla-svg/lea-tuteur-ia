@@ -1,42 +1,42 @@
-// Léa — client web (palier 2D/SVG + texte), sans build ni dépendance.
-// Consomme l'API du moteur (/sessions, /sessions/:id/repondre).
-// L'avatar n'affiche que des signaux SYNTHÉTIQUES (visèmes/regard) — jamais de
-// caméra (§1.4). Le moteur pédagogique est identique à tous les paliers (R6).
+// Léa — client web (palier 2D manga expressif + texte), sans build.
+// Consomme le moteur, soit embarqué (window.LeaEngine, build statique), soit via
+// l'API HTTP (déploiement backend). L'avatar n'affiche que des signaux
+// SYNTHÉTIQUES (visèmes/regard) — jamais de caméra (§1.4). Même moteur à tous
+// les paliers (R6). L'expression est imposée par le déterministe (A1).
+
+import { PERSONAS, personaParId, avatarSVG } from './personas.js';
 
 const $ = (sel) => document.querySelector(sel);
 const reduireMouvement = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const EMBARQUE = typeof window !== 'undefined' && window.LeaEngine;
 
 const COUPS = {
-  proposer: 'nouvel exercice',
-  reformuler: 'reformulation',
-  simplifier: 'on simplifie',
-  changer_de_modalite: 'autre approche',
-  encourager: 'encouragement',
-  reviser: 'révision',
+  proposer: 'nouvel exercice', reformuler: 'reformulation', simplifier: 'on simplifie',
+  changer_de_modalite: 'autre approche', encourager: 'encouragement', reviser: 'révision',
   clore: 'séance terminée',
 };
 
-let sessionId = null;
-let parleJusqua = 0; // timestamp de fin d'animation « parle »
-
-// Expression de l'avatar (ADDENDUM v1/A1). Imposée par l'ÉTAT du moteur : sur
-// une correction, elle vient du verdict (correct → celebrate, erreur →
-// encouraging/concerned) — l'avatar ne peut donc pas féliciter une réponse
-// fausse. Chaque entrée encode : décalage vertical des sourcils, sourire
-// (1 = sourire, -1 = moue douce, 0 = neutre), blush des joues [0,1], inquiétude.
+// Config visuelle par expression (A1). browY : décalage sourcils ; smile :
+// 1 sourire / -1 moue douce / 0 neutre ; cheeks : blush [0,1] ; extras manga.
 const EXPR = {
-  idle:        { browY: 0,  smile: 0,  cheeks: 0,   worry: false },
-  listening:   { browY: -1, smile: 0,  cheeks: 0,   worry: false },
-  speaking:    { browY: 0,  smile: 0,  cheeks: 0,   worry: false },
-  thinking:    { browY: -2, smile: 0,  cheeks: 0,   worry: false },
-  happy:       { browY: -1, smile: 1,  cheeks: 0.3, worry: false },
-  encouraging: { browY: -1, smile: 1,  cheeks: 0.2, worry: false },
-  surprised:   { browY: -3, smile: 0,  cheeks: 0,   worry: false },
-  concerned:   { browY: 1,  smile: -1, cheeks: 0,   worry: true },
-  celebrate:   { browY: -2, smile: 1,  cheeks: 0.8, worry: false },
+  idle:        { browY: 0,  smile: 0,  cheeks: 0,   tilt: 0,  eye: 1,    sparkle: 0, sweat: 0, bulle: 0 },
+  listening:   { browY: -1, smile: 0,  cheeks: 0,   tilt: 3,  eye: 1.05, sparkle: 0, sweat: 0, bulle: 0 },
+  speaking:    { browY: 0,  smile: 0,  cheeks: 0,   tilt: 0,  eye: 1,    sparkle: 0, sweat: 0, bulle: 0 },
+  thinking:    { browY: -2, smile: 0,  cheeks: 0,   tilt: 4,  eye: 0.9,  sparkle: 0, sweat: 0, bulle: 1 },
+  happy:       { browY: -2, smile: 1,  cheeks: 0.4, tilt: 0,  eye: 1,    sparkle: 0, sweat: 0, bulle: 0 },
+  encouraging: { browY: -2, smile: 1,  cheeks: 0.3, tilt: 4,  eye: 1,    sparkle: 0, sweat: 0, bulle: 0 },
+  surprised:   { browY: -4, smile: 0,  cheeks: 0,   tilt: 0,  eye: 1.25, sparkle: 0, sweat: 0.6, bulle: 0 },
+  concerned:   { browY: 2,  smile: -1, cheeks: 0,   tilt: -5, eye: 0.95, sparkle: 0, sweat: 1, bulle: 0 },
+  celebrate:   { browY: -3, smile: 1,  cheeks: 0.9, tilt: 0,  eye: 1.1,  sparkle: 1, sweat: 0, bulle: 0 },
 };
+
+let sessionId = null;
+let persona = null;
+let parleJusqua = 0;     // fin d'animation « parle »
 let expression = 'idle';
-let celebreJusqua = 0; // rebond one-shot sur celebrate
+let celebreJusqua = 0;   // rebond one-shot
+
+/* --- Transport ------------------------------------------------------------ */
 
 async function api(chemin, methode = 'GET', corps) {
   const res = await fetch(chemin, {
@@ -49,6 +49,17 @@ async function api(chemin, methode = 'GET', corps) {
   return data;
 }
 
+async function moteurCreer() {
+  return EMBARQUE ? window.LeaEngine.creerSession() : api('/sessions', 'POST', {});
+}
+async function moteurRepondre(texte) {
+  return EMBARQUE
+    ? window.LeaEngine.repondre(sessionId, texte)
+    : api(`/sessions/${sessionId}/repondre`, 'POST', { texte });
+}
+
+/* --- Rendu ---------------------------------------------------------------- */
+
 function ajouterTour(qui, texte) {
   const li = document.createElement('li');
   li.className = qui;
@@ -58,9 +69,16 @@ function ajouterTour(qui, texte) {
 }
 
 function parler(texte) {
-  // Durée d'animation ~ proportionnelle à la longueur (≈ débit de parole).
-  const duree = Math.min(4000, 400 + texte.length * 35);
+  const duree = Math.min(4000, 400 + texte.length * 32);
   parleJusqua = performance.now() + duree;
+}
+
+// Extrait « 27 + 48 » d'un énoncé pour l'écrire au tableau, sinon l'énoncé brut.
+function pourLeTableau(etat) {
+  const enonce = etat.question_courante?.enonce ?? '';
+  const m = enonce.match(/(\d+\s*[+\-×x*/]\s*\d+)/);
+  if (m) return `${m[1].replace(/\s+/g, ' ')} = ?`;
+  return enonce.replace(/^.*?:\s*/, '').slice(0, 40);
 }
 
 function rendre(etat) {
@@ -68,9 +86,10 @@ function rendre(etat) {
   ajouterTour('tuteur', etat.texte_tuteur);
   parler(etat.texte_tuteur);
 
-  // Expression imposée par le moteur (A1). Le rebond de célébration est one-shot.
   expression = etat.expression ?? 'idle';
-  if (expression === 'celebrate') celebreJusqua = performance.now() + 1600;
+  if (expression === 'celebrate') celebreJusqua = performance.now() + 1800;
+
+  if (!etat.termine) $('#tableauTexte').textContent = pourLeTableau(etat);
 
   const p = Math.round((etat.maitrise_cible?.probabilite_effective ?? 0) * 100);
   $('#barre').style.width = p + '%';
@@ -82,20 +101,16 @@ function rendre(etat) {
   $('#envoyer').disabled = fini;
   $('#perdu').disabled = fini;
   $('#rejouer').hidden = !fini;
+  if (fini) $('#tableauTexte').textContent = '★';
   if (!fini) $('#reponse').focus();
 }
 
-// Le moteur peut tourner soit dans l'onglet (build statique GitHub Pages, où
-// window.LeaEngine est présent), soit derrière l'API HTTP (déploiement backend).
-// Même moteur déterministe dans les deux cas (R6) : seul le transport change.
-const EMBARQUE = typeof window !== 'undefined' && window.LeaEngine;
+/* --- Boucle de session ---------------------------------------------------- */
 
 async function demarrer() {
   $('#transcript').replaceChildren();
   try {
-    const d = EMBARQUE
-      ? await window.LeaEngine.creerSession()
-      : await api('/sessions', 'POST', {});
+    const d = await moteurCreer();
     sessionId = d.session_id;
     rendre(d.etat);
   } catch (e) {
@@ -107,106 +122,147 @@ async function repondre(texte) {
   if (!sessionId || texte.trim() === '') return;
   ajouterTour('eleve', texte);
   try {
-    const d = EMBARQUE
-      ? await window.LeaEngine.repondre(sessionId, texte)
-      : await api(`/sessions/${sessionId}/repondre`, 'POST', { texte });
+    const d = await moteurRepondre(texte);
     rendre(d.etat);
   } catch (e) {
     $('#parole').textContent = 'Oups : ' + e.message;
   }
 }
 
-/* --- Animation de l'avatar (visèmes + regard + clignements) --------------- */
+/* --- Choix du prof (§7) --------------------------------------------------- */
+
+function construireChoix() {
+  const grille = $('#choixGrille');
+  grille.replaceChildren();
+  for (const p of PERSONAS) {
+    const carte = document.createElement('button');
+    carte.type = 'button';
+    carte.className = 'choix-carte';
+    carte.style.setProperty('--accent', p.accent);
+    carte.innerHTML =
+      `<div class="choix-avatar">${avatarSVG(p, p.id)}</div>` +
+      `<div class="choix-nom">${p.nom} <span class="choix-emoji">${p.emoji}</span></div>` +
+      `<div class="choix-matiere">${p.matiere}</div>` +
+      `<div class="choix-tag">${p.tagline}</div>`;
+    carte.addEventListener('click', () => choisirProf(p.id));
+    grille.append(carte);
+  }
+}
+
+function choisirProf(id) {
+  persona = personaParId(id);
+  document.documentElement.style.setProperty('--accent', persona.accent);
+  $('#avatarHost').innerHTML = avatarSVG(persona);
+  $('#titre').textContent = persona.nom;
+  $('#sousTitre').textContent = `prof de ${persona.matiere.toLowerCase()}`;
+  $('#changerProf').hidden = false;
+  $('#choix').classList.add('cache');
+  expression = 'happy';
+  demarrer();
+}
+
+function ouvrirChoix() {
+  $('#choix').classList.remove('cache');
+}
+
+/* --- Animation de l'avatar ------------------------------------------------ */
 
 let prochainClignement = 1500;
 let debutClignement = 0;
 
 function animer(t) {
-  const bouche = $('#bouche');
-  const pg = $('#pupilleG');
-  const pd = $('#pupilleD');
-  const oeilG = $('#oeilG');
-  const oeilD = $('#oeilD');
-
   const parle = t < parleJusqua && !reduireMouvement;
+  const cfg = EXPR[expression] ?? EXPR.idle;
+
+  // Respiration du corps.
+  const corps = $('#corps');
+  if (corps && !reduireMouvement) {
+    const dy = Math.sin(t / 1400) * 1.4;
+    corps.setAttribute('transform', `translate(0 ${dy.toFixed(2)})`);
+  }
+
+  // Lip-sync approximatif (A3 MVP) : ouverture ∝ « débit » pendant la parole.
+  const bouche = $('#bouche');
   if (bouche) {
-    // Lip-sync approximatif (A3 MVP) : ouverture ∝ « débit » pendant la parole.
-    const ouverture = parle ? 3 + 7 * Math.abs(Math.sin(t / 90)) : 3;
+    const ouverture = parle ? 2 + 6 * Math.abs(Math.sin(t / 85)) : 2.5;
     bouche.setAttribute('ry', ouverture.toFixed(2));
   }
 
-  // Regard : légère dérive ; pupilles synchronisées.
-  if (pg && pd && !reduireMouvement) {
-    const dx = Math.sin(t / 1700) * 2.2;
-    const dy = Math.cos(t / 2300) * 1.4;
-    pg.setAttribute('cx', (36 + dx).toFixed(2));
-    pg.setAttribute('cy', (42 + dy).toFixed(2));
-    pd.setAttribute('cx', (64 + dx).toFixed(2));
-    pd.setAttribute('cy', (42 + dy).toFixed(2));
+  // Regard : légère dérive ; les deux iris synchronisés.
+  const ig = $('#irisG');
+  const id = $('#irisD');
+  if (ig && id && !reduireMouvement) {
+    const dx = Math.sin(t / 1900) * 2.4;
+    const dy = Math.cos(t / 2500) * 1.6;
+    ig.setAttribute('transform', `translate(${dx.toFixed(2)} ${dy.toFixed(2)})`);
+    id.setAttribute('transform', `translate(${dx.toFixed(2)} ${dy.toFixed(2)})`);
   }
 
-  // Clignements occasionnels (compression verticale des yeux).
-  if (!reduireMouvement && oeilG && oeilD) {
-    if (t > prochainClignement && debutClignement === 0) debutClignement = t;
-    let sy = 1;
-    if (debutClignement > 0) {
-      const dt = t - debutClignement;
-      sy = dt < 60 ? 1 - dt / 60 : dt < 120 ? (dt - 60) / 60 : 1;
-      if (dt >= 120) {
-        debutClignement = 0;
-        prochainClignement = t + 1800 + Math.sin(t) * 600 + 1200;
+  // Clignement (compression verticale des yeux) + ouverture par l'expression.
+  const oeilG = $('#oeilG');
+  const oeilD = $('#oeilD');
+  if (oeilG && oeilD) {
+    let sy = cfg.eye;
+    if (!reduireMouvement) {
+      if (t > prochainClignement && debutClignement === 0) debutClignement = t;
+      if (debutClignement > 0) {
+        const dt = t - debutClignement;
+        const k = dt < 60 ? 1 - dt / 60 : dt < 120 ? (dt - 60) / 60 : 1;
+        sy = cfg.eye * k;
+        if (dt >= 120) { debutClignement = 0; prochainClignement = t + 2400 + Math.abs(Math.sin(t)) * 1600; }
       }
     }
-    oeilG.setAttribute('transform', `translate(0 ${42 * (1 - sy)}) scale(1 ${sy})`);
-    oeilD.setAttribute('transform', `translate(0 ${42 * (1 - sy)}) scale(1 ${sy})`);
+    // Centre des yeux ≈ y 112 (viewBox 200×240).
+    for (const oeil of [oeilG, oeilD]) {
+      oeil.setAttribute('transform', `translate(0 ${(112 * (1 - sy)).toFixed(2)}) scale(1 ${sy.toFixed(3)})`);
+    }
   }
 
-  appliquerExpression(t, parle);
+  appliquerExpression(t, parle, cfg);
   requestAnimationFrame(animer);
 }
 
-/* Applique l'expression courante (sourcils, joues, sourire, rebond) — A1. */
-function appliquerExpression(t, parle) {
-  const cfg = EXPR[expression] ?? EXPR.idle;
+function poser(id, attr, val) {
+  const el = $('#' + id);
+  if (el) el.setAttribute(attr, val);
+}
 
-  const sg = $('#sourcilG');
-  const sd = $('#sourcilD');
-  if (sg && sd) {
-    // Décalage vertical + inclinaison interne montante pour l'inquiétude douce.
-    const ang = cfg.worry ? 9 : 0;
-    sg.setAttribute('transform', `translate(0 ${cfg.browY}) rotate(${ang} 36 34)`);
-    sd.setAttribute('transform', `translate(0 ${cfg.browY}) rotate(${-ang} 64 34)`);
-  }
+function appliquerExpression(t, parle, cfg) {
+  // Sourcils : décalage vertical + inclinaison interne pour l'inquiétude douce.
+  const ang = cfg.smile < 0 ? 10 : 0;
+  poser('sourcilG', 'transform', `translate(0 ${cfg.browY}) rotate(${ang} 74 88)`);
+  poser('sourcilD', 'transform', `translate(0 ${cfg.browY}) rotate(${-ang} 126 88)`);
 
-  const jg = $('#joueG');
-  const jd = $('#joueD');
-  if (jg && jd) {
-    jg.setAttribute('opacity', String(cfg.cheeks));
-    jd.setAttribute('opacity', String(cfg.cheeks));
-  }
+  // Joues (blush).
+  poser('joueG', 'opacity', String(cfg.cheeks));
+  poser('joueD', 'opacity', String(cfg.cheeks));
 
-  // Le sourire (ou la moue) ne s'affiche qu'HORS parole (la parole pilote la
-  // bouche pour le lip-sync). Sourire vers le haut / moue douce vers le bas.
-  const sourire = $('#sourire');
-  const bouche = $('#bouche');
+  // Sourire (hors parole) vs bouche animée (parole).
   const montrerSourire = !parle && cfg.smile !== 0;
-  if (sourire) {
-    sourire.setAttribute('opacity', montrerSourire ? '1' : '0');
-    sourire.setAttribute(
-      'd',
-      cfg.smile > 0 ? 'M40 66 Q50 73 60 66' : 'M40 70 Q50 65 60 70',
-    );
-  }
-  if (bouche) bouche.setAttribute('opacity', montrerSourire ? '0' : '1');
+  poser('sourire', 'opacity', montrerSourire ? '1' : '0');
+  poser('sourire', 'd', cfg.smile > 0 ? 'M84 140 Q100 154 116 140' : 'M84 148 Q100 138 116 148');
+  poser('bouche', 'opacity', montrerSourire ? '0' : '1');
 
-  // Rebond one-shot de célébration.
+  // Extras manga.
+  poser('goutte', 'opacity', String(cfg.sweat));
+  poser('bulle', 'opacity', String(cfg.bulle));
+  const et = $('#etincelles');
+  if (et) {
+    const brille = cfg.sparkle && !reduireMouvement
+      ? 0.4 + 0.6 * Math.abs(Math.sin(t / 180))
+      : cfg.sparkle;
+    et.setAttribute('opacity', String(brille));
+  }
+
+  // Inclinaison de tête + rebond de célébration.
   const vg = $('#visageG');
   if (vg) {
     let ty = 0;
     if (expression === 'celebrate' && t < celebreJusqua && !reduireMouvement) {
-      ty = -Math.abs(Math.sin(t / 120)) * 4;
+      ty = -Math.abs(Math.sin(t / 110)) * 5;
     }
-    vg.setAttribute('transform', `translate(0 ${ty.toFixed(2)})`);
+    const tilt = reduireMouvement ? 0 : cfg.tilt;
+    vg.setAttribute('transform', `translate(0 ${ty.toFixed(2)}) rotate(${tilt} 100 110)`);
   }
 }
 
@@ -220,9 +276,10 @@ $('#form').addEventListener('submit', (e) => {
 });
 $('#perdu').addEventListener('click', () => repondre('je suis perdu'));
 $('#rejouer').addEventListener('click', demarrer);
+$('#changerProf').addEventListener('click', ouvrirChoix);
 $('#palier').addEventListener('change', (e) => {
   $('#scene').style.display = e.target.value === 'texte' ? 'none' : 'flex';
 });
 
+construireChoix();
 requestAnimationFrame(animer);
-demarrer();
