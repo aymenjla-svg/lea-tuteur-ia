@@ -3,58 +3,66 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Léa — tuteur de physique</title>
+    <title>LÉA — Physique</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <div class="deco" aria-hidden="true"><span class="blob b1"></span><span class="blob b2"></span><span class="blob b3"></span></div>
-
     <main class="app">
       <!-- ============================ ACCUEIL ============================ -->
       <section id="accueil" class="accueil">
-        <header class="topbar">
-          <div class="brand">
-            <span class="brand-logo">Léa</span>
-            <span class="brand-sub">Physique</span>
+        <!-- Masthead façon revue scientifique -->
+        <header class="masthead">
+          <div class="mh-top">
+            <h1 class="mh-logo">LÉA</h1>
+            <span class="mh-issue">N<sup>o</sup>&nbsp;<span id="mhSerie">1</span></span>
           </div>
-          <div id="stats" class="stats"></div>
+          <div class="mh-rule"></div>
+          <div class="mh-meta">
+            <span class="mh-tag">Physique</span>
+            <span class="mh-dot">/</span>
+            <span class="mh-tag">Cycle 4</span>
+            <span class="mh-dot">/</span>
+            <span class="mh-tag" id="mhClasse">—</span>
+            <span class="mh-figs" id="stats"></span>
+          </div>
         </header>
 
-        <div class="hero">
-          <div class="hero-body">
-            <p class="hero-hi" id="heroHi">Salut&nbsp;! 👋</p>
-            <h1 class="hero-title">Deviens un·e as de la physique</h1>
+        <!-- Une (feature) -->
+        <section class="feature">
+          <div class="feature-txt">
+            <span class="kicker">Ton professeur</span>
+            <h2 class="feature-nom" id="featureNom">Léa</h2>
+            <span class="feature-style" id="featureStyle"></span>
             <div class="niveau-select">
-              <span class="ns-label">Ta classe</span>
+              <span class="kicker">Classe</span>
               <div class="ns-seg" id="niveauSeg" role="tablist"></div>
             </div>
             <button id="continuer" class="cta" type="button" hidden></button>
+            <button id="ouvrirProfs" class="lien-edito" type="button">Changer de prof ↴</button>
           </div>
-          <div class="hero-prof">
-            <div id="heroAvatar" class="hero-avatar"></div>
-            <button id="ouvrirProfs" class="hero-prof-nom" type="button"></button>
-          </div>
-        </div>
+          <div class="feature-avatar" id="heroAvatar"></div>
+        </section>
 
         <div id="profPicker" class="prof-picker" hidden>
-          <span class="pp-label">Choisis ton prof</span>
+          <span class="kicker">Choisis ton prof</span>
           <div id="profChips" class="pp-chips"></div>
         </div>
 
-        <div class="section-head">
-          <h2>Modules</h2>
-          <span id="modCount" class="section-count"></span>
+        <!-- Sommaire (les modules, en index numéroté) -->
+        <div class="index-head">
+          <span class="kicker">Sommaire</span>
+          <span class="kicker" id="modCount"></span>
         </div>
-        <div id="modulesGrille" class="modules-grille"></div>
+        <ol id="modulesGrille" class="index"></ol>
 
-        <p class="note accueil-note"><a href="dashboard.html">→ Tableau de bord éducateur</a></p>
+        <p class="note accueil-note"><a href="dashboard.html">Tableau de bord éducateur →</a></p>
       </section>
 
       <!-- ============================= LEÇON ============================= -->
       <section id="lecon" class="lecon" hidden>
         <header class="hud">
-          <button id="retour" type="button" class="hud-retour" aria-label="Retour aux modules">←</button>
+          <button id="retour" type="button" class="hud-retour" aria-label="Retour au sommaire">←</button>
           <div class="hud-centre">
             <div class="hud-titre" id="hudTitre"></div>
             <div class="hud-barre-fond"><div id="barre" class="hud-barre"></div></div>
@@ -63,8 +71,7 @@
           <button id="voix" type="button" class="icone-btn" hidden aria-pressed="false" title="Activer la voix" aria-label="Activer la voix">🔊</button>
         </header>
 
-        <!-- Le prof écrit la CONSIGNE au tableau et la LIT ; sa parole s'affiche
-             en SOUS-TITRES. Signaux synthétiques, jamais de caméra (§1.4). -->
+        <div class="fig-label">Fig. — le professeur au tableau</div>
         <section id="scene" class="scene" aria-hidden="true">
           <div class="tableau">
             <span id="tableauFormule" class="tableau-formule"></span>

@@ -69,45 +69,31 @@ async function moteurRepondre(texte) {
 
 /* --- Accueil (modules) ---------------------------------------------------- */
 
+// Accent « signature » : rouge éditorial sur l'accueil, couleur du module en leçon.
 function theme(couleur) {
-  document.documentElement.style.setProperty('--accent', couleur);
+  document.documentElement.style.setProperty('--hot', couleur);
 }
+const HOT_DEFAUT = '#e5361f';
 
-// Anneau de progression SVG (blanc, posé sur le bandeau coloré du module).
-function anneau(pct, taille = 44, epais = 5) {
-  const r = (taille - epais) / 2;
-  const c = 2 * Math.PI * r;
-  const off = c * (1 - pct / 100);
-  const mid = taille / 2;
-  return (
-    `<svg viewBox="0 0 ${taille} ${taille}" width="${taille}" height="${taille}" class="anneau mc-ring">` +
-    `<circle cx="${mid}" cy="${mid}" r="${r}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="${epais}"/>` +
-    `<circle cx="${mid}" cy="${mid}" r="${r}" fill="none" stroke="#fff" stroke-width="${epais}" ` +
-    `stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" ` +
-    `transform="rotate(-90 ${mid} ${mid})"/>` +
-    `<text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" class="anneau-txt">${pct}%</text>` +
-    `</svg>`
-  );
-}
-
-function rangeeEtoiles(pct) {
+function etoilesTexte(pct) {
   const n = etoiles(pct);
-  return `<div class="mc-etoiles">${'★'.repeat(n)}<span class="off">${'★'.repeat(3 - n)}</span></div>`;
+  return `<span class="idx-stars">${'★'.repeat(n)}<span class="off">${'★'.repeat(3 - n)}</span></span>`;
 }
 
-/* --- Stats gamifiées + classe (adaptation à l'âge) ----------------------- */
+/* --- Figures (stats) + classe (adaptation à l'âge) ----------------------- */
 
 function construireStats() {
+  $('#mhSerie').textContent = String(niveauJeu());
   $('#stats').innerHTML =
-    `<div class="stat"><span class="stat-ic">🔥</span><b>${serie()}</b><small>jours</small></div>` +
-    `<div class="stat"><span class="stat-ic">⭐</span><b>${xp()}</b><small>XP</small></div>` +
-    `<div class="stat stat-niv"><span class="niv-badge">Niv.&nbsp;${niveauJeu()}</span>` +
-    `<span class="niv-bar"><span style="width:${Math.round(progNiveauJeu() * 100)}%"></span></span></div>`;
+    `<span class="fig"><b>${xp()}</b><i>XP</i></span>` +
+    `<span class="fig"><b>${serie()}</b><i>Série</i></span>` +
+    `<span class="fig"><b>N${niveauJeu()}</b><i>Niveau</i></span>`;
 }
 
 function construireNiveauSeg() {
   const seg = $('#niveauSeg');
   const courant = niveauCourant();
+  $('#mhClasse').textContent = courant ? courant.label : 'Classe ?';
   seg.replaceChildren();
   for (const n of NIVEAUX) {
     const b = document.createElement('button');
@@ -119,11 +105,13 @@ function construireNiveauSeg() {
   }
 }
 
-/* --- Hero + choix du prof ------------------------------------------------ */
+/* --- Feature (une) + choix du prof --------------------------------------- */
 
 function construireHero() {
+  $('#featureNom').textContent = persona.nom;
+  $('#featureStyle').textContent = persona.style;
   $('#heroAvatar').innerHTML = avatarSVG(persona);
-  $('#ouvrirProfs').textContent = `${persona.nom} ${persona.emoji} · changer`;
+  $('#ouvrirProfs').textContent = 'Changer de prof ↴';
 }
 
 function construireProfChips() {
@@ -147,45 +135,39 @@ function construireProfChips() {
 function choisirProf(id) {
   persona = personaParId(id);
   localStorage.setItem(CLE_PROF, persona.id);
-  theme(persona.accent);
   construireHero();
   construireProfChips();
 }
 
-/* --- Cartes modules + « continuer » -------------------------------------- */
+/* --- Sommaire (modules en index numéroté) + « continuer » ---------------- */
 
 function construireModules() {
   const grille = $('#modulesGrille');
   const prog = chargerProgress();
   grille.replaceChildren();
   const actifs = MODULES.filter((m) => !m.verrouille).length;
-  $('#modCount').textContent = `${actifs} disponibles · ${MODULES.length - actifs} à venir`;
+  $('#modCount').textContent = `${actifs} en accès · ${MODULES.length - actifs} à venir`;
 
-  for (const m of MODULES) {
+  MODULES.forEach((m, i) => {
     const pct = progressModule(m, prog);
-    const carte = document.createElement('button');
-    carte.type = 'button';
-    carte.className = 'module-carte' + (m.verrouille ? ' verrouille' : '');
-    carte.style.setProperty('--c', m.couleur);
-    carte.disabled = !!m.verrouille;
-    carte.innerHTML =
-      `<div class="mc-cover">` +
-      `<span class="mc-emoji">${m.icone}</span>` +
-      (m.verrouille ? `<span class="mc-lock">🔒</span>` : anneau(pct)) +
-      `</div>` +
-      `<div class="mc-body">` +
-      (m.verrouille ? '' : rangeeEtoiles(pct)) +
-      `<div class="mc-titre">${m.titre}</div>` +
-      `<div class="mc-resume">${m.resume}</div>` +
-      `<div class="mc-pied">` +
+    const num = String(i + 1).padStart(2, '0');
+    const li = document.createElement('li');
+    li.className = 'idx' + (m.verrouille ? ' verrouille' : '');
+    li.style.setProperty('--c', m.couleur);
+    li.innerHTML =
+      `<span class="idx-num">${num}</span>` +
+      `<span class="idx-body">` +
+      `<span class="idx-titre">${m.titre}</span>` +
+      `<span class="idx-resume">${m.resume}</span>` +
+      `</span>` +
+      `<span class="idx-meta">` +
       (m.verrouille
-        ? `<span class="mc-bientot">Bientôt disponible</span>`
-        : `<span class="mc-go">${pct >= 100 ? 'Rejouer' : pct > 0 ? 'Continuer' : 'Commencer'} →</span>` +
-          `<span class="mc-xp">+100 XP</span>`) +
-      `</div></div>`;
-    if (!m.verrouille) carte.addEventListener('click', () => ouvrirModule(m));
-    grille.append(carte);
-  }
+        ? `<span class="idx-avenir">À venir</span>`
+        : `<span class="idx-pct">${pct}<i>%</i></span>${etoilesTexte(pct)}`) +
+      `</span>`;
+    if (!m.verrouille) li.addEventListener('click', () => ouvrirModule(m));
+    grille.append(li);
+  });
   majContinuer(prog);
 }
 
@@ -195,12 +177,12 @@ function majContinuer(prog = chargerProgress()) {
   if (!cible) { btn.hidden = true; return; }
   const pct = progressModule(cible, prog);
   btn.hidden = false;
-  btn.textContent = `${pct > 0 ? 'Continuer' : 'Commencer'} · ${cible.titre} →`;
+  btn.textContent = `${pct > 0 ? 'Reprendre' : 'Commencer'} · ${cible.titre} →`;
   btn.onclick = () => ouvrirModule(cible);
 }
 
 function construireAccueil() {
-  theme(persona.accent);
+  theme(HOT_DEFAUT); // accent signature sur l'accueil
   appliquerVibe();
   construireStats();
   construireNiveauSeg();
