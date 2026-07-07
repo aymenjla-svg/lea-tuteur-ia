@@ -1,4 +1,10 @@
-# Léa — palier 3D (Vite + Three.js)
+# Léa — palier 3D (Vite + Three.js) — RELÉGUÉ (ADDENDUM v1/A1)
+
+> ⚠️ **Hors chemin critique.** L'ADDENDUM v1 (cf. `SPEC.md`) fait du **2D
+> expressif « manga »** le rendu primaire (`web/`, rig SVG maison → Live2D en
+> prod). Ce palier 3D est conservé comme **alternative morte, non câblée** :
+> même contrat `Avatar`, mais il ne reçoit plus d'investissement et n'est pas le
+> visu par défaut. Ne pas y ajouter de fonctionnalités — enrichir `web/`.
 
 Avatar **3D** stylisé (Three.js), branché sur la **même API** que le palier
 SVG. Aucun asset distant : la tête est construite à partir de primitives et

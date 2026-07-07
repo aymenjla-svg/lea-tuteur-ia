@@ -19,6 +19,25 @@ const COUPS = {
 let sessionId = null;
 let parleJusqua = 0; // timestamp de fin d'animation « parle »
 
+// Expression de l'avatar (ADDENDUM v1/A1). Imposée par l'ÉTAT du moteur : sur
+// une correction, elle vient du verdict (correct → celebrate, erreur →
+// encouraging/concerned) — l'avatar ne peut donc pas féliciter une réponse
+// fausse. Chaque entrée encode : décalage vertical des sourcils, sourire
+// (1 = sourire, -1 = moue douce, 0 = neutre), blush des joues [0,1], inquiétude.
+const EXPR = {
+  idle:        { browY: 0,  smile: 0,  cheeks: 0,   worry: false },
+  listening:   { browY: -1, smile: 0,  cheeks: 0,   worry: false },
+  speaking:    { browY: 0,  smile: 0,  cheeks: 0,   worry: false },
+  thinking:    { browY: -2, smile: 0,  cheeks: 0,   worry: false },
+  happy:       { browY: -1, smile: 1,  cheeks: 0.3, worry: false },
+  encouraging: { browY: -1, smile: 1,  cheeks: 0.2, worry: false },
+  surprised:   { browY: -3, smile: 0,  cheeks: 0,   worry: false },
+  concerned:   { browY: 1,  smile: -1, cheeks: 0,   worry: true },
+  celebrate:   { browY: -2, smile: 1,  cheeks: 0.8, worry: false },
+};
+let expression = 'idle';
+let celebreJusqua = 0; // rebond one-shot sur celebrate
+
 async function api(chemin, methode = 'GET', corps) {
   const res = await fetch(chemin, {
     method: methode,
@@ -48,6 +67,10 @@ function rendre(etat) {
   $('#parole').textContent = etat.texte_tuteur;
   ajouterTour('tuteur', etat.texte_tuteur);
   parler(etat.texte_tuteur);
+
+  // Expression imposée par le moteur (A1). Le rebond de célébration est one-shot.
+  expression = etat.expression ?? 'idle';
+  if (expression === 'celebrate') celebreJusqua = performance.now() + 1600;
 
   const p = Math.round((etat.maitrise_cible?.probabilite_effective ?? 0) * 100);
   $('#barre').style.width = p + '%';
@@ -105,8 +128,9 @@ function animer(t) {
   const oeilG = $('#oeilG');
   const oeilD = $('#oeilD');
 
+  const parle = t < parleJusqua && !reduireMouvement;
   if (bouche) {
-    const parle = t < parleJusqua && !reduireMouvement;
+    // Lip-sync approximatif (A3 MVP) : ouverture ∝ « débit » pendant la parole.
     const ouverture = parle ? 3 + 7 * Math.abs(Math.sin(t / 90)) : 3;
     bouche.setAttribute('ry', ouverture.toFixed(2));
   }
@@ -137,7 +161,53 @@ function animer(t) {
     oeilD.setAttribute('transform', `translate(0 ${42 * (1 - sy)}) scale(1 ${sy})`);
   }
 
+  appliquerExpression(t, parle);
   requestAnimationFrame(animer);
+}
+
+/* Applique l'expression courante (sourcils, joues, sourire, rebond) — A1. */
+function appliquerExpression(t, parle) {
+  const cfg = EXPR[expression] ?? EXPR.idle;
+
+  const sg = $('#sourcilG');
+  const sd = $('#sourcilD');
+  if (sg && sd) {
+    // Décalage vertical + inclinaison interne montante pour l'inquiétude douce.
+    const ang = cfg.worry ? 9 : 0;
+    sg.setAttribute('transform', `translate(0 ${cfg.browY}) rotate(${ang} 36 34)`);
+    sd.setAttribute('transform', `translate(0 ${cfg.browY}) rotate(${-ang} 64 34)`);
+  }
+
+  const jg = $('#joueG');
+  const jd = $('#joueD');
+  if (jg && jd) {
+    jg.setAttribute('opacity', String(cfg.cheeks));
+    jd.setAttribute('opacity', String(cfg.cheeks));
+  }
+
+  // Le sourire (ou la moue) ne s'affiche qu'HORS parole (la parole pilote la
+  // bouche pour le lip-sync). Sourire vers le haut / moue douce vers le bas.
+  const sourire = $('#sourire');
+  const bouche = $('#bouche');
+  const montrerSourire = !parle && cfg.smile !== 0;
+  if (sourire) {
+    sourire.setAttribute('opacity', montrerSourire ? '1' : '0');
+    sourire.setAttribute(
+      'd',
+      cfg.smile > 0 ? 'M40 66 Q50 73 60 66' : 'M40 70 Q50 65 60 70',
+    );
+  }
+  if (bouche) bouche.setAttribute('opacity', montrerSourire ? '0' : '1');
+
+  // Rebond one-shot de célébration.
+  const vg = $('#visageG');
+  if (vg) {
+    let ty = 0;
+    if (expression === 'celebrate' && t < celebreJusqua && !reduireMouvement) {
+      ty = -Math.abs(Math.sin(t / 120)) * 4;
+    }
+    vg.setAttribute('transform', `translate(0 ${ty.toFixed(2)})`);
+  }
 }
 
 /* --- Événements ----------------------------------------------------------- */

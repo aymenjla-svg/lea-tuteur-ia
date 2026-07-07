@@ -20,21 +20,30 @@
         </label>
       </header>
 
-      <!-- Avatar — palier 2D/SVG (R6). Signaux synthétiques, jamais de caméra (§1.4). -->
+      <!-- Avatar — palier 2D/SVG expressif (R6, ADDENDUM v1/A1). Rig maison :
+           couches (base, joues, yeux, sourcils, bouche) pilotées par l'ÉTAT
+           déterministe. Signaux synthétiques, jamais de caméra (§1.4). -->
       <section id="scene" class="scene" aria-hidden="true">
         <svg viewBox="0 0 100 100" class="visage" role="img">
-          <circle cx="50" cy="50" r="46" fill="#ffe0bd" />
-          <g id="oeilG">
-            <circle cx="36" cy="42" r="7" fill="#fff" />
-            <circle id="pupilleG" cx="36" cy="42" r="3.2" fill="#3a3a3a" />
+          <g id="visageG">
+            <circle cx="50" cy="50" r="46" fill="#ffe0bd" />
+            <!-- Joues (blush) — révélées sur happy/celebrate. -->
+            <circle id="joueG" cx="29" cy="58" r="7" fill="#ff8fa3" opacity="0" />
+            <circle id="joueD" cx="71" cy="58" r="7" fill="#ff8fa3" opacity="0" />
+            <g id="oeilG">
+              <circle cx="36" cy="42" r="7" fill="#fff" />
+              <circle id="pupilleG" cx="36" cy="42" r="3.2" fill="#3a3a3a" />
+            </g>
+            <g id="oeilD">
+              <circle cx="64" cy="42" r="7" fill="#fff" />
+              <circle id="pupilleD" cx="64" cy="42" r="3.2" fill="#3a3a3a" />
+            </g>
+            <path id="sourcilG" d="M28 34 Q36 30 44 34" stroke="#9a6b4f" stroke-width="1.8" fill="none" stroke-linecap="round" />
+            <path id="sourcilD" d="M56 34 Q64 30 72 34" stroke="#9a6b4f" stroke-width="1.8" fill="none" stroke-linecap="round" />
+            <!-- Bouche : ellipse (parole/lip-sync) + sourire (expression, hors parole). -->
+            <path id="sourire" d="M40 66 Q50 73 60 66" stroke="#a33" stroke-width="2.6" fill="none" stroke-linecap="round" opacity="0" />
+            <ellipse id="bouche" cx="50" cy="68" rx="11" ry="3" fill="#a33" />
           </g>
-          <g id="oeilD">
-            <circle cx="64" cy="42" r="7" fill="#fff" />
-            <circle id="pupilleD" cx="64" cy="42" r="3.2" fill="#3a3a3a" />
-          </g>
-          <path d="M28 34 Q36 30 44 34" stroke="#9a6b4f" stroke-width="1.6" fill="none" />
-          <path d="M56 34 Q64 30 72 34" stroke="#9a6b4f" stroke-width="1.6" fill="none" />
-          <ellipse id="bouche" cx="50" cy="68" rx="11" ry="3" fill="#a33" />
         </svg>
       </section>
 

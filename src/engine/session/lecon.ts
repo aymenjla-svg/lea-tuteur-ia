@@ -27,6 +27,7 @@ import type {
   EleveId,
   ErreurTypeId,
   ExerciceTemplateId,
+  Expression,
   LearnerModel,
   MaitriseEffective,
   Modalite,
@@ -45,9 +46,29 @@ import type {
 import { evenement, type Horloge, nouvelId } from '../core.js';
 import { politiqueEvaluation } from '../planning/eval-types.js';
 import type { MagasinMemoire } from '../persistence/in-memory-store.js';
+import { expressionVerdict } from '../presence/emotion.js';
 
 /* Petit alias local : le type des leviers, extrait du répertoire R7. */
 type Levier = 'reformuler' | 'simplifier' | 'changer_de_modalite';
+
+/**
+ * Expression par défaut d'un tour NON lié à une correction (ADDENDUM v1/A1).
+ * Les tours liés à un verdict imposent leur expression via `expressionVerdict`.
+ */
+function expressionParDefaut(coup: CoupTuteur): Expression {
+  switch (coup.type) {
+    case 'clore':
+      return 'happy';
+    case 'encourager':
+    case 'simplifier':
+      return 'encouraging';
+    case 'proposer':
+    case 'reformuler':
+    case 'changer_de_modalite':
+    case 'reviser':
+      return 'idle';
+  }
+}
 
 /** État rendu au terme de chaque interaction (ce que l'UI texte afficherait). */
 export interface EtatLecon {
@@ -58,6 +79,12 @@ export interface EtatLecon {
   /** Texte du tuteur, DÉJÀ passé par le SafetyFilter (§1.6). */
   readonly texte_tuteur: string;
   readonly dernier_coup: CoupTuteur;
+  /**
+   * Expression de l'avatar pour ce tour (ADDENDUM v1/A1). Sur un tour lié à une
+   * correction, elle est IMPOSÉE par le verdict (correct → `celebrate`, erreur →
+   * `encouraging`/`concerned`) — l'avatar ne peut pas féliciter le faux (P1).
+   */
+  readonly expression: Expression;
   /** Maîtrise effective (après decay) de l'objectif VISÉ (progression). */
   readonly maitrise_cible: MaitriseEffective;
   readonly termine: boolean;
@@ -221,7 +248,7 @@ export class MoteurLecon {
         `Parfait, le prérequis est acquis. Revenons à l’exercice de départ. ${session.question.enonce}`,
         coup,
       );
-      return this.#etat(session_id, session, texte, coup);
+      return this.#etat(session_id, session, texte, coup, expressionVerdict(true));
     }
 
     const maitrise = await this.deps.learnerModel.niveauMaitrise(
@@ -243,7 +270,7 @@ export class MoteurLecon {
         'Bravo, c’est juste — et tu maîtrises maintenant cet objectif. Excellente séance !',
         coup,
       );
-      return this.#etat(session_id, session, texte, coup);
+      return this.#etat(session_id, session, texte, coup, expressionVerdict(true));
     }
 
     // Sinon : encourager puis re-proposer (consolidation).
@@ -257,7 +284,7 @@ export class MoteurLecon {
       `Bien joué, c’est correct ! On continue pour consolider. ${session.question.enonce}`,
       coup,
     );
-    return this.#etat(session_id, session, texte, coup);
+    return this.#etat(session_id, session, texte, coup, expressionVerdict(true));
   }
 
   async #surEchec(
@@ -288,7 +315,15 @@ export class MoteurLecon {
       `Pas tout à fait, ce n’est pas la bonne réponse.${aide} Réessaie : ${session.question.enonce}`,
       coup,
     );
-    return this.#etat(session_id, session, texte, coup);
+    // Verdict faux → expression de soutien (jamais moqueuse). `echecs` vient
+    // d'être incrémenté ; on passe le compte AVANT ce tour (A1).
+    return this.#etat(
+      session_id,
+      session,
+      texte,
+      coup,
+      expressionVerdict(false, session.echecs - 1),
+    );
   }
 
   /** Remédiation parlée : erreur-type du catalogue si disponible, sinon indice. */
@@ -328,7 +363,8 @@ export class MoteurLecon {
           `Reprenons une étape avant pour bien poser les bases. ${session.question.enonce}`,
           coup,
         );
-        return this.#etat(session_id, session, texte, coup);
+        // Blocage installé → expression douce (jamais moqueuse) — A1.
+        return this.#etat(session_id, session, texte, coup, 'concerned');
       }
       case 'changer_de_modalite': {
         const modalite = this.#autreModalite(session.question.modalite);
@@ -338,7 +374,7 @@ export class MoteurLecon {
           `Essayons autrement (${modalite}). ${session.question.enonce}`,
           coup,
         );
-        return this.#etat(session_id, session, texte, coup);
+        return this.#etat(session_id, session, texte, coup, 'concerned');
       }
       case 'reformuler':
       default: {
@@ -348,7 +384,7 @@ export class MoteurLecon {
           `Je reformule. ${session.question.enonce}`,
           coup,
         );
-        return this.#etat(session_id, session, texte, coup);
+        return this.#etat(session_id, session, texte, coup, 'concerned');
       }
     }
   }
@@ -480,6 +516,7 @@ export class MoteurLecon {
     session: SessionInterne,
     texte_tuteur: string,
     coup: CoupTuteur,
+    expression?: Expression,
   ): Promise<EtatLecon> {
     const maitrise_cible = await this.deps.learnerModel.niveauMaitrise(
       session.eleve_id,
@@ -491,6 +528,9 @@ export class MoteurLecon {
       objectif_courant: session.objectif_courant,
       texte_tuteur,
       dernier_coup: coup,
+      // Hors correction, l'expression découle du coup (le LLM affinera le ton) ;
+      // sur une correction, l'appelant l'impose depuis le verdict (A1).
+      expression: expression ?? expressionParDefaut(coup),
       maitrise_cible,
       termine: session.termine,
     };

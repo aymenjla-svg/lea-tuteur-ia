@@ -69,3 +69,55 @@ Vidéo locale (coordonnées seules). SafetyFilter + détresse → escalade adult
 
 ## 14. Hors-périmètre v1
 RL · DKT · speech-to-speech premium · multi-matières · marketplace personas.
+
+---
+
+## ADDENDUM v1 (2026-07-07) — correctif présence & voix
+
+Amende ce SPEC sans toucher l'archi (grâce aux contrats P3, c'est de
+l'implémentation, pas des fondations). Trois objets : voix au rang de brique
+cœur, avatar 2D expressif « manga » au lieu du 3D, écarts Praktika intégrés.
+
+- **A1 — Avatar 2D expressif « manga » (amende D9 & §8).** Le rendu PRIMAIRE
+  n'est plus RPM+Three.js/R3F mais un avatar 2D expressif, derrière la MÊME
+  interface `Avatar` (P3 intact). MVP = rig maison SVG/Canvas (couches base/yeux/
+  sourcils/bouche/joues pilotées par état) ; prod = Live2D Cubism
+  (`pixi-live2d-display`). Le 3D (RPM/R3F) est relégué hors chemin critique
+  (alternative morte, non câblée). Jeu d'expressions : états continus
+  (`idle`/`listening`/`thinking`/`speaking`), émotions
+  (`happy`/`encouraging`/`surprised`/`concerned`/`celebrate`), réactions one-shot
+  (`nod`/`aha`/`cheer`/`tilt`), regard, clignement, micro-mouvements.
+  **Invariant :** l'émotion liée à une correction est IMPOSÉE par le
+  déterministe — verdict `correct` → `celebrate`, erreur →
+  `encouraging`/`concerned` (jamais moqueur). L'avatar ne peut pas féliciter une
+  réponse fausse (cohérent §1.1 & P1). Le LLM ne fournit qu'un indice de ton
+  hors correction.
+- **A2 — Voix : brique cœur (amende D11/R4 & phasage).** La voix remonte de P3
+  vers P2. Pipeline streaming bout-en-bout derrière `Voice` : STT continu (MVP
+  Web Speech), TTS streaming FR — prévoir tôt un TTS qui rend un flux/buffer
+  audio (neural) pour débloquer le lip-sync ; barge-in + tour de parole gérés par
+  le `ConversationOrchestrator` ; budget R4 (premier son < ~1 s) maintenu ;
+  entrée écrite de plein droit (P1).
+- **A3 — Lip-sync (dépend de A1+A2).** Bouche pilotée par le flux audio du TTS :
+  MVP amplitude → `setMouth(openness)` (+ frontières de mots si dispo) ; prod
+  visèmes mappés aux params bouche Live2D.
+- **A4 — Mémoire post-parole.** Le `ConversationOrchestrator` récupère l'état
+  élève + mémoire APRÈS que l'élève a fini de parler (réagir à ce qu'il vient de
+  dire, pas à ce qu'on anticipait). Reste de la mémoire inchangé.
+- **A5 — Écarts Praktika.** On intègre voix streaming+barge-in, présence
+  expressive, timing mémoire. On garde le moat (vérif déterministe, maîtrise
+  persistante+oubli+répétition espacée, DAG prérequis, remédiation principielle,
+  alignement curriculum). On reporte le multimodal (photo/audio/doc) en P4.
+- **A6 — Interfaces.** `Expression`/`Reaction` énumérées ; le tour du tuteur
+  porte un indice d'expression (imposé par le verdict, sinon indice LLM) ;
+  `Voice` streaming + barge-in confirmé.
+
+**Phasage révisé.** P1 inchangée (cœur texte). **P2 enrichie** : voix streaming
+(A2) + avatar 2D maison expressif (A1 MVP) + lip-sync amplitude (A3) + timing
+mémoire (A4). **P3 polish présence** : Live2D, visèmes, barge-in raffiné, TTS
+neural, personas visuels. P4 inchangée (échelle + multimodal).
+
+**État d'implémentation (2026-07-07).** A1 livré côté visu 2D : `Expression`/
+`Reaction` aux contrats ; expression imposée par le verdict dans `EtatLecon`
+(`expressionVerdict`) ; avatar SVG expressif (sourcils, joues, sourire, rebond)
+piloté par l'état, déployable sans backend. A2/A3/A4 = P2, à suivre.

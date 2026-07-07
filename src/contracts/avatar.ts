@@ -12,8 +12,36 @@
 
 import type { PersonaId } from './common.js';
 
-/** Paliers de présence, du plus riche au plus sobre (R6). */
+/**
+ * Paliers de présence, du plus sobre au plus riche (R6).
+ *
+ * ADDENDUM v1/A1 : le rendu PRIMAIRE est désormais le 2D expressif « manga »
+ * (`2d_svg` → rig maison MVP, puis Live2D en prod). Le `3d` (RPM/R3F) est
+ * relégué en option lointaine, hors chemin critique.
+ */
 export type PalierPresence = '3d' | '2d_svg' | 'texte_voix' | 'texte';
+
+/**
+ * Jeu d'expressions de l'avatar (ADDENDUM v1/A6). États continus + émotions.
+ *
+ * L'émotion liée à une correction est IMPOSÉE par le déterministe (A1) :
+ * verdict `correct` → `celebrate` ; erreur → `encouraging`/`concerned` (jamais
+ * moqueur). Garantit que l'avatar ne peut pas « féliciter » une réponse fausse
+ * (invariant §1.1 & P1). Le LLM ne fournit qu'un indice de ton hors correction.
+ */
+export type Expression =
+  | 'idle'
+  | 'listening'
+  | 'thinking'
+  | 'speaking'
+  | 'happy'
+  | 'encouraging'
+  | 'surprised'
+  | 'concerned'
+  | 'celebrate';
+
+/** Réactions one-shot courtes (ADDENDUM v1/A6). */
+export type Reaction = 'nod' | 'aha' | 'cheer' | 'tilt';
 
 /** Visème = forme de bouche associée à un phonème (lip-sync). */
 export interface Viseme {
@@ -36,8 +64,10 @@ export interface FrameAvatar {
   readonly t_ms: number;
   readonly visemes: readonly Viseme[];
   readonly regard: Regard;
-  /** Expression émotionnelle synthétique (ex. « bienveillant »). */
-  readonly expression?: string;
+  /** Expression émotionnelle synthétique (énumérée, ADDENDUM v1/A6). */
+  readonly expression?: Expression;
+  /** Réaction one-shot à jouer sur cette frame, le cas échéant. */
+  readonly reaction?: Reaction;
 }
 
 /**
