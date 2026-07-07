@@ -5,12 +5,12 @@
 const CLE_JEU = 'lea.jeu.v1';
 const CLE_NIVEAU = 'lea.niveau.v1';
 
-/** Niveaux scolaires (cycle 4) + le « vibe » d'UI associé. */
+/** Niveaux scolaires (cycle 4) + « vibe » d'UI + couleur de badge (façon manuel). */
 export const NIVEAUX = [
-  { id: '6e', label: '6ᵉ', age: 11, vibe: 'jeune' },
-  { id: '5e', label: '5ᵉ', age: 12, vibe: 'jeune' },
-  { id: '4e', label: '4ᵉ', age: 13, vibe: 'moyen' },
-  { id: '3e', label: '3ᵉ', age: 14, vibe: 'grand' },
+  { id: '6e', label: '6ᵉ', age: 11, vibe: 'jeune', couleur: '#14c8d4' },
+  { id: '5e', label: '5ᵉ', age: 12, vibe: 'jeune', couleur: '#43c463' },
+  { id: '4e', label: '4ᵉ', age: 13, vibe: 'moyen', couleur: '#f5b400' },
+  { id: '3e', label: '3ᵉ', age: 14, vibe: 'grand', couleur: '#a855f7' },
 ];
 
 export function niveauCourant() {

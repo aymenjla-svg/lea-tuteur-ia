@@ -97,7 +97,8 @@ function construireNiveauSeg() {
     const b = document.createElement('button');
     b.type = 'button';
     b.className = n.id === courant?.id ? 'actif' : '';
-    b.textContent = n.label;
+    b.style.setProperty('--cn', n.couleur);
+    b.innerHTML = `${n.id[0]}<sup>e</sup>`;
     b.addEventListener('click', () => { definirNiveau(n.id); construireAccueil(); });
     seg.append(b);
   }
