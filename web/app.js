@@ -244,6 +244,25 @@ const FORMULES = {
   'obj-poids': 'P = m × g', 'obj-ohm': 'U = R × I',
 };
 
+// Petite pluie de confettis (maîtrise d'un module).
+function confettis() {
+  if (reduireMouvement) return;
+  const zone = document.createElement('div');
+  zone.className = 'confetti-zone';
+  const couleurs = ['#14c8d4', '#43c463', '#f5b400', '#a855f7', '#ff5d7d', '#ffffff'];
+  for (let i = 0; i < 40; i++) {
+    const c = document.createElement('span');
+    c.className = 'confetti';
+    c.style.left = ((i * 97) % 100) + '%';
+    c.style.background = couleurs[i % couleurs.length];
+    c.style.animationDelay = ((i % 8) * 0.06).toFixed(2) + 's';
+    c.style.animationDuration = (2 + (i % 5) * 0.25).toFixed(2) + 's';
+    zone.append(c);
+  }
+  document.body.append(zone);
+  setTimeout(() => zone.remove(), 3200);
+}
+
 function rendre(etat) {
   const enonce = etat.question_courante?.enonce ?? '';
   const fini = !!etat.termine;
@@ -252,6 +271,7 @@ function rendre(etat) {
   if (fini) {
     $('#tableauTexte').textContent = '★ Module réussi !';
     $('#tableauFormule').textContent = '';
+    confettis();
   } else {
     $('#tableauTexte').textContent = enonce || FORMULES[etat.objectif_courant] || '';
     $('#tableauFormule').textContent = FORMULES[etat.objectif_courant] ?? '';
