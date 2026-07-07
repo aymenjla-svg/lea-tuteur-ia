@@ -65,14 +65,6 @@ async function moteurRepondre(texte) {
 
 /* --- Rendu ---------------------------------------------------------------- */
 
-function ajouterTour(qui, texte) {
-  const li = document.createElement('li');
-  li.className = qui;
-  li.textContent = texte;
-  $('#transcript').append(li);
-  $('#transcript').scrollTop = $('#transcript').scrollHeight;
-}
-
 function parler(texte) {
   // Durée visuelle par défaut (utilisée telle quelle si la voix est coupée).
   const duree = Math.min(4000, 400 + texte.length * 32);
@@ -108,34 +100,44 @@ function pourLeTableau(etat) {
 }
 
 function rendre(etat) {
-  $('#parole').textContent = etat.texte_tuteur;
-  ajouterTour('tuteur', etat.texte_tuteur);
+  const enonce = etat.question_courante?.enonce ?? '';
+  const fini = !!etat.termine;
+
+  // TABLEAU = la consigne (ce que le prof « écrit ») + la relation en coin.
+  if (fini) {
+    $('#tableauTexte').textContent = '★ Séance réussie !';
+    $('#tableauFormule').textContent = '';
+  } else {
+    $('#tableauTexte').textContent = enonce || pourLeTableau(etat);
+    $('#tableauFormule').textContent = FORMULES[etat.objectif_courant] ?? '';
+  }
+
+  // BULLE = ce que le prof DIT (sa réaction), sans redire la consigne déjà au
+  // tableau. Le prof LIT quand même l'ensemble (consigne + réaction) à voix haute.
+  const reaction = enonce
+    ? etat.texte_tuteur.replace(enonce, '').replace(/\s{2,}/g, ' ').trim()
+    : etat.texte_tuteur;
+  $('#parole').textContent = reaction || etat.texte_tuteur;
   parler(etat.texte_tuteur);
 
   expression = etat.expression ?? 'idle';
   if (expression === 'celebrate') celebreJusqua = performance.now() + 1800;
 
-  if (!etat.termine) $('#tableauTexte').textContent = pourLeTableau(etat);
-
   const p = Math.round((etat.maitrise_cible?.probabilite_effective ?? 0) * 100);
   $('#barre').style.width = p + '%';
   $('#pct').innerHTML = p + '&nbsp;%';
-  $('#coup').textContent = COUPS[etat.dernier_coup?.type] ?? '';
 
-  const fini = !!etat.termine;
   attente = !fini;
   $('#reponse').disabled = fini;
   $('#envoyer').disabled = fini;
   $('#perdu').disabled = fini;
   $('#rejouer').hidden = !fini;
-  if (fini) $('#tableauTexte').textContent = '★';
   if (!fini) $('#reponse').focus();
 }
 
 /* --- Boucle de session ---------------------------------------------------- */
 
 async function demarrer() {
-  $('#transcript').replaceChildren();
   try {
     const d = await moteurCreer();
     sessionId = d.session_id;
@@ -148,7 +150,6 @@ async function demarrer() {
 async function repondre(texte) {
   if (!sessionId || texte.trim() === '') return;
   voix.interrompre(); // barge-in : l'élève prend la parole → Léa se tait
-  ajouterTour('eleve', texte);
   try {
     const d = await moteurRepondre(texte);
     rendre(d.etat);
@@ -186,6 +187,9 @@ function choisirProf(id) {
   $('#changerProf').hidden = false;
   $('#choix').classList.add('cache');
   expression = 'happy';
+  // « Un prof devant toi » : la voix s'active d'office (le clic de choix est le
+  // geste utilisateur qui débloque la synthèse). L'élève peut couper via 🔊.
+  if (voix.tts) { voixActive = true; majVoixUI(); }
   demarrer();
 }
 
