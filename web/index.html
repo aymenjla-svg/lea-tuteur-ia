@@ -73,9 +73,31 @@
         <div id="soustitre" class="soustitre" aria-live="polite"></div>
 
         <form id="form" class="saisie" autocomplete="off">
-          <input id="reponse" name="reponse" type="text" inputmode="text" placeholder="Ta réponse…" aria-label="Ta réponse" />
-          <button id="micro" type="button" class="micro-btn" hidden title="Répondre à la voix" aria-label="Répondre à la voix">🎤</button>
-          <button id="envoyer" type="submit">Envoyer</button>
+          <div id="unites" class="unites" role="group" aria-label="Unité de la réponse" hidden></div>
+          <div class="saisie-ligne">
+            <div class="champ">
+              <input id="reponse" name="reponse" type="text" inputmode="decimal" placeholder="Ta réponse…" aria-label="Ta réponse" />
+              <span id="uniteBadge" class="unite-badge" hidden></span>
+            </div>
+            <button id="micro" type="button" class="micro-btn" hidden title="Répondre à la voix" aria-label="Répondre à la voix">🎤</button>
+            <button id="envoyer" type="submit">Envoyer</button>
+          </div>
+          <div id="pave" class="pave" aria-label="Pavé numérique">
+            <button type="button" class="pk pk-util" data-act="clear" aria-label="Tout effacer">C</button>
+            <button type="button" class="pk pk-util" data-act="sign" aria-label="Changer de signe">±</button>
+            <button type="button" class="pk pk-util" data-act="back" aria-label="Effacer un caractère">⌫</button>
+            <button type="button" class="pk" data-k="7">7</button>
+            <button type="button" class="pk" data-k="8">8</button>
+            <button type="button" class="pk" data-k="9">9</button>
+            <button type="button" class="pk" data-k="4">4</button>
+            <button type="button" class="pk" data-k="5">5</button>
+            <button type="button" class="pk" data-k="6">6</button>
+            <button type="button" class="pk" data-k="1">1</button>
+            <button type="button" class="pk" data-k="2">2</button>
+            <button type="button" class="pk" data-k="3">3</button>
+            <button type="button" class="pk pk-comma" data-k=",">,</button>
+            <button type="button" class="pk pk-zero" data-k="0">0</button>
+          </div>
         </form>
 
         <div class="actions-sec">

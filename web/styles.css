@@ -277,13 +277,32 @@ body::after {
 .soustitre { margin-top: 12px; min-height: 22px; text-align: center; color: var(--txt); background: var(--panel-2); border: 1.5px solid var(--border); border-radius: var(--rad); padding: 12px 18px; font-size: 1rem; line-height: 1.4; backdrop-filter: blur(10px); }
 .soustitre:empty { display: none; }
 
-.saisie { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-.saisie input { flex: 1; min-width: 140px; padding: 13px 16px; border: 1.5px solid var(--border); border-radius: var(--rad); font-size: 1rem; background: rgba(255, 255, 255, 0.14); color: #fff; font-family: var(--sans); }
-.saisie input::placeholder { color: var(--txt2); }
-.saisie input:focus { outline: none; border-color: #fff; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2); }
-.saisie button { font-family: var(--round); padding: 13px 22px; border: none; border-radius: var(--rad); background: linear-gradient(120deg, var(--or), #ffd166); color: #4a2f00; font-size: 0.98rem; font-weight: 700; cursor: pointer; box-shadow: 0 6px 18px rgba(255, 194, 60, calc(0.4 * var(--glow))); }
-.saisie button:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
-.micro-btn { background: var(--panel) !important; color: #fff !important; border: 1.5px solid var(--border) !important; min-width: 52px; box-shadow: none !important; }
+.saisie { display: flex; flex-direction: column; gap: 12px; margin-top: 14px; max-width: 420px; margin-inline: auto; }
+.saisie-ligne { display: flex; gap: 10px; flex-wrap: wrap; }
+.champ { position: relative; flex: 1; min-width: 140px; display: flex; align-items: center; }
+.champ input { flex: 1; width: 100%; padding: 13px 16px; border: 1.5px solid var(--border); border-radius: var(--rad); font-size: 1.15rem; background: rgba(10, 26, 42, 0.55); backdrop-filter: blur(12px); color: #fff; font-family: var(--round); font-weight: 600; }
+.champ input::placeholder { color: var(--txt2); font-weight: 400; }
+.champ input:focus { outline: none; border-color: #fff; box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.2); }
+.unite-badge { position: absolute; right: 12px; font-family: var(--round); font-weight: 700; font-size: 0.95rem; color: #06202a; background: var(--neon, #ffd166); padding: 3px 9px; border-radius: 8px; pointer-events: none; }
+.saisie button[type="submit"] { font-family: var(--round); padding: 13px 22px; border: none; border-radius: var(--rad); background: linear-gradient(120deg, var(--or), #ffd166); color: #4a2f00; font-size: 0.98rem; font-weight: 700; cursor: pointer; box-shadow: 0 6px 18px rgba(255, 194, 60, calc(0.4 * var(--glow))); }
+.saisie button[type="submit"]:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: none; }
+
+/* Pastilles d'unités contextuelles (auto-contrôle valeur + unité) */
+.unites { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.unites-lib { font-size: 0.8rem; color: var(--txt2); font-weight: 600; letter-spacing: 0.02em; }
+.chip-unite { font-family: var(--round); font-weight: 700; font-size: 0.9rem; padding: 7px 14px; border-radius: 999px; border: 1.5px solid var(--border); background: rgba(10, 26, 42, 0.5); backdrop-filter: blur(10px); color: #fff; cursor: pointer; transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease; }
+.chip-unite:hover { background: rgba(255, 255, 255, 0.16); }
+.chip-unite.actif { background: var(--neon, #37e0ff); border-color: transparent; color: #06202a; transform: translateY(-1px); }
+.chip-unite.juste { border-color: var(--ok); box-shadow: 0 0 0 2px rgba(67, 196, 99, 0.4) inset; }
+
+/* Pavé numérique tactile */
+.pave { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.pk { font-family: var(--round); font-weight: 700; font-size: 1.3rem; padding: 14px 0; border: 1.5px solid var(--border); border-radius: 14px; background: rgba(10, 26, 42, 0.62); backdrop-filter: blur(12px); color: #fff; cursor: pointer; user-select: none; transition: transform 0.08s ease, background 0.12s ease; }
+.pk:hover { background: rgba(30, 52, 74, 0.75); }
+.pk:active { transform: scale(0.94); background: rgba(45, 70, 96, 0.85); }
+.pk-util { font-size: 1.05rem; background: rgba(10, 26, 42, 0.45); color: var(--txt2); }
+.pk-zero { grid-column: span 2; }
+.micro-btn { font-family: var(--round); padding: 13px 16px; border-radius: var(--rad); font-size: 1.05rem; cursor: pointer; background: var(--panel) !important; color: #fff !important; border: 1.5px solid var(--border) !important; min-width: 52px; box-shadow: none !important; }
 .micro-btn.actif { background: #ff5d7d !important; color: #fff !important; animation: pulseMic 1s ease-in-out infinite; }
 @keyframes pulseMic { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 93, 125, 0.5); } 50% { box-shadow: 0 0 0 7px rgba(255, 93, 125, 0); } }
 

@@ -244,6 +244,61 @@ const FORMULES = {
   'obj-poids': 'P = m × g', 'obj-ohm': 'U = R × I',
 };
 
+// Unités par objectif : la « bonne » (précisée dans l'énoncé) + des pastilles
+// proposées avec des pièges classiques (km vs km/h, N vs kg…). La valeur
+// envoyée au moteur reste un NOMBRE pur ; l'unité est un auto-contrôle.
+const UNITES = {
+  'obj-vitesse':          { bonne: 'km/h', choix: ['km/h', 'm/s', 'km', 'h'] },
+  'obj-vitesse-relation': { bonne: 'm/s',  choix: ['m/s', 'km/h', 'm', 's'] },
+  'obj-poids':            { bonne: 'N',    choix: ['N', 'kg', 'g', 'N/kg'] },
+  'obj-ohm':              { bonne: 'V',    choix: ['V', 'Ω', 'A', 'W'] },
+};
+let uniteObjectif = null;   // { bonne, choix } de l'objectif courant
+let uniteObjectifId = null; // pour ne reconstruire les pastilles qu'au changement
+let uniteChoisie = '';
+
+function construireUnites(objectif) {
+  const box = $('#unites');
+  uniteObjectif = UNITES[objectif] ?? null;
+  uniteChoisie = '';
+  majUniteBadge();
+  box.innerHTML = '';
+  if (!uniteObjectif) { box.hidden = true; return; }
+  box.hidden = false;
+  const lib = document.createElement('span');
+  lib.className = 'unites-lib';
+  lib.textContent = 'Unité';
+  box.append(lib);
+  for (const u of uniteObjectif.choix) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'chip-unite';
+    b.textContent = u;
+    b.dataset.u = u;
+    b.addEventListener('click', () => {
+      uniteChoisie = uniteChoisie === u ? '' : u;
+      for (const el of box.querySelectorAll('.chip-unite')) {
+        el.classList.toggle('actif', el.dataset.u === uniteChoisie);
+      }
+      majUniteBadge();
+      $('#reponse').focus();
+    });
+    box.append(b);
+  }
+}
+function majUniteBadge() {
+  const badge = $('#uniteBadge');
+  if (uniteChoisie) { badge.textContent = uniteChoisie; badge.hidden = false; }
+  else badge.hidden = true;
+}
+// Après une bonne réponse : révèle la bonne unité (auto-contrôle pédagogique).
+function revelerUnite() {
+  if (!uniteObjectif) return;
+  for (const el of $('#unites').querySelectorAll('.chip-unite')) {
+    el.classList.toggle('juste', el.dataset.u === uniteObjectif.bonne);
+  }
+}
+
 // Petite pluie de confettis (maîtrise d'un module).
 function confettis() {
   if (reduireMouvement) return;
@@ -282,6 +337,16 @@ function rendre(etat) {
 
   expression = etat.expression ?? 'idle';
   if (expression === 'celebrate') celebreJusqua = performance.now() + 1800;
+
+  // Pastilles d'unités contextuelles (reconstruites au changement d'objectif
+  // pour préserver le choix entre deux questions du même objectif).
+  if (fini) {
+    $('#unites').hidden = true;
+  } else if (etat.objectif_courant !== uniteObjectifId) {
+    uniteObjectifId = etat.objectif_courant;
+    construireUnites(etat.objectif_courant);
+  }
+  if (expression === 'celebrate') revelerUnite();
 
   const pct = Math.round((etat.maitrise_cible?.probabilite_effective ?? 0) * 100);
   $('#barre').style.width = pct + '%';
@@ -474,6 +539,24 @@ $('#form').addEventListener('submit', (e) => {
   const v = $('#reponse').value;
   $('#reponse').value = '';
   repondre(v);
+});
+// Pavé numérique tactile (alimente #reponse ; le clavier physique marche aussi).
+$('#pave').addEventListener('click', (e) => {
+  const b = e.target.closest('.pk');
+  if (!b) return;
+  const inp = $('#reponse');
+  if (inp.disabled) return;
+  if (b.dataset.k != null) {
+    if (b.dataset.k === ',' && inp.value.includes(',')) return; // une seule virgule
+    inp.value += b.dataset.k;
+  } else if (b.dataset.act === 'back') {
+    inp.value = inp.value.slice(0, -1);
+  } else if (b.dataset.act === 'clear') {
+    inp.value = '';
+  } else if (b.dataset.act === 'sign') {
+    inp.value = inp.value.startsWith('-') ? inp.value.slice(1) : '-' + inp.value;
+  }
+  inp.focus();
 });
 $('#perdu').addEventListener('click', () => repondre('je suis perdu'));
 $('#rejouer').addEventListener('click', () => demarrer(moduleActuel?.objectifPrincipal));
