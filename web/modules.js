@@ -78,19 +78,25 @@ export function chargerProgress() {
   }
 }
 
-/** Enregistre le meilleur pourcentage atteint pour un objectif (jamais régressif). */
+/**
+ * Enregistre le meilleur pourcentage atteint pour un objectif (jamais
+ * régressif). Renvoie le GAIN de points (0 si pas de progrès) — sert à l'XP.
+ */
 export function majProgress(objectifId, pct) {
-  if (!objectifId) return;
+  if (!objectifId) return 0;
   const p = chargerProgress();
   const v = Math.max(0, Math.min(100, Math.round(pct)));
-  if (v > (p[objectifId] ?? 0)) {
+  const ancien = p[objectifId] ?? 0;
+  if (v > ancien) {
     p[objectifId] = v;
     try {
       localStorage.setItem(CLE, JSON.stringify(p));
     } catch {
       /* stockage indisponible : on ignore, la session reste fonctionnelle */
     }
+    return v - ancien;
   }
+  return 0;
 }
 
 /** Pourcentage d'avancement d'un module (0..100). */

@@ -7,9 +7,11 @@
 
 import { PERSONAS, MATIERE, personaParId, avatarSVG } from './personas.js';
 import { voix } from './voix.js';
+import { MODULES, chargerProgress, majProgress, progressModule } from './modules.js';
 import {
-  MODULES, chargerProgress, majProgress, progressModule, progressGlobal,
-} from './modules.js';
+  NIVEAUX, niveauCourant, definirNiveau, appliquerVibe,
+  xp, ajouterXp, niveauJeu, progNiveauJeu, majSerie, serie, etoiles,
+} from './jeu.js';
 
 const $ = (s) => document.querySelector(s);
 const reduireMouvement = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -71,21 +73,57 @@ function theme(couleur) {
   document.documentElement.style.setProperty('--accent', couleur);
 }
 
-// Anneau de progression SVG.
-function anneau(pct, taille = 46, couleur = 'var(--accent)', epais = 5) {
+// Anneau de progression SVG (blanc, posé sur le bandeau coloré du module).
+function anneau(pct, taille = 44, epais = 5) {
   const r = (taille - epais) / 2;
   const c = 2 * Math.PI * r;
   const off = c * (1 - pct / 100);
   const mid = taille / 2;
   return (
-    `<svg viewBox="0 0 ${taille} ${taille}" width="${taille}" height="${taille}" class="anneau">` +
-    `<circle cx="${mid}" cy="${mid}" r="${r}" fill="none" stroke="#e7ecf6" stroke-width="${epais}"/>` +
-    `<circle cx="${mid}" cy="${mid}" r="${r}" fill="none" stroke="${couleur}" stroke-width="${epais}" ` +
+    `<svg viewBox="0 0 ${taille} ${taille}" width="${taille}" height="${taille}" class="anneau mc-ring">` +
+    `<circle cx="${mid}" cy="${mid}" r="${r}" fill="none" stroke="rgba(255,255,255,.35)" stroke-width="${epais}"/>` +
+    `<circle cx="${mid}" cy="${mid}" r="${r}" fill="none" stroke="#fff" stroke-width="${epais}" ` +
     `stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" ` +
     `transform="rotate(-90 ${mid} ${mid})"/>` +
     `<text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" class="anneau-txt">${pct}%</text>` +
     `</svg>`
   );
+}
+
+function rangeeEtoiles(pct) {
+  const n = etoiles(pct);
+  return `<div class="mc-etoiles">${'★'.repeat(n)}<span class="off">${'★'.repeat(3 - n)}</span></div>`;
+}
+
+/* --- Stats gamifiées + classe (adaptation à l'âge) ----------------------- */
+
+function construireStats() {
+  $('#stats').innerHTML =
+    `<div class="stat"><span class="stat-ic">🔥</span><b>${serie()}</b><small>jours</small></div>` +
+    `<div class="stat"><span class="stat-ic">⭐</span><b>${xp()}</b><small>XP</small></div>` +
+    `<div class="stat stat-niv"><span class="niv-badge">Niv.&nbsp;${niveauJeu()}</span>` +
+    `<span class="niv-bar"><span style="width:${Math.round(progNiveauJeu() * 100)}%"></span></span></div>`;
+}
+
+function construireNiveauSeg() {
+  const seg = $('#niveauSeg');
+  const courant = niveauCourant();
+  seg.replaceChildren();
+  for (const n of NIVEAUX) {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = n.id === courant?.id ? 'actif' : '';
+    b.textContent = n.label;
+    b.addEventListener('click', () => { definirNiveau(n.id); construireAccueil(); });
+    seg.append(b);
+  }
+}
+
+/* --- Hero + choix du prof ------------------------------------------------ */
+
+function construireHero() {
+  $('#heroAvatar').innerHTML = avatarSVG(persona);
+  $('#ouvrirProfs').textContent = `${persona.nom} ${persona.emoji} · changer`;
 }
 
 function construireProfChips() {
@@ -109,13 +147,20 @@ function construireProfChips() {
 function choisirProf(id) {
   persona = personaParId(id);
   localStorage.setItem(CLE_PROF, persona.id);
+  theme(persona.accent);
+  construireHero();
   construireProfChips();
 }
+
+/* --- Cartes modules + « continuer » -------------------------------------- */
 
 function construireModules() {
   const grille = $('#modulesGrille');
   const prog = chargerProgress();
   grille.replaceChildren();
+  const actifs = MODULES.filter((m) => !m.verrouille).length;
+  $('#modCount').textContent = `${actifs} disponibles · ${MODULES.length - actifs} à venir`;
+
   for (const m of MODULES) {
     const pct = progressModule(m, prog);
     const carte = document.createElement('button');
@@ -124,25 +169,42 @@ function construireModules() {
     carte.style.setProperty('--c', m.couleur);
     carte.disabled = !!m.verrouille;
     carte.innerHTML =
-      `<div class="mc-haut">` +
-      `<span class="mc-icone">${m.icone}</span>` +
-      (m.verrouille ? `<span class="mc-lock">🔒</span>` : anneau(pct, 46, m.couleur)) +
+      `<div class="mc-cover">` +
+      `<span class="mc-emoji">${m.icone}</span>` +
+      (m.verrouille ? `<span class="mc-lock">🔒</span>` : anneau(pct)) +
       `</div>` +
+      `<div class="mc-body">` +
+      (m.verrouille ? '' : rangeeEtoiles(pct)) +
       `<div class="mc-titre">${m.titre}</div>` +
       `<div class="mc-resume">${m.resume}</div>` +
       `<div class="mc-pied">` +
       (m.verrouille
         ? `<span class="mc-bientot">Bientôt disponible</span>`
-        : `<span class="mc-go">${pct >= 100 ? 'Rejouer' : pct > 0 ? 'Continuer' : 'Commencer'} →</span>`) +
-      `</div>`;
+        : `<span class="mc-go">${pct >= 100 ? 'Rejouer' : pct > 0 ? 'Continuer' : 'Commencer'} →</span>` +
+          `<span class="mc-xp">+100 XP</span>`) +
+      `</div></div>`;
     if (!m.verrouille) carte.addEventListener('click', () => ouvrirModule(m));
     grille.append(carte);
   }
-  $('#hero-ring').innerHTML = anneau(progressGlobal(prog), 64, 'var(--accent)', 6);
+  majContinuer(prog);
+}
+
+function majContinuer(prog = chargerProgress()) {
+  const cible = MODULES.find((m) => !m.verrouille && progressModule(m, prog) < 100);
+  const btn = $('#continuer');
+  if (!cible) { btn.hidden = true; return; }
+  const pct = progressModule(cible, prog);
+  btn.hidden = false;
+  btn.textContent = `${pct > 0 ? 'Continuer' : 'Commencer'} · ${cible.titre} →`;
+  btn.onclick = () => ouvrirModule(cible);
 }
 
 function construireAccueil() {
   theme(persona.accent);
+  appliquerVibe();
+  construireStats();
+  construireNiveauSeg();
+  construireHero();
   construireProfChips();
   construireModules();
 }
@@ -221,7 +283,11 @@ function rendre(etat) {
   const pct = Math.round((etat.maitrise_cible?.probabilite_effective ?? 0) * 100);
   $('#barre').style.width = pct + '%';
   $('#pct').innerHTML = pct + '&nbsp;%';
-  if (moduleActuel) majProgress(moduleActuel.objectifPrincipal, pct);
+  // Progression persistée → gain d'XP (1 point de maîtrise = 1 XP).
+  if (moduleActuel) {
+    const gain = majProgress(moduleActuel.objectifPrincipal, pct);
+    if (gain > 0) ajouterXp(gain);
+  }
 
   attente = !fini;
   $('#reponse').disabled = fini;
@@ -409,6 +475,10 @@ $('#form').addEventListener('submit', (e) => {
 $('#perdu').addEventListener('click', () => repondre('je suis perdu'));
 $('#rejouer').addEventListener('click', () => demarrer(moduleActuel?.objectifPrincipal));
 $('#retour').addEventListener('click', retourAccueil);
+$('#ouvrirProfs').addEventListener('click', () => {
+  const pp = $('#profPicker');
+  pp.hidden = !pp.hidden;
+});
 
 if (voix.tts) {
   $('#voix').hidden = false;
@@ -420,5 +490,8 @@ if (voix.stt) {
   $('#micro').addEventListener('click', ecouterMic);
 }
 
+// Démarrage : série du jour + interface adaptée à la classe + accueil.
+majSerie();
+appliquerVibe();
 construireAccueil();
 requestAnimationFrame(animer);
