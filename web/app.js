@@ -247,7 +247,7 @@ function parler(texte) {
     majSousTitre(texte, 0);
     const est = Math.min(15000, 500 + texte.length * 80);
     voix.parler(texte, {
-      params: persona?.voix,
+      params: { ...persona?.voix, sexe: persona?.sexe },
       onStart: () => { parleJusqua = performance.now() + est; },
       onBoundary: (e) => {
         clearTimeout(stFallback);

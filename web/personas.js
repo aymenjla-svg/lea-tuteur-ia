@@ -18,28 +18,28 @@ export const PERSONAS = [
     tagline: 'Explique calmement, te laisse tout le temps qu’il faut.',
     peau: '#ffdcc0', cheveux: '#8a5a3b', cheveux2: '#6f4529',
     tenue: '#e0a83e', tenue2: '#c8902c', iris: '#5a9e6f', accent: '#e0a83e',
-    coiffe: 'longs', voix: { pitch: 1.15, rate: 0.95 },
+    coiffe: 'longs', sexe: 'f', voix: { pitch: 1.14, rate: 0.98 },
   },
   {
     id: 'persona-noe', nom: 'Noé', style: 'Énergique & curieux', emoji: '⚡',
     tagline: 'Transforme chaque notion de physique en expérience.',
     peau: '#f3c9a0', cheveux: '#3a2f2a', cheveux2: '#241d19',
     tenue: '#f2f4f8', tenue2: '#d6dbe4', iris: '#7a5230', accent: '#4a90d9',
-    coiffe: 'courts', voix: { pitch: 1.0, rate: 1.12 },
+    coiffe: 'courts', sexe: 'h', voix: { pitch: 0.85, rate: 1.06 },
   },
   {
     id: 'persona-mila', nom: 'Mila', style: 'Créative & imagée', emoji: '🎨',
     tagline: 'Fait comprendre avec des images et des exemples concrets.',
     peau: '#ffd9c2', cheveux: '#c86fa6', cheveux2: '#a8558a',
     tenue: '#b06ab3', tenue2: '#98549b', iris: '#8e5bd0', accent: '#b06ab3',
-    coiffe: 'queue', voix: { pitch: 1.2, rate: 1.0 },
+    coiffe: 'queue', sexe: 'f', voix: { pitch: 1.22, rate: 1.0 },
   },
   {
     id: 'persona-kenji', nom: 'Kenji', style: 'Calme & rigoureux', emoji: '🧭',
     tagline: 'Avance étape par étape, en posant bien les bases.',
     peau: '#f0c49a', cheveux: '#20242c', cheveux2: '#12151b',
     tenue: '#3f6f8f', tenue2: '#2f556e', iris: '#4a5568', accent: '#2e8b74',
-    coiffe: 'carre', lunettes: true, voix: { pitch: 0.9, rate: 0.92 },
+    coiffe: 'carre', lunettes: true, sexe: 'h', voix: { pitch: 0.8, rate: 0.92 },
   },
 ];
 
