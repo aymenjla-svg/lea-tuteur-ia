@@ -48,57 +48,84 @@ export function personaParId(id) {
   return PERSONAS.find((p) => p.id === id) ?? PERSONAS[0];
 }
 
-// --- Gabarits de cheveux (arrière = derrière la tête, avant = frange) --------
-// Repère : visage centré ~ (100,104), rayon ~ 60. Coordonnées en viewBox 200×240.
+// --- Cheveux (arrière = derrière la tête, avant = frange à mèches) -----------
+// Repère : visage centré ~ (100,108), yeux à y≈112 (pivots d'animation).
 
 function cheveuxArriere(p) {
   switch (p.coiffe) {
-    case 'longs': // longue chevelure qui tombe sur les épaules
-      return `<path d="M32 96 Q28 176 44 208 L58 200 Q46 150 52 104 Z" fill="${p.cheveux2}"/>
-              <path d="M168 96 Q172 176 156 208 L142 200 Q154 150 148 104 Z" fill="${p.cheveux2}"/>`;
-    case 'queue': // queue de côté
-      return `<path d="M150 70 Q196 96 190 168 Q176 150 158 150 Q170 110 150 92 Z" fill="${p.cheveux2}"/>`;
+    case 'longs':
+      return `<path d="M34 92 Q26 178 46 214 L60 206 Q48 150 54 100 Z" fill="${p.cheveux2}"/>
+              <path d="M166 92 Q174 178 154 214 L140 206 Q152 150 146 100 Z" fill="${p.cheveux2}"/>`;
+    case 'queue':
+      return `<path d="M146 66 Q198 92 196 176 Q180 150 158 152 Q174 108 146 88 Z" fill="${p.cheveux2}"/>
+              <path d="M150 70 Q188 96 188 168 Q176 150 160 150 Q170 112 150 90 Z" fill="${p.cheveux}"/>`;
     case 'courts':
     case 'carre':
     default:
-      return `<path d="M40 96 Q40 150 56 176 L60 150 Q52 120 56 100 Z" fill="${p.cheveux2}"/>
-              <path d="M160 96 Q160 150 144 176 L140 150 Q148 120 144 100 Z" fill="${p.cheveux2}"/>`;
+      return `<path d="M40 92 Q38 152 58 180 L64 150 Q54 118 58 96 Z" fill="${p.cheveux2}"/>
+              <path d="M160 92 Q162 152 142 180 L136 150 Q146 118 142 96 Z" fill="${p.cheveux2}"/>`;
   }
 }
 
-function cheveuxAvant(p) {
-  switch (p.coiffe) {
-    case 'longs':
-      return `<path d="M40 92 Q52 34 100 32 Q148 34 160 92 Q150 66 128 60
-              Q120 84 108 66 Q100 88 92 66 Q80 84 72 60 Q50 66 40 92 Z" fill="${p.cheveux}"/>`;
-    case 'queue':
-      return `<path d="M42 92 Q54 36 100 34 Q150 36 160 92 Q152 64 130 58
-              Q116 82 104 62 Q96 86 84 64 Q68 70 42 92 Z" fill="${p.cheveux}"/>`;
-    case 'courts':
-      return `<path d="M44 92 Q54 40 100 38 Q146 40 156 92 Q150 58 118 56
-              Q110 74 96 58 Q84 74 74 60 Q52 62 44 92 Z" fill="${p.cheveux}"/>`;
-    case 'carre':
-    default:
-      return `<path d="M42 96 Q46 42 100 40 Q154 42 158 96 Q150 60 100 58
-              Q50 60 42 96 Z" fill="${p.cheveux}"/>`;
-  }
+// Frange à mèches pointues (bord dentelé), avec reflet + ombre de front.
+function cheveuxAvant(p, s) {
+  const base =
+    p.coiffe === 'carre'
+      ? `M40 100 Q42 46 100 42 Q158 46 160 100 Q152 66 130 62 L134 96
+         Q120 62 100 60 Q80 62 66 96 L70 62 Q48 66 40 100 Z`
+      : `M40 100 Q44 44 100 40 Q156 44 160 100
+         Q150 68 132 64 L140 98 Q126 64 112 62 L118 92 Q106 60 100 60
+         Q94 60 82 92 L88 62 Q74 64 60 98 L68 64 Q50 68 40 100 Z`;
+  return `
+    <!-- ombre portée de la frange sur le front -->
+    <path d="M52 92 Q100 108 148 92 Q140 74 100 76 Q60 74 52 92 Z" fill="#00000012"/>
+    <path d="${base}" fill="${p.cheveux}"/>
+    <!-- mèche foncée (profondeur) -->
+    <path d="M40 100 Q52 62 84 60 L74 92 Q58 70 40 100 Z" fill="${p.cheveux2}" opacity="0.55"/>
+    <!-- reflet -->
+    <path d="M96 50 Q118 50 138 66 Q120 58 100 60 Q86 60 80 70 Q86 54 96 50 Z" fill="#ffffff" opacity="0.22"/>`;
 }
 
 /**
- * Construit le SVG d'un avatar manga expressif.
+ * Construit le SVG d'un avatar manga « pro » (yeux détaillés, ombrage, mèches).
  *
- * `uid` suffixe TOUS les IDs (clipPath/gradient + éléments animés) pour éviter
- * les collisions quand plusieurs avatars coexistent (cartes de choix). L'avatar
- * principal (animé par app.js) est construit SANS uid → il garde les IDs
- * canoniques : #corps #visageG #oeilG #oeilD #irisG #irisD #sourcilG #sourcilD
- * #bouche #sourire #joueG #joueD #goutte #etincelles #bulle.
+ * `uid` suffixe TOUS les IDs (clipPath/gradients + éléments animés) pour éviter
+ * les collisions quand plusieurs avatars coexistent. L'avatar principal (animé
+ * par app.js) est construit SANS uid → IDs canoniques : #corps #visageG #oeilG
+ * #oeilD #irisG #irisD #sourcilG #sourcilD #bouche #sourire #joueG #joueD
+ * #goutte #etincelles #bulle. Ancrages : yeux à y≈112, bouche à y≈146.
  */
 export function avatarSVG(p, uid = '') {
   const s = uid ? `-${uid}` : '';
+  // Un œil manga complet, paramétré par le centre x (miroir pour l'autre œil).
+  const oeil = (cx, dir) => {
+    const o = -dir; // sens « vers l'extérieur » : gauche→-1, droite→+1
+    const ext = cx + o * 15; // coin externe de l'œil
+    return `
+      <ellipse cx="${cx}" cy="112" rx="16" ry="19" fill="#fff"/>
+      <g clip-path="url(#clip${dir > 0 ? 'G' : 'D'}${s})">
+        <g id="iris${dir > 0 ? 'G' : 'D'}${s}">
+          <circle cx="${cx}" cy="115" r="14" fill="${p.iris}"/>
+          <path d="M${cx - 14} 111 A14 14 0 0 1 ${cx + 14} 111 A14 18 0 0 0 ${cx - 14} 111 Z" fill="#000000" opacity="0.28"/>
+          <circle cx="${cx}" cy="115" r="14" fill="none" stroke="#00000028" stroke-width="2.5"/>
+          <circle cx="${cx}" cy="117" r="6.2" fill="#141010"/>
+          <ellipse cx="${cx - 5}" cy="107" rx="4.6" ry="5.4" fill="#fff"/>
+          <circle cx="${cx + 6}" cy="122" r="2.3" fill="#fff" opacity="0.85"/>
+        </g>
+      </g>
+      <!-- eyeliner (paupière haute) : arc doux, sans écraser le regard -->
+      <path d="M${cx - 15} 110 Q${cx} 100 ${cx + 15} 109" fill="none" stroke="#2a1f18" stroke-width="3.8" stroke-linecap="round"/>
+      <!-- cils au coin externe (pointent vers l'extérieur) -->
+      <path d="M${ext} 108 q${o * 6} -4 ${o * 9} -6" fill="none" stroke="#2a1f18" stroke-width="2.6" stroke-linecap="round"/>
+      <path d="M${ext + o * 1} 112 q${o * 6} -1 ${o * 9} -3" fill="none" stroke="#2a1f18" stroke-width="1.8" stroke-linecap="round"/>
+      <!-- pli de paupière inférieure (léger) -->
+      <path d="M${cx - 11} 127 Q${cx} 131 ${cx + 11} 126" fill="none" stroke="#c98f77" stroke-width="1.3" opacity="0.45" stroke-linecap="round"/>`;
+  };
   const lunettes = p.lunettes
-    ? `<g stroke="#2c2c2c" stroke-width="2.4" fill="none" opacity="0.9">
-         <circle cx="74" cy="112" r="20"/><circle cx="126" cy="112" r="20"/>
-         <path d="M94 112 h12"/><path d="M54 108 l-10 -4"/><path d="M146 108 l10 -4"/>
+    ? `<g stroke="#20242c" stroke-width="2.6" fill="#ffffff10">
+         <rect x="52" y="100" width="40" height="30" rx="12"/>
+         <rect x="108" y="100" width="40" height="30" rx="12"/>
+         <path d="M92 114 h16" fill="none"/><path d="M52 110 l-10 -3" fill="none"/><path d="M148 110 l10 -3" fill="none"/>
        </g>`
     : '';
   return `
@@ -108,71 +135,57 @@ export function avatarSVG(p, uid = '') {
       <stop offset="0%" stop-color="#ff8fa3" stop-opacity="0.9"/>
       <stop offset="100%" stop-color="#ff8fa3" stop-opacity="0"/>
     </radialGradient>
-    <clipPath id="clipG${s}"><ellipse cx="74" cy="112" rx="17" ry="21"/></clipPath>
-    <clipPath id="clipD${s}"><ellipse cx="126" cy="112" rx="17" ry="21"/></clipPath>
+    <radialGradient id="skin${s}" cx="50%" cy="38%" r="62%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.30"/>
+      <stop offset="70%" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
+    <clipPath id="clipG${s}"><ellipse cx="74" cy="112" rx="16" ry="19"/></clipPath>
+    <clipPath id="clipD${s}"><ellipse cx="126" cy="112" rx="16" ry="19"/></clipPath>
   </defs>
 
   <!-- Corps (respiration) -->
   <g id="corps${s}">
-    <path d="M40 240 Q44 188 78 176 L122 176 Q156 188 160 240 Z" fill="${p.tenue}"/>
-    <path d="M78 176 Q100 196 122 176 L118 172 Q100 184 82 172 Z" fill="${p.tenue2}"/>
-    <rect x="88" y="158" width="24" height="26" rx="8" fill="${p.peau}"/>
+    <path d="M36 240 Q40 186 76 174 L124 174 Q160 186 164 240 Z" fill="${p.tenue}"/>
+    <path d="M76 174 Q100 198 124 174 L119 169 Q100 186 81 169 Z" fill="${p.tenue2}"/>
+    <path d="M88 154 h24 v20 q-12 10 -24 0 Z" fill="${p.peau}"/>
+    <path d="M88 154 h24 v6 q-12 7 -24 0 Z" fill="#00000018"/>
   </g>
 
   <!-- Tête (inclinaison/rebond via #visageG) -->
   <g id="visageG${s}">
     ${cheveuxArriere(p)}
-    <ellipse cx="40" cy="112" rx="8" ry="12" fill="${p.peau}"/>
-    <ellipse cx="160" cy="112" rx="8" ry="12" fill="${p.peau}"/>
-    <path d="M44 104 Q44 48 100 46 Q156 48 156 104 Q156 156 100 168 Q44 156 44 104 Z" fill="${p.peau}"/>
+    <ellipse cx="41" cy="114" rx="7.5" ry="11" fill="${p.peau}"/>
+    <ellipse cx="159" cy="114" rx="7.5" ry="11" fill="${p.peau}"/>
+    <!-- visage manga (menton affiné) -->
+    <path d="M46 106 Q44 54 100 50 Q156 54 154 106 Q152 140 128 160 Q112 174 100 176 Q88 174 72 160 Q48 140 46 106 Z" fill="${p.peau}"/>
+    <path d="M46 106 Q44 54 100 50 Q156 54 154 106 Q152 140 128 160 Q112 174 100 176 Q88 174 72 160 Q48 140 46 106 Z" fill="url(#skin${s})"/>
+    <!-- ombres de mâchoire -->
+    <path d="M72 158 Q100 172 128 158 Q118 168 100 170 Q82 168 72 158 Z" fill="#00000010"/>
 
-    <circle id="joueG${s}" cx="66" cy="130" r="13" fill="url(#joueGrad${s})" opacity="0"/>
-    <circle id="joueD${s}" cx="134" cy="130" r="13" fill="url(#joueGrad${s})" opacity="0"/>
+    <circle id="joueG${s}" cx="66" cy="130" r="12" fill="url(#joueGrad${s})" opacity="0"/>
+    <circle id="joueD${s}" cx="134" cy="130" r="12" fill="url(#joueGrad${s})" opacity="0"/>
 
-    <!-- GROS yeux manga -->
-    <g id="oeilG${s}">
-      <ellipse cx="74" cy="112" rx="17" ry="21" fill="#ffffff" stroke="#2c2c2c" stroke-width="1.4"/>
-      <g clip-path="url(#clipG${s})">
-        <g id="irisG${s}">
-          <circle cx="74" cy="114" r="13" fill="${p.iris}"/>
-          <circle cx="74" cy="114" r="12" fill="none" stroke="#00000022" stroke-width="3"/>
-          <circle cx="74" cy="115" r="6.5" fill="#1a1a1a"/>
-          <circle cx="69" cy="108" r="3.6" fill="#ffffff"/>
-          <circle cx="79" cy="118" r="1.8" fill="#ffffff" opacity="0.8"/>
-        </g>
-      </g>
-    </g>
-    <g id="oeilD${s}">
-      <ellipse cx="126" cy="112" rx="17" ry="21" fill="#ffffff" stroke="#2c2c2c" stroke-width="1.4"/>
-      <g clip-path="url(#clipD${s})">
-        <g id="irisD${s}">
-          <circle cx="126" cy="114" r="13" fill="${p.iris}"/>
-          <circle cx="126" cy="114" r="12" fill="none" stroke="#00000022" stroke-width="3"/>
-          <circle cx="126" cy="115" r="6.5" fill="#1a1a1a"/>
-          <circle cx="121" cy="108" r="3.6" fill="#ffffff"/>
-          <circle cx="131" cy="118" r="1.8" fill="#ffffff" opacity="0.8"/>
-        </g>
-      </g>
-    </g>
-    <path d="M57 100 l-7 -4" stroke="#2c2c2c" stroke-width="2" stroke-linecap="round"/>
-    <path d="M143 100 l7 -4" stroke="#2c2c2c" stroke-width="2" stroke-linecap="round"/>
+    <g id="oeilG${s}">${oeil(74, 1)}</g>
+    <g id="oeilD${s}">${oeil(126, -1)}</g>
 
-    <path id="sourcilG${s}" d="M58 88 Q74 82 90 88" stroke="${p.cheveux2}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
-    <path id="sourcilD${s}" d="M110 88 Q126 82 142 88" stroke="${p.cheveux2}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <path id="sourcilG${s}" d="M58 85 Q74 78 90 84" stroke="${p.cheveux2}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
+    <path id="sourcilD${s}" d="M110 84 Q126 78 142 85" stroke="${p.cheveux2}" stroke-width="3.2" fill="none" stroke-linecap="round"/>
 
-    <path d="M100 118 q3 6 -2 8" stroke="#00000033" stroke-width="1.6" fill="none" stroke-linecap="round"/>
+    <!-- nez -->
+    <path d="M101 122 q3.5 7 -3 10" stroke="#00000026" stroke-width="1.6" fill="none" stroke-linecap="round"/>
 
-    <path id="sourire${s}" d="M84 140 Q100 152 116 140" stroke="#b0463f" stroke-width="3" fill="none" stroke-linecap="round" opacity="0"/>
-    <ellipse id="bouche${s}" cx="100" cy="142" rx="9" ry="3" fill="#b0463f"/>
+    <path id="sourire${s}" d="M84 144 Q100 156 116 144" stroke="#b5544a" stroke-width="3" fill="none" stroke-linecap="round" opacity="0"/>
+    <ellipse id="bouche${s}" cx="100" cy="146" rx="8.5" ry="3" fill="#b5544a"/>
+    <path d="M92 145 q8 4 16 0" stroke="#00000018" stroke-width="1.2" fill="none"/>
 
-    ${cheveuxAvant(p)}
+    ${cheveuxAvant(p, s)}
     ${lunettes}
 
     <path id="goutte${s}" d="M150 78 q6 10 0 16 q-6 -6 0 -16 Z" fill="#7fd3f2" opacity="0"/>
     <g id="etincelles${s}" opacity="0">
-      <path d="M40 60 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z" fill="#ffd54a"/>
-      <path d="M158 56 l1.6 5 5 1.6 -5 1.6 -1.6 5 -1.6 -5 -5 -1.6 5 -1.6 Z" fill="#ffd54a"/>
-      <path d="M150 100 l1.2 4 4 1.2 -4 1.2 -1.2 4 -1.2 -4 -4 -1.2 4 -1.2 Z" fill="#fff0a8"/>
+      <path d="M40 58 l2 6 6 2 -6 2 -2 6 -2 -6 -6 -2 6 -2 Z" fill="#ffd54a"/>
+      <path d="M160 54 l1.6 5 5 1.6 -5 1.6 -1.6 5 -1.6 -5 -5 -1.6 5 -1.6 Z" fill="#ffd54a"/>
+      <path d="M152 98 l1.2 4 4 1.2 -4 1.2 -1.2 4 -1.2 -4 -4 -1.2 4 -1.2 Z" fill="#fff0a8"/>
     </g>
     <g id="bulle${s}" opacity="0">
       <circle cx="150" cy="70" r="3" fill="#ffffff" stroke="#c9d2e0"/>
