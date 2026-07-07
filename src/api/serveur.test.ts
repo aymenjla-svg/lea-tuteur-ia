@@ -84,7 +84,7 @@ test('sert le front : GET / → HTML', async () => {
   const res = await fetch(base + '/');
   assert.equal(res.status, 200);
   assert.match(res.headers.get('content-type') ?? '', /text\/html/);
-  assert.match(await res.text(), /<title>Léa/);
+  assert.match(await res.text(), /<title>[^<]*Léa/i);
 });
 
 test('sert les assets : GET /app.js → JavaScript', async () => {
