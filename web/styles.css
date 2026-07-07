@@ -87,6 +87,43 @@ body {
 .lien-prof:hover {
   border-color: var(--accent);
 }
+.icone-btn {
+  border: 1px solid var(--accent-doux);
+  background: #fff;
+  border-radius: 999px;
+  width: 34px;
+  height: 34px;
+  font-size: 1rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 0;
+}
+.icone-btn.actif {
+  background: var(--accent);
+  border-color: var(--accent);
+  filter: saturate(1.1);
+}
+.micro-btn {
+  border: 1px solid var(--accent-doux);
+  background: #fff;
+  border-radius: 12px;
+  padding: 0 12px;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.micro-btn.actif {
+  background: #e5484d;
+  border-color: #e5484d;
+  color: #fff;
+  animation: pulseMic 1s ease-in-out infinite;
+}
+@keyframes pulseMic {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(229, 72, 77, 0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .micro-btn.actif { animation: none; }
+}
 
 /* Scène « prof au tableau » (ADDENDUM v1/A1). */
 .scene {

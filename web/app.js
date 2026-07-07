@@ -5,6 +5,7 @@
 // les paliers (R6). L'expression est imposée par le déterministe (A1).
 
 import { PERSONAS, MATIERE, personaParId, avatarSVG } from './personas.js';
+import { voix } from './voix.js';
 
 const $ = (sel) => document.querySelector(sel);
 const reduireMouvement = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -36,6 +37,9 @@ let parleJusqua = 0;     // fin d'animation « parle »
 let expression = 'idle';
 let celebreJusqua = 0;   // rebond one-shot
 let attente = false;     // true tant qu'on attend la réponse de l'élève
+let voixActive = false;  // Léa parle à voix haute (A2) — activé par l'élève
+let micActif = false;    // écoute micro en cours
+let micHandle = null;    // handle STT courant
 
 /* --- Transport ------------------------------------------------------------ */
 
@@ -70,8 +74,20 @@ function ajouterTour(qui, texte) {
 }
 
 function parler(texte) {
+  // Durée visuelle par défaut (utilisée telle quelle si la voix est coupée).
   const duree = Math.min(4000, 400 + texte.length * 32);
   parleJusqua = performance.now() + duree;
+
+  // Voix activée : Léa parle vraiment (TTS FR, timbre du prof) et le lip-sync
+  // (A3 MVP) suit la durée RÉELLE de la synthèse via onstart/onend.
+  if (voixActive && voix.tts) {
+    const est = Math.min(15000, 500 + texte.length * 80);
+    voix.parler(texte, {
+      params: persona?.voix,
+      onStart: () => { parleJusqua = performance.now() + est; },
+      onEnd: () => { parleJusqua = performance.now(); },
+    });
+  }
 }
 
 // Relation de physique à afficher à la craie, selon l'objectif courant.
@@ -131,6 +147,7 @@ async function demarrer() {
 
 async function repondre(texte) {
   if (!sessionId || texte.trim() === '') return;
+  voix.interrompre(); // barge-in : l'élève prend la parole → Léa se tait
   ajouterTour('eleve', texte);
   try {
     const d = await moteurRepondre(texte);
@@ -284,6 +301,56 @@ function appliquerExpression(t, parle, cfg) {
   }
 }
 
+/* --- Voix (A2) ------------------------------------------------------------ */
+
+function majVoixUI() {
+  const b = $('#voix');
+  if (!b) return;
+  b.classList.toggle('actif', voixActive);
+  b.setAttribute('aria-pressed', String(voixActive));
+  b.title = voixActive ? 'Couper la voix' : 'Activer la voix';
+}
+
+function basculerVoix() {
+  voixActive = !voixActive;
+  majVoixUI();
+  if (voixActive) {
+    // Le clic sert de « geste utilisateur » qui débloque la synthèse ; on relit
+    // la dernière réplique pour un retour immédiat.
+    const dernier = $('#parole')?.textContent;
+    if (dernier && dernier !== '…') parler(dernier);
+  } else {
+    voix.interrompre();
+  }
+}
+
+function majMicUI() {
+  const b = $('#micro');
+  if (!b) return;
+  b.classList.toggle('actif', micActif);
+  b.textContent = micActif ? '● écoute…' : '🎤';
+}
+
+function ecouterMic() {
+  if (!voix.stt) return;
+  if (micActif) { micHandle?.stop(); return; } // re-clic → stop
+  voix.interrompre(); // barge-in : couper Léa avant d'écouter
+  micActif = true;
+  majMicUI();
+  micHandle = voix.ecouter({
+    onPartial: (txt) => { $('#reponse').value = txt; },
+    onFinal: (txt) => { $('#reponse').value = txt; },
+    onEnd: () => {
+      micActif = false;
+      majMicUI();
+      const v = $('#reponse').value.trim();
+      if (v) { $('#reponse').value = ''; repondre(v); }
+    },
+    onErreur: () => { micActif = false; majMicUI(); },
+  });
+  if (!micHandle) { micActif = false; majMicUI(); }
+}
+
 /* --- Événements ----------------------------------------------------------- */
 
 $('#form').addEventListener('submit', (e) => {
@@ -298,6 +365,18 @@ $('#changerProf').addEventListener('click', ouvrirChoix);
 $('#palier').addEventListener('change', (e) => {
   $('#scene').style.display = e.target.value === 'texte' ? 'none' : 'flex';
 });
+
+// Voix : bouton visible seulement si le navigateur sait synthétiser ; micro
+// seulement s'il sait reconnaître (sinon l'écrit reste seul maître, P1).
+if (voix.tts) {
+  $('#voix').hidden = false;
+  $('#voix').addEventListener('click', basculerVoix);
+  majVoixUI();
+}
+if (voix.stt) {
+  $('#micro').hidden = false;
+  $('#micro').addEventListener('click', ecouterMic);
+}
 
 construireChoix();
 requestAnimationFrame(animer);

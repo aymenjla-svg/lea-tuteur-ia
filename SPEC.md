@@ -120,4 +120,9 @@ neural, personas visuels. P4 inchangée (échelle + multimodal).
 **État d'implémentation (2026-07-07).** A1 livré côté visu 2D : `Expression`/
 `Reaction` aux contrats ; expression imposée par le verdict dans `EtatLecon`
 (`expressionVerdict`) ; avatar SVG expressif (sourcils, joues, sourire, rebond)
-piloté par l'état, déployable sans backend. A2/A3/A4 = P2, à suivre.
+piloté par l'état, déployable sans backend. **A2/A3 MVP livrés** (`web/voix.js`) :
+voix streaming navigateur (Web Speech API) — TTS FR par prof (timbre pitch/rate),
+STT micro avec transcription partielle, barge-in (`interrompre()`), lip-sync
+piloté par la durée réelle de la synthèse ; détection de capacités + dégradation
+propre (l'écrit reste de plein droit, P1). Reste : A4 (timing mémoire post-parole,
+côté orchestrateur) ; visèmes + TTS neural = P3.
