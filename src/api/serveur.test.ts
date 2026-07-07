@@ -41,7 +41,7 @@ test('POST /sessions démarre une session et propose un exercice', async () => {
   assert.equal(code, 201);
   assert.ok(typeof data.session_id === 'string');
   assert.equal(data.etat.dernier_coup.type, 'proposer');
-  assert.match(data.etat.question_courante.enonce, /27 \+ 48/);
+  assert.match(data.etat.question_courante.enonce, /150 km/);
 });
 
 test('parcours complet via HTTP jusqu’à la maîtrise + dashboard', async () => {
@@ -50,7 +50,7 @@ test('parcours complet via HTTP jusqu’à la maîtrise + dashboard', async () =
 
   let etat = dem.etat;
   for (let i = 0; i < 6 && !etat.termine; i++) {
-    const r = await post(`/sessions/${sid}/repondre`, { texte: '75' });
+    const r = await post(`/sessions/${sid}/repondre`, { texte: '50' });
     assert.equal(r.code, 200);
     etat = r.data.etat;
   }
@@ -70,14 +70,14 @@ test('GET /eleves/:id/prochaine-action : à froid → travailler le prérequis (
   assert.equal(res.status, 200);
   const data = (await res.json()) as { action: { type: string; objectif_id?: string } };
   assert.equal(data.action.type, 'travailler');
-  assert.equal(data.action.objectif_id, 'obj-tables-addition');
+  assert.equal(data.action.objectif_id, 'obj-vitesse-relation');
 });
 
 test('POST /sessions {auto:true} démarre sur l’objectif planifié', async () => {
   const { code, data } = await post('/sessions', { eleve_id: 'eleve-plan2', auto: true });
   assert.equal(code, 201);
   assert.equal(data.action.type, 'travailler');
-  assert.match(data.etat.question_courante.enonce, /7 \+ 8/); // prérequis : tables
+  assert.match(data.etat.question_courante.enonce, /12 m/); // prérequis : grandeur-quotient
 });
 
 test('sert le front : GET / → HTML', async () => {
