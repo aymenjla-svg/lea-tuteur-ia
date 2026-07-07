@@ -35,6 +35,7 @@ let persona = null;
 let parleJusqua = 0;     // fin d'animation « parle »
 let expression = 'idle';
 let celebreJusqua = 0;   // rebond one-shot
+let attente = false;     // true tant qu'on attend la réponse de l'élève
 
 /* --- Transport ------------------------------------------------------------ */
 
@@ -97,6 +98,7 @@ function rendre(etat) {
   $('#coup').textContent = COUPS[etat.dernier_coup?.type] ?? '';
 
   const fini = !!etat.termine;
+  attente = !fini;
   $('#reponse').disabled = fini;
   $('#envoyer').disabled = fini;
   $('#perdu').disabled = fini;
@@ -172,6 +174,13 @@ let debutClignement = 0;
 
 function animer(t) {
   const parle = t < parleJusqua && !reduireMouvement;
+  // Après avoir réagi (parole finie + rebond de célébration passé), l'avatar
+  // se met en écoute attentive tant qu'on attend la réponse de l'élève — effet
+  // « vivant » (A1). Les expressions restent pilotées par le moteur au tour
+  // suivant (rendre les réassigne).
+  if (attente && !parle && t > celebreJusqua && expression !== 'listening') {
+    expression = 'listening';
+  }
   const cfg = EXPR[expression] ?? EXPR.idle;
 
   // Respiration du corps.
