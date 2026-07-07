@@ -64,9 +64,24 @@ Reproduire : lancer un Postgres puis `npm run db:verify` (cf. en-tête de
 Le mapping `verdict` (objet riche en mémoire) est aplati en `correct` +
 `erreur_type_id` dans `tentatives` — suffisant pour la maîtrise et le dashboard.
 
-## Appliquer sur Supabase (demain, MCP connecté)
+## Statut : DÉPLOYÉ sur Supabase (production) ✓
 
-`supabase/migrations/20260629000000_lea_init.sql` est la migration de départ
-(miroir validé de `db/schema.sql`). Une fois le MCP Supabase authentifié :
-`execute_sql` (itératif) ou `apply_migration` / `supabase db push`, puis activer
-`pgvector` pour la colonne `embedding`.
+Le schéma est **appliqué et vérifié sur le projet Supabase Léa**
+(`project_ref = wncsqdxtqfhwjkmeqpgt`), via le SQL Editor, le 2026-07-07 :
+
+- **17 tables**, **RLS activée + forcée sur les 17**, **17 policies** (contrôle
+  `pg_tables` / `pg_class` / `pg_policies` → `17 / 17 / 17`).
+- **pgvector 0.8.0** activé ; `embeddings.embedding` basculée en `vector(768)`
+  avec un index **IVFFlat** cosinus (`embeddings_embedding_idx`) — RAG (Phase 2)
+  prêt côté base.
+
+Migrations appliquées (dans l'ordre) :
+1. `supabase/migrations/20260629000000_lea_init.sql` — schéma initial (miroir de
+   `db/schema.sql`).
+2. `supabase/migrations/20260707000000_lea_pgvector.sql` — activation pgvector +
+   `embedding vector(768)` + index IVFFlat.
+
+Reste à faire pour brancher l'app en direct (au déploiement) : fournir une
+`DATABASE_URL` (pooler IPv4 `aws-0-…pooler.supabase.com`, rôle **non**
+`service_role` pour respecter la RLS) au `PgStore` ; `store.migrer()` devient
+inutile (schéma déjà en place), seul `persister()` écrit les sessions.
