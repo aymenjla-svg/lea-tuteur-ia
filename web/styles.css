@@ -1,149 +1,277 @@
-/* Léa — palette calme (sécurité psychologique, P1). */
+/* Léa — design system « front canon ». Palette calme (sécurité psychologique,
+   P1) mais premium : profondeur douce, accents par module, coins généreux. */
 :root {
-  --fond: #f4f7fb;
+  --bg1: #eef2fb;
+  --bg2: #e3eaf6;
   --carte: #ffffff;
-  --encre: #1f2937;
-  --doux: #6b7280;
+  --encre: #1e2740;
+  --doux: #6b7690;
+  --doux2: #9aa4bb;
   --accent: #4f7cc4;
-  --accent-doux: #dbe6f6;
-  --ok: #4caf83;
-  --ombre: 0 6px 24px rgba(31, 41, 55, 0.08);
-  --rayon: 18px;
+  --accent-doux: #e7eef9;
+  --ok: #3fae8f;
+  --board1: #356355;
+  --board2: #244c3f;
+  --rayon: 22px;
+  --rayon-sm: 14px;
+  --ombre-s: 0 1px 2px rgba(20, 30, 60, 0.06);
+  --ombre-m: 0 10px 28px rgba(20, 30, 60, 0.1);
+  --ombre-l: 0 20px 50px rgba(20, 30, 60, 0.16);
 }
 
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  background: var(--fond);
+  font-family: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   color: var(--encre);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #ffffff 0%, transparent 55%),
+    linear-gradient(160deg, var(--bg1), var(--bg2));
+  min-height: 100vh;
   display: flex;
   justify-content: center;
-  padding: 24px 16px;
+  padding: 22px 16px 40px;
 }
 
 .app {
   width: 100%;
-  max-width: 520px;
-  background: var(--carte);
-  border-radius: var(--rayon);
-  box-shadow: var(--ombre);
-  padding: 22px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+  max-width: 680px;
 }
 
-.entete {
+/* ============================== ACCUEIL ================================== */
+
+.hero {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 16px;
+  padding: 6px 6px 2px;
 }
-.entete h1 {
+.hero-logo {
   margin: 0;
-  font-size: 1.5rem;
-  letter-spacing: 0.5px;
+  font-size: 2.6rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  line-height: 1;
+  background: linear-gradient(120deg, var(--accent), #7aa2e0);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
-.palier {
-  font-size: 0.8rem;
+.hero-sub {
+  margin: 4px 0 0;
   color: var(--doux);
-  display: flex;
-  gap: 6px;
-  align-items: center;
+  font-weight: 600;
+  font-size: 0.9rem;
+  letter-spacing: 0.4px;
 }
-.palier select {
-  border: 1px solid var(--accent-doux);
-  border-radius: 10px;
-  padding: 4px 8px;
-  background: var(--fond);
-  color: var(--encre);
+.hero-ring .anneau { display: block; }
+
+.prof-picker {
+  margin: 18px 0 8px;
+  background: var(--carte);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre-m);
+  padding: 14px 14px 16px;
 }
-.titre-bloc {
+.pp-label {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--doux2);
+  margin-bottom: 10px;
+}
+.pp-chips {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+.prof-chip {
+  --accent: #4f7cc4;
+  border: 2px solid var(--accent-doux);
+  background: #fff;
+  border-radius: var(--rayon-sm);
+  padding: 8px 4px 10px;
+  cursor: pointer;
   display: flex;
   flex-direction: column;
-  line-height: 1.1;
+  align-items: center;
+  gap: 2px;
+  transition: transform 0.14s ease, border-color 0.14s ease, box-shadow 0.14s ease;
 }
-.sous-titre {
-  font-size: 0.72rem;
-  color: var(--doux);
+.prof-chip:hover { transform: translateY(-2px); }
+.prof-chip.actif {
+  border-color: var(--accent);
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--accent) 22%, transparent);
 }
-.entete-actions {
+.pc-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: linear-gradient(180deg, #f3f6fc, #e8eef8);
+  display: flex;
+  justify-content: center;
+}
+.pc-avatar svg { width: 78px; height: 94px; margin: -13px 0 0 -15px; }
+.pc-nom { font-weight: 700; font-size: 0.82rem; }
+.pc-style { font-size: 0.6rem; color: var(--doux2); line-height: 1.1; text-align: center; }
+
+.section-titre {
+  margin: 22px 4px 12px;
+  font-size: 1.02rem;
+  font-weight: 700;
+}
+.modules-grille {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 14px;
+}
+.module-carte {
+  position: relative;
+  text-align: left;
+  border: none;
+  background: var(--carte);
+  border-radius: var(--rayon);
+  box-shadow: var(--ombre-m);
+  padding: 16px 16px 14px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.16s ease, box-shadow 0.16s ease;
+  font: inherit;
+  color: inherit;
+}
+.module-carte::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 4px;
+  background: var(--c);
+}
+.module-carte:hover { transform: translateY(-4px); box-shadow: var(--ombre-l); }
+.module-carte.verrouille { cursor: default; opacity: 0.72; }
+.module-carte.verrouille:hover { transform: none; box-shadow: var(--ombre-m); }
+.mc-haut {
   display: flex;
   align-items: center;
-  gap: 10px;
+  justify-content: space-between;
+  margin-bottom: 10px;
 }
-.lien-prof {
+.mc-icone {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 1.4rem;
+  background: color-mix(in srgb, var(--c) 16%, #fff);
+}
+.mc-lock { font-size: 1.2rem; opacity: 0.6; }
+.mc-titre { font-weight: 700; font-size: 1rem; }
+.mc-resume {
+  color: var(--doux);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  margin-top: 4px;
+  min-height: 34px;
+}
+.mc-pied { margin-top: 10px; }
+.mc-go { color: var(--c); font-weight: 700; font-size: 0.82rem; }
+.mc-bientot { color: var(--doux2); font-size: 0.78rem; font-style: italic; }
+
+.accueil-note { margin-top: 22px; }
+
+/* Anneau de progression (SVG). */
+.anneau { display: inline-block; }
+.anneau-txt {
+  font-size: 13px;
+  font-weight: 800;
+  fill: var(--encre);
+  font-family: system-ui, sans-serif;
+}
+.hero-ring .anneau-txt { font-size: 15px; }
+
+/* =============================== LEÇON ================================== */
+
+.hud {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+.hud-retour {
   border: 1px solid var(--accent-doux);
   background: #fff;
-  color: var(--accent);
-  border-radius: 999px;
-  padding: 5px 11px;
-  font-size: 0.72rem;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
+  font-size: 1.1rem;
   cursor: pointer;
+  flex: 0 0 auto;
+  box-shadow: var(--ombre-s);
 }
-.lien-prof:hover {
-  border-color: var(--accent);
+.hud-retour:hover { border-color: var(--accent); }
+.hud-centre { flex: 1; min-width: 0; }
+.hud-titre {
+  font-weight: 700;
+  font-size: 0.95rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
+.hud-barre-fond {
+  margin-top: 6px;
+  height: 8px;
+  background: #fff;
+  border: 1px solid var(--accent-doux);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.hud-barre {
+  height: 100%;
+  width: 0%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--ok));
+  transition: width 0.5s ease;
+}
+.hud-pct { font-size: 0.8rem; color: var(--doux); min-width: 40px; text-align: right; }
+
 .icone-btn {
   border: 1px solid var(--accent-doux);
   background: #fff;
-  border-radius: 999px;
-  width: 34px;
-  height: 34px;
+  border-radius: 50%;
+  width: 38px;
+  height: 38px;
   font-size: 1rem;
   cursor: pointer;
-  line-height: 1;
+  flex: 0 0 auto;
   padding: 0;
+  box-shadow: var(--ombre-s);
 }
 .icone-btn.actif {
   background: var(--accent);
   border-color: var(--accent);
-  filter: saturate(1.1);
-}
-.micro-btn {
-  border: 1px solid var(--accent-doux);
-  background: #fff;
-  border-radius: 12px;
-  padding: 0 12px;
-  font-size: 1rem;
-  cursor: pointer;
-}
-.micro-btn.actif {
-  background: #e5484d;
-  border-color: #e5484d;
-  color: #fff;
-  animation: pulseMic 1s ease-in-out infinite;
-}
-@keyframes pulseMic {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.4); }
-  50% { box-shadow: 0 0 0 6px rgba(229, 72, 77, 0); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .micro-btn.actif { animation: none; }
 }
 
-/* Scène « prof au tableau » (ADDENDUM v1/A1) : le prof ÉCRIT la consigne au
-   tableau et se tient devant. */
+/* Scène « prof au tableau » + sous-titres. */
 .scene {
   position: relative;
-  min-height: 240px;
-  background: linear-gradient(180deg, #3a6a55, #2b5142);
-  border: 7px solid #6f4e34;
-  border-radius: 14px;
+  min-height: 260px;
+  background: linear-gradient(180deg, var(--board1), var(--board2));
+  border: 8px solid #6f4e34;
+  border-radius: 18px;
   padding: 16px 16px 0;
   overflow: hidden;
-  box-shadow: inset 0 0 44px rgba(0, 0, 0, 0.28), var(--ombre);
+  box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.3), var(--ombre-l);
 }
 .tableau {
   height: 100%;
-  min-height: 208px;
+  min-height: 228px;
   display: flex;
   flex-direction: column;
 }
-/* La relation travaillée, en petit dans le coin haut-droit. */
 .tableau-formule {
   align-self: flex-end;
   color: #cfe6d8;
@@ -152,15 +280,12 @@ body {
   opacity: 0.85;
   transform: rotate(-1deg);
 }
-.tableau-formule:empty {
-  display: none;
-}
-/* La CONSIGNE, à la craie, occupe le tableau (réserve la place de l'avatar). */
+.tableau-formule:empty { display: none; }
 .tableau-texte {
   flex: 1;
   display: flex;
   align-items: center;
-  padding: 4px 130px 20px 2px;
+  padding: 8px 130px 22px 2px;
   color: #f2f8f4;
   font-family: "Comic Sans MS", "Segoe Print", "Bradley Hand", cursive;
   font-size: clamp(1.05rem, 4vw, 1.55rem);
@@ -168,257 +293,121 @@ body {
   letter-spacing: 0.3px;
   text-shadow: 0 1px 0 rgba(255, 255, 255, 0.12);
 }
-/* L'avatar se tient au tableau, coin bas-droit. */
-.avatar-host {
-  position: absolute;
-  right: 4px;
-  bottom: 0;
-}
+.avatar-host { position: absolute; right: 4px; bottom: 0; }
 .visage {
   width: 138px;
   height: 166px;
   display: block;
   filter: drop-shadow(0 4px 10px rgba(0, 0, 0, 0.3));
 }
-/* Bulle de parole du prof (sa réaction) sous le tableau. */
-.bulle-prof {
-  margin: 0;
-  background: var(--accent-doux);
+/* Barre de sous-titrage (captions) sous le tableau, synchronisée à la voix. */
+.soustitre {
+  margin-top: 10px;
+  min-height: 22px;
+  text-align: center;
+  color: #f4f7fb;
+  background: linear-gradient(180deg, #2a3350, #232b44);
   border-radius: 14px;
-  padding: 12px 16px;
+  padding: 11px 18px;
   font-size: 1rem;
   line-height: 1.4;
-  min-height: 24px;
-  position: relative;
+  box-shadow: var(--ombre-s);
 }
-.bulle-prof::before {
-  content: "";
-  position: absolute;
-  top: -8px;
-  right: 26px;
-  border: 8px solid transparent;
-  border-top: 0;
-  border-bottom-color: var(--accent-doux);
-}
-.bulle-prof:empty {
-  display: none;
-}
+.soustitre:empty { display: none; }
 
-/* Écran de choix du prof. */
-.choix {
-  position: fixed;
-  inset: 0;
-  background: rgba(31, 41, 55, 0.55);
-  backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 18px;
-  z-index: 20;
-}
-.choix.cache {
-  display: none;
-}
-.choix-panneau {
-  background: var(--carte);
-  border-radius: 22px;
-  padding: 24px;
-  width: 100%;
-  max-width: 720px;
-  max-height: 92vh;
-  overflow-y: auto;
-  box-shadow: var(--ombre);
-  text-align: center;
-}
-.choix-panneau h2 {
-  margin: 0 0 4px;
-  font-size: 1.3rem;
-}
-.choix-sous {
-  margin: 0 0 18px;
-  color: var(--doux);
-  font-size: 0.9rem;
-}
-.choix-grille {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(148px, 1fr));
-  gap: 14px;
-}
-.choix-carte {
-  --accent: #4f7cc4;
-  border: 2px solid var(--accent-doux);
-  border-radius: 18px;
-  background: #fff;
-  padding: 12px 10px 14px;
-  cursor: pointer;
-  font: inherit;
-  text-align: center;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-}
-.choix-carte:hover,
-.choix-carte:focus-visible {
-  transform: translateY(-4px);
-  border-color: var(--accent);
-  box-shadow: 0 12px 26px rgba(31, 41, 55, 0.16);
-  outline: none;
-}
-.choix-avatar {
-  background: linear-gradient(180deg, #f2f6fc, #e7eef8);
-  border-radius: 14px;
-  padding: 6px 6px 0;
-  overflow: hidden;
-}
-.choix-avatar .visage {
-  width: 118px;
-  height: 142px;
-  margin: 0 auto;
-}
-.choix-nom {
-  font-weight: 700;
-  margin-top: 8px;
-  font-size: 1.05rem;
-}
-.choix-matiere {
-  color: var(--accent);
-  font-weight: 600;
-  font-size: 0.82rem;
-}
-.choix-tag {
-  color: var(--doux);
-  font-size: 0.74rem;
-  margin-top: 4px;
-  line-height: 1.3;
-}
-
-.parole {
-  background: var(--accent-doux);
-  border-radius: var(--rayon);
-  padding: 14px 16px;
-  min-height: 48px;
-  position: relative;
-}
-.parole p {
-  margin: 0;
-  font-size: 1.05rem;
-  line-height: 1.45;
-}
-.coup {
-  display: inline-block;
-  margin-top: 8px;
-  font-size: 0.72rem;
-  color: var(--accent);
-  background: #fff;
-  border-radius: 999px;
-  padding: 2px 10px;
-}
-.coup:empty {
-  display: none;
-}
-
-.progres {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.barre-fond {
-  flex: 1;
-  height: 10px;
-  background: var(--fond);
-  border-radius: 999px;
-  overflow: hidden;
-  border: 1px solid var(--accent-doux);
-}
-.barre {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, var(--accent), var(--ok));
-  transition: width 0.6s ease;
-}
-.pct {
-  font-size: 0.8rem;
-  color: var(--doux);
-  min-width: 38px;
-  text-align: right;
-}
-
-.transcript {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  max-height: 180px;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.transcript li {
-  padding: 8px 12px;
-  border-radius: 12px;
-  font-size: 0.92rem;
-  max-width: 85%;
-}
-.transcript .tuteur {
-  background: var(--accent-doux);
-  align-self: flex-start;
-}
-.transcript .eleve {
-  background: var(--fond);
-  border: 1px solid var(--accent-doux);
-  align-self: flex-end;
-}
-
+/* Saisie. */
 .saisie {
   display: flex;
   gap: 8px;
+  margin-top: 14px;
   flex-wrap: wrap;
 }
 .saisie input {
   flex: 1;
   min-width: 140px;
-  padding: 12px 14px;
+  padding: 13px 15px;
   border: 1px solid var(--accent-doux);
-  border-radius: 12px;
+  border-radius: var(--rayon-sm);
   font-size: 1rem;
+  background: #fff;
+  box-shadow: var(--ombre-s);
+}
+.saisie input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent);
 }
 .saisie button {
-  padding: 12px 16px;
+  padding: 13px 18px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rayon-sm);
   background: var(--accent);
   color: #fff;
-  font-size: 0.95rem;
+  font-size: 0.98rem;
+  font-weight: 600;
   cursor: pointer;
+  box-shadow: var(--ombre-s);
 }
-.saisie button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+.saisie button:disabled { opacity: 0.5; cursor: not-allowed; }
+.micro-btn {
+  background: #fff !important;
+  color: var(--accent) !important;
+  border: 1px solid var(--accent-doux) !important;
+  min-width: 48px;
 }
-.saisie .secondaire {
+.micro-btn.actif {
+  background: #e5484d !important;
+  color: #fff !important;
+  border-color: #e5484d !important;
+  animation: pulseMic 1s ease-in-out infinite;
+}
+@keyframes pulseMic {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 72, 77, 0.4); }
+  50% { box-shadow: 0 0 0 6px rgba(229, 72, 77, 0); }
+}
+
+.actions-sec {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.secondaire {
   background: #fff;
   color: var(--accent);
   border: 1px solid var(--accent-doux);
+  border-radius: var(--rayon-sm);
+  padding: 10px 16px;
+  font-size: 0.9rem;
+  cursor: pointer;
 }
-
 .rejouer {
-  align-self: center;
-  padding: 12px 20px;
   border: none;
-  border-radius: 12px;
+  border-radius: var(--rayon-sm);
   background: var(--ok);
   color: #fff;
-  font-size: 1rem;
+  padding: 10px 20px;
+  font-size: 0.95rem;
+  font-weight: 600;
   cursor: pointer;
 }
 
 .note {
-  margin: 0;
+  margin: 16px 0 0;
   text-align: center;
   font-size: 0.74rem;
-  color: var(--doux);
+  color: var(--doux2);
 }
+.note a { color: var(--accent); }
 
 @media (prefers-reduced-motion: reduce) {
-  .barre {
-    transition: none;
-  }
+  .hud-barre { transition: none; }
+  .micro-btn.actif { animation: none; }
+  .module-carte, .prof-chip { transition: none; }
+}
+
+@media (max-width: 420px) {
+  .pp-chips { grid-template-columns: repeat(4, 1fr); }
+  .pc-style { display: none; }
 }

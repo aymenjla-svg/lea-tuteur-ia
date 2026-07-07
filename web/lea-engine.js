@@ -1273,13 +1273,13 @@
     pedagogie: PEDAGOGIE,
     catalogueErreurs: catalogueErreursPhysique(tenant_id, horloge)
   });
-  async function creerSession() {
+  async function creerSession(objectifId) {
     const session_id = nouvelId();
     const contexte = {
       session_id,
       eleve_id: id("eleve-demo"),
       persona_id: id("persona-lea"),
-      objectif_initial: OBJ_VITESSE
+      objectif_initial: objectifId ? id(objectifId) : OBJ_VITESSE
     };
     const etat = await moteur.demarrer(contexte);
     return { session_id, etat };

@@ -1,24 +1,21 @@
-// Léa — client web (palier 2D manga expressif + texte), sans build.
-// Consomme le moteur, soit embarqué (window.LeaEngine, build statique), soit via
-// l'API HTTP (déploiement backend). L'avatar n'affiche que des signaux
-// SYNTHÉTIQUES (visèmes/regard) — jamais de caméra (§1.4). Même moteur à tous
-// les paliers (R6). L'expression est imposée par le déterministe (A1).
+// Léa — client web (front modulaire « prof devant toi »).
+// Accueil = choix d'un MODULE (avec % d'avancement). Leçon = le prof écrit la
+// consigne au tableau, la LIT (voix), et sa parole s'affiche en SOUS-TITRES.
+// Le moteur tourne embarqué (window.LeaEngine) ou via l'API HTTP. L'avatar
+// n'émet que des signaux synthétiques — jamais de caméra (§1.4). L'expression
+// est imposée par le déterministe (A1).
 
 import { PERSONAS, MATIERE, personaParId, avatarSVG } from './personas.js';
 import { voix } from './voix.js';
+import {
+  MODULES, chargerProgress, majProgress, progressModule, progressGlobal,
+} from './modules.js';
 
-const $ = (sel) => document.querySelector(sel);
+const $ = (s) => document.querySelector(s);
 const reduireMouvement = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const EMBARQUE = typeof window !== 'undefined' && window.LeaEngine;
 
-const COUPS = {
-  proposer: 'nouvel exercice', reformuler: 'reformulation', simplifier: 'on simplifie',
-  changer_de_modalite: 'autre approche', encourager: 'encouragement', reviser: 'révision',
-  clore: 'séance terminée',
-};
-
-// Config visuelle par expression (A1). browY : décalage sourcils ; smile :
-// 1 sourire / -1 moue douce / 0 neutre ; cheeks : blush [0,1] ; extras manga.
+// Config visuelle par expression (A1).
 const EXPR = {
   idle:        { browY: 0,  smile: 0,  cheeks: 0,   tilt: 0,  eye: 1,    sparkle: 0, sweat: 0, bulle: 0 },
   listening:   { browY: -1, smile: 0,  cheeks: 0,   tilt: 3,  eye: 1.05, sparkle: 0, sweat: 0, bulle: 0 },
@@ -31,15 +28,19 @@ const EXPR = {
   celebrate:   { browY: -3, smile: 1,  cheeks: 0.9, tilt: 0,  eye: 1.1,  sparkle: 1, sweat: 0, bulle: 0 },
 };
 
+const CLE_PROF = 'lea.prof.v1';
+
+let persona = personaParId(localStorage.getItem(CLE_PROF) ?? '');
+let moduleActuel = null;
 let sessionId = null;
-let persona = null;
-let parleJusqua = 0;     // fin d'animation « parle »
+let parleJusqua = 0;
 let expression = 'idle';
-let celebreJusqua = 0;   // rebond one-shot
-let attente = false;     // true tant qu'on attend la réponse de l'élève
-let voixActive = false;  // Léa parle à voix haute (A2) — activé par l'élève
-let micActif = false;    // écoute micro en cours
-let micHandle = null;    // handle STT courant
+let celebreJusqua = 0;
+let attente = false;
+let voixActive = false;
+let micActif = false;
+let micHandle = null;
+let stFallback = 0;
 
 /* --- Transport ------------------------------------------------------------ */
 
@@ -53,9 +54,10 @@ async function api(chemin, methode = 'GET', corps) {
   if (!res.ok) throw new Error(data.erreur || `HTTP ${res.status}`);
   return data;
 }
-
-async function moteurCreer() {
-  return EMBARQUE ? window.LeaEngine.creerSession() : api('/sessions', 'POST', {});
+async function moteurCreer(objectifId) {
+  return EMBARQUE
+    ? window.LeaEngine.creerSession(objectifId)
+    : api('/sessions', 'POST', { objectif_id: objectifId });
 }
 async function moteurRepondre(texte) {
   return EMBARQUE
@@ -63,41 +65,139 @@ async function moteurRepondre(texte) {
     : api(`/sessions/${sessionId}/repondre`, 'POST', { texte });
 }
 
-/* --- Rendu ---------------------------------------------------------------- */
+/* --- Accueil (modules) ---------------------------------------------------- */
 
-function parler(texte) {
-  // Durée visuelle par défaut (utilisée telle quelle si la voix est coupée).
-  const duree = Math.min(4000, 400 + texte.length * 32);
-  parleJusqua = performance.now() + duree;
+function theme(couleur) {
+  document.documentElement.style.setProperty('--accent', couleur);
+}
 
-  // Voix activée : Léa parle vraiment (TTS FR, timbre du prof) et le lip-sync
-  // (A3 MVP) suit la durée RÉELLE de la synthèse via onstart/onend.
-  if (voixActive && voix.tts) {
-    const est = Math.min(15000, 500 + texte.length * 80);
-    voix.parler(texte, {
-      params: persona?.voix,
-      onStart: () => { parleJusqua = performance.now() + est; },
-      onEnd: () => { parleJusqua = performance.now(); },
-    });
+// Anneau de progression SVG.
+function anneau(pct, taille = 46, couleur = 'var(--accent)', epais = 5) {
+  const r = (taille - epais) / 2;
+  const c = 2 * Math.PI * r;
+  const off = c * (1 - pct / 100);
+  const mid = taille / 2;
+  return (
+    `<svg viewBox="0 0 ${taille} ${taille}" width="${taille}" height="${taille}" class="anneau">` +
+    `<circle cx="${mid}" cy="${mid}" r="${r}" fill="none" stroke="#e7ecf6" stroke-width="${epais}"/>` +
+    `<circle cx="${mid}" cy="${mid}" r="${r}" fill="none" stroke="${couleur}" stroke-width="${epais}" ` +
+    `stroke-linecap="round" stroke-dasharray="${c.toFixed(1)}" stroke-dashoffset="${off.toFixed(1)}" ` +
+    `transform="rotate(-90 ${mid} ${mid})"/>` +
+    `<text x="50%" y="50%" text-anchor="middle" dominant-baseline="central" class="anneau-txt">${pct}%</text>` +
+    `</svg>`
+  );
+}
+
+function construireProfChips() {
+  const box = $('#profChips');
+  box.replaceChildren();
+  for (const p of PERSONAS) {
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'prof-chip' + (p.id === persona.id ? ' actif' : '');
+    chip.style.setProperty('--accent', p.accent);
+    chip.setAttribute('aria-pressed', String(p.id === persona.id));
+    chip.innerHTML =
+      `<span class="pc-avatar">${avatarSVG(p, 'chip-' + p.id)}</span>` +
+      `<span class="pc-nom">${p.nom}</span>` +
+      `<span class="pc-style">${p.style}</span>`;
+    chip.addEventListener('click', () => choisirProf(p.id));
+    box.append(chip);
   }
 }
 
-// Relation de physique à afficher à la craie, selon l'objectif courant.
-const FORMULES = {
-  'obj-vitesse': 'v = d / t',
-  'obj-vitesse-relation': 'v = d / t',
-  'obj-poids': 'P = m × g',
-  'obj-ohm': 'U = R × I',
-};
-
-// Écrit au tableau la relation travaillée ; à défaut, une opération de l'énoncé.
-function pourLeTableau(etat) {
-  const f = FORMULES[etat.objectif_courant];
-  if (f) return f;
-  const enonce = etat.question_courante?.enonce ?? '';
-  const m = enonce.match(/(\d+\s*[+\-×x*/]\s*\d+)/);
-  return m ? `${m[1].replace(/\s+/g, ' ')} = ?` : '';
+function choisirProf(id) {
+  persona = personaParId(id);
+  localStorage.setItem(CLE_PROF, persona.id);
+  construireProfChips();
 }
+
+function construireModules() {
+  const grille = $('#modulesGrille');
+  const prog = chargerProgress();
+  grille.replaceChildren();
+  for (const m of MODULES) {
+    const pct = progressModule(m, prog);
+    const carte = document.createElement('button');
+    carte.type = 'button';
+    carte.className = 'module-carte' + (m.verrouille ? ' verrouille' : '');
+    carte.style.setProperty('--c', m.couleur);
+    carte.disabled = !!m.verrouille;
+    carte.innerHTML =
+      `<div class="mc-haut">` +
+      `<span class="mc-icone">${m.icone}</span>` +
+      (m.verrouille ? `<span class="mc-lock">🔒</span>` : anneau(pct, 46, m.couleur)) +
+      `</div>` +
+      `<div class="mc-titre">${m.titre}</div>` +
+      `<div class="mc-resume">${m.resume}</div>` +
+      `<div class="mc-pied">` +
+      (m.verrouille
+        ? `<span class="mc-bientot">Bientôt disponible</span>`
+        : `<span class="mc-go">${pct >= 100 ? 'Rejouer' : pct > 0 ? 'Continuer' : 'Commencer'} →</span>`) +
+      `</div>`;
+    if (!m.verrouille) carte.addEventListener('click', () => ouvrirModule(m));
+    grille.append(carte);
+  }
+  $('#hero-ring').innerHTML = anneau(progressGlobal(prog), 64, 'var(--accent)', 6);
+}
+
+function construireAccueil() {
+  theme(persona.accent);
+  construireProfChips();
+  construireModules();
+}
+
+/* --- Navigation accueil ↔ leçon ------------------------------------------ */
+
+function ouvrirModule(m) {
+  moduleActuel = m;
+  theme(m.couleur);
+  $('#avatarHost').innerHTML = avatarSVG(persona);
+  $('#hudTitre').textContent = `${persona.nom} · ${m.titre}`;
+  $('#accueil').hidden = true;
+  $('#lecon').hidden = false;
+  expression = 'happy';
+  // « Un prof devant toi » : la voix s'active d'office (le clic = geste qui
+  // débloque la synthèse). L'élève peut couper via 🔊.
+  if (voix.tts) { voixActive = true; majVoixUI(); }
+  demarrer(m.objectifPrincipal);
+}
+
+function retourAccueil() {
+  voix.interrompre();
+  $('#lecon').hidden = true;
+  $('#accueil').hidden = false;
+  construireAccueil(); // rafraîchit les % de progression
+}
+
+/* --- Boucle de leçon ------------------------------------------------------ */
+
+async function demarrer(objectifId) {
+  $('#soustitre').textContent = '';
+  try {
+    const d = await moteurCreer(objectifId);
+    sessionId = d.session_id;
+    rendre(d.etat);
+  } catch (e) {
+    $('#soustitre').textContent = 'Connexion au tuteur impossible : ' + e.message;
+  }
+}
+
+async function repondre(texte) {
+  if (!sessionId || texte.trim() === '') return;
+  voix.interrompre(); // barge-in : l'élève prend la parole → le prof se tait
+  try {
+    const d = await moteurRepondre(texte);
+    rendre(d.etat);
+  } catch (e) {
+    $('#soustitre').textContent = 'Oups : ' + e.message;
+  }
+}
+
+const FORMULES = {
+  'obj-vitesse': 'v = d / t', 'obj-vitesse-relation': 'v = d / t',
+  'obj-poids': 'P = m × g', 'obj-ohm': 'U = R × I',
+};
 
 function rendre(etat) {
   const enonce = etat.question_courante?.enonce ?? '';
@@ -105,27 +205,23 @@ function rendre(etat) {
 
   // TABLEAU = la consigne (ce que le prof « écrit ») + la relation en coin.
   if (fini) {
-    $('#tableauTexte').textContent = '★ Séance réussie !';
+    $('#tableauTexte').textContent = '★ Module réussi !';
     $('#tableauFormule').textContent = '';
   } else {
-    $('#tableauTexte').textContent = enonce || pourLeTableau(etat);
+    $('#tableauTexte').textContent = enonce || FORMULES[etat.objectif_courant] || '';
     $('#tableauFormule').textContent = FORMULES[etat.objectif_courant] ?? '';
   }
 
-  // BULLE = ce que le prof DIT (sa réaction), sans redire la consigne déjà au
-  // tableau. Le prof LIT quand même l'ensemble (consigne + réaction) à voix haute.
-  const reaction = enonce
-    ? etat.texte_tuteur.replace(enonce, '').replace(/\s{2,}/g, ' ').trim()
-    : etat.texte_tuteur;
-  $('#parole').textContent = reaction || etat.texte_tuteur;
+  // Le prof DIT texte_tuteur → affiché en SOUS-TITRES (synchronisés à la voix).
   parler(etat.texte_tuteur);
 
   expression = etat.expression ?? 'idle';
   if (expression === 'celebrate') celebreJusqua = performance.now() + 1800;
 
-  const p = Math.round((etat.maitrise_cible?.probabilite_effective ?? 0) * 100);
-  $('#barre').style.width = p + '%';
-  $('#pct').innerHTML = p + '&nbsp;%';
+  const pct = Math.round((etat.maitrise_cible?.probabilite_effective ?? 0) * 100);
+  $('#barre').style.width = pct + '%';
+  $('#pct').innerHTML = pct + '&nbsp;%';
+  if (moduleActuel) majProgress(moduleActuel.objectifPrincipal, pct);
 
   attente = !fini;
   $('#reponse').disabled = fini;
@@ -135,66 +231,83 @@ function rendre(etat) {
   if (!fini) $('#reponse').focus();
 }
 
-/* --- Boucle de session ---------------------------------------------------- */
+/* --- Parole + sous-titres (A2/A3) ----------------------------------------- */
 
-async function demarrer() {
-  try {
-    const d = await moteurCreer();
-    sessionId = d.session_id;
-    rendre(d.etat);
-  } catch (e) {
-    $('#parole').textContent = 'Connexion au tuteur impossible : ' + e.message;
+function majSousTitre(texte, n) {
+  const el = $('#soustitre');
+  if (el) el.textContent = texte.slice(0, n);
+}
+
+function parler(texte) {
+  const duree = Math.min(4000, 400 + texte.length * 32);
+  parleJusqua = performance.now() + duree;
+
+  if (voixActive && voix.tts) {
+    // Sous-titre révélé au fil de la parole (word-boundary), avec filet.
+    majSousTitre(texte, 0);
+    const est = Math.min(15000, 500 + texte.length * 80);
+    voix.parler(texte, {
+      params: persona?.voix,
+      onStart: () => { parleJusqua = performance.now() + est; },
+      onBoundary: (e) => {
+        clearTimeout(stFallback);
+        majSousTitre(texte, (e.charIndex ?? 0) + (e.charLength ?? 1));
+      },
+      onEnd: () => { parleJusqua = performance.now(); majSousTitre(texte, texte.length); },
+    });
+    clearTimeout(stFallback);
+    stFallback = setTimeout(() => {
+      if ($('#soustitre')?.textContent === '') majSousTitre(texte, texte.length);
+    }, 500);
+  } else {
+    // Sans voix : le texte reste le sous-titrage (affiché en entier).
+    majSousTitre(texte, texte.length);
   }
 }
 
-async function repondre(texte) {
-  if (!sessionId || texte.trim() === '') return;
-  voix.interrompre(); // barge-in : l'élève prend la parole → Léa se tait
-  try {
-    const d = await moteurRepondre(texte);
-    rendre(d.etat);
-  } catch (e) {
-    $('#parole').textContent = 'Oups : ' + e.message;
+/* --- Voix : boutons ------------------------------------------------------- */
+
+function majVoixUI() {
+  const b = $('#voix');
+  if (!b) return;
+  b.classList.toggle('actif', voixActive);
+  b.setAttribute('aria-pressed', String(voixActive));
+  b.textContent = voixActive ? '🔊' : '🔇';
+  b.title = voixActive ? 'Couper la voix' : 'Activer la voix';
+}
+function basculerVoix() {
+  voixActive = !voixActive;
+  majVoixUI();
+  if (voixActive) {
+    const s = $('#soustitre')?.textContent;
+    if (s) parler(s);
+  } else {
+    voix.interrompre();
   }
 }
-
-/* --- Choix du prof (§7) --------------------------------------------------- */
-
-function construireChoix() {
-  const grille = $('#choixGrille');
-  grille.replaceChildren();
-  for (const p of PERSONAS) {
-    const carte = document.createElement('button');
-    carte.type = 'button';
-    carte.className = 'choix-carte';
-    carte.style.setProperty('--accent', p.accent);
-    carte.innerHTML =
-      `<div class="choix-avatar">${avatarSVG(p, p.id)}</div>` +
-      `<div class="choix-nom">${p.nom} <span class="choix-emoji">${p.emoji}</span></div>` +
-      `<div class="choix-matiere">${p.style}</div>` +
-      `<div class="choix-tag">${p.tagline}</div>`;
-    carte.addEventListener('click', () => choisirProf(p.id));
-    grille.append(carte);
-  }
+function majMicUI() {
+  const b = $('#micro');
+  if (!b) return;
+  b.classList.toggle('actif', micActif);
+  b.textContent = micActif ? '●' : '🎤';
 }
-
-function choisirProf(id) {
-  persona = personaParId(id);
-  document.documentElement.style.setProperty('--accent', persona.accent);
-  $('#avatarHost').innerHTML = avatarSVG(persona);
-  $('#titre').textContent = persona.nom;
-  $('#sousTitre').textContent = `prof de ${MATIERE.toLowerCase()} · ${persona.style.toLowerCase()}`;
-  $('#changerProf').hidden = false;
-  $('#choix').classList.add('cache');
-  expression = 'happy';
-  // « Un prof devant toi » : la voix s'active d'office (le clic de choix est le
-  // geste utilisateur qui débloque la synthèse). L'élève peut couper via 🔊.
-  if (voix.tts) { voixActive = true; majVoixUI(); }
-  demarrer();
-}
-
-function ouvrirChoix() {
-  $('#choix').classList.remove('cache');
+function ecouterMic() {
+  if (!voix.stt) return;
+  if (micActif) { micHandle?.stop(); return; }
+  voix.interrompre();
+  micActif = true;
+  majMicUI();
+  micHandle = voix.ecouter({
+    onPartial: (txt) => { $('#reponse').value = txt; },
+    onFinal: (txt) => { $('#reponse').value = txt; },
+    onEnd: () => {
+      micActif = false; majMicUI();
+      const v = $('#reponse').value.trim();
+      if (v) { $('#reponse').value = ''; repondre(v); }
+    },
+    onErreur: () => { micActif = false; majMicUI(); },
+  });
+  if (!micHandle) { micActif = false; majMicUI(); }
 }
 
 /* --- Animation de l'avatar ------------------------------------------------ */
@@ -204,40 +317,30 @@ let debutClignement = 0;
 
 function animer(t) {
   const parle = t < parleJusqua && !reduireMouvement;
-  // Après avoir réagi (parole finie + rebond de célébration passé), l'avatar
-  // se met en écoute attentive tant qu'on attend la réponse de l'élève — effet
-  // « vivant » (A1). Les expressions restent pilotées par le moteur au tour
-  // suivant (rendre les réassigne).
   if (attente && !parle && t > celebreJusqua && expression !== 'listening') {
     expression = 'listening';
   }
   const cfg = EXPR[expression] ?? EXPR.idle;
 
-  // Respiration du corps.
   const corps = $('#corps');
   if (corps && !reduireMouvement) {
-    const dy = Math.sin(t / 1400) * 1.4;
-    corps.setAttribute('transform', `translate(0 ${dy.toFixed(2)})`);
+    corps.setAttribute('transform', `translate(0 ${(Math.sin(t / 1400) * 1.4).toFixed(2)})`);
   }
 
-  // Lip-sync approximatif (A3 MVP) : ouverture ∝ « débit » pendant la parole.
   const bouche = $('#bouche');
   if (bouche) {
-    const ouverture = parle ? 2 + 6 * Math.abs(Math.sin(t / 85)) : 2.5;
-    bouche.setAttribute('ry', ouverture.toFixed(2));
+    bouche.setAttribute('ry', (parle ? 2 + 6 * Math.abs(Math.sin(t / 85)) : 2.5).toFixed(2));
   }
 
-  // Regard : légère dérive ; les deux iris synchronisés.
   const ig = $('#irisG');
-  const id = $('#irisD');
-  if (ig && id && !reduireMouvement) {
+  const idr = $('#irisD');
+  if (ig && idr && !reduireMouvement) {
     const dx = Math.sin(t / 1900) * 2.4;
     const dy = Math.cos(t / 2500) * 1.6;
     ig.setAttribute('transform', `translate(${dx.toFixed(2)} ${dy.toFixed(2)})`);
-    id.setAttribute('transform', `translate(${dx.toFixed(2)} ${dy.toFixed(2)})`);
+    idr.setAttribute('transform', `translate(${dx.toFixed(2)} ${dy.toFixed(2)})`);
   }
 
-  // Clignement (compression verticale des yeux) + ouverture par l'expression.
   const oeilG = $('#oeilG');
   const oeilD = $('#oeilD');
   if (oeilG && oeilD) {
@@ -251,7 +354,6 @@ function animer(t) {
         if (dt >= 120) { debutClignement = 0; prochainClignement = t + 2400 + Math.abs(Math.sin(t)) * 1600; }
       }
     }
-    // Centre des yeux ≈ y 112 (viewBox 200×240).
     for (const oeil of [oeilG, oeilD]) {
       oeil.setAttribute('transform', `translate(0 ${(112 * (1 - sy)).toFixed(2)}) scale(1 ${sy.toFixed(3)})`);
     }
@@ -267,33 +369,24 @@ function poser(id, attr, val) {
 }
 
 function appliquerExpression(t, parle, cfg) {
-  // Sourcils : décalage vertical + inclinaison interne pour l'inquiétude douce.
   const ang = cfg.smile < 0 ? 10 : 0;
   poser('sourcilG', 'transform', `translate(0 ${cfg.browY}) rotate(${ang} 74 88)`);
   poser('sourcilD', 'transform', `translate(0 ${cfg.browY}) rotate(${-ang} 126 88)`);
-
-  // Joues (blush).
   poser('joueG', 'opacity', String(cfg.cheeks));
   poser('joueD', 'opacity', String(cfg.cheeks));
 
-  // Sourire (hors parole) vs bouche animée (parole).
   const montrerSourire = !parle && cfg.smile !== 0;
   poser('sourire', 'opacity', montrerSourire ? '1' : '0');
   poser('sourire', 'd', cfg.smile > 0 ? 'M84 140 Q100 154 116 140' : 'M84 148 Q100 138 116 148');
   poser('bouche', 'opacity', montrerSourire ? '0' : '1');
 
-  // Extras manga.
   poser('goutte', 'opacity', String(cfg.sweat));
   poser('bulle', 'opacity', String(cfg.bulle));
   const et = $('#etincelles');
   if (et) {
-    const brille = cfg.sparkle && !reduireMouvement
-      ? 0.4 + 0.6 * Math.abs(Math.sin(t / 180))
-      : cfg.sparkle;
-    et.setAttribute('opacity', String(brille));
+    et.setAttribute('opacity', String(cfg.sparkle && !reduireMouvement ? 0.4 + 0.6 * Math.abs(Math.sin(t / 180)) : cfg.sparkle));
   }
 
-  // Inclinaison de tête + rebond de célébration.
   const vg = $('#visageG');
   if (vg) {
     let ty = 0;
@@ -305,56 +398,6 @@ function appliquerExpression(t, parle, cfg) {
   }
 }
 
-/* --- Voix (A2) ------------------------------------------------------------ */
-
-function majVoixUI() {
-  const b = $('#voix');
-  if (!b) return;
-  b.classList.toggle('actif', voixActive);
-  b.setAttribute('aria-pressed', String(voixActive));
-  b.title = voixActive ? 'Couper la voix' : 'Activer la voix';
-}
-
-function basculerVoix() {
-  voixActive = !voixActive;
-  majVoixUI();
-  if (voixActive) {
-    // Le clic sert de « geste utilisateur » qui débloque la synthèse ; on relit
-    // la dernière réplique pour un retour immédiat.
-    const dernier = $('#parole')?.textContent;
-    if (dernier && dernier !== '…') parler(dernier);
-  } else {
-    voix.interrompre();
-  }
-}
-
-function majMicUI() {
-  const b = $('#micro');
-  if (!b) return;
-  b.classList.toggle('actif', micActif);
-  b.textContent = micActif ? '● écoute…' : '🎤';
-}
-
-function ecouterMic() {
-  if (!voix.stt) return;
-  if (micActif) { micHandle?.stop(); return; } // re-clic → stop
-  voix.interrompre(); // barge-in : couper Léa avant d'écouter
-  micActif = true;
-  majMicUI();
-  micHandle = voix.ecouter({
-    onPartial: (txt) => { $('#reponse').value = txt; },
-    onFinal: (txt) => { $('#reponse').value = txt; },
-    onEnd: () => {
-      micActif = false;
-      majMicUI();
-      const v = $('#reponse').value.trim();
-      if (v) { $('#reponse').value = ''; repondre(v); }
-    },
-    onErreur: () => { micActif = false; majMicUI(); },
-  });
-  if (!micHandle) { micActif = false; majMicUI(); }
-}
-
 /* --- Événements ----------------------------------------------------------- */
 
 $('#form').addEventListener('submit', (e) => {
@@ -364,14 +407,9 @@ $('#form').addEventListener('submit', (e) => {
   repondre(v);
 });
 $('#perdu').addEventListener('click', () => repondre('je suis perdu'));
-$('#rejouer').addEventListener('click', demarrer);
-$('#changerProf').addEventListener('click', ouvrirChoix);
-$('#palier').addEventListener('change', (e) => {
-  $('#scene').style.display = e.target.value === 'texte' ? 'none' : 'flex';
-});
+$('#rejouer').addEventListener('click', () => demarrer(moduleActuel?.objectifPrincipal));
+$('#retour').addEventListener('click', retourAccueil);
 
-// Voix : bouton visible seulement si le navigateur sait synthétiser ; micro
-// seulement s'il sait reconnaître (sinon l'écrit reste seul maître, P1).
 if (voix.tts) {
   $('#voix').hidden = false;
   $('#voix').addEventListener('click', basculerVoix);
@@ -382,5 +420,5 @@ if (voix.stt) {
   $('#micro').addEventListener('click', ecouterMic);
 }
 
-construireChoix();
+construireAccueil();
 requestAnimationFrame(animer);

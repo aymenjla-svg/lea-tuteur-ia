@@ -3,90 +3,85 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Léa — tuteur</title>
+    <title>Léa — tuteur de physique</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app">
-      <header class="entete">
-        <div class="titre-bloc">
-          <h1 id="titre">Léa</h1>
-          <span id="sousTitre" class="sous-titre"></span>
+      <!-- ============================ ACCUEIL ============================ -->
+      <section id="accueil" class="accueil">
+        <header class="hero">
+          <div class="hero-txt">
+            <h1 class="hero-logo">Léa</h1>
+            <p class="hero-sub">Physique · Cycle&nbsp;4</p>
+          </div>
+          <div id="hero-ring" class="hero-ring" title="Avancement global"></div>
+        </header>
+
+        <div class="prof-picker">
+          <span class="pp-label">Ton prof</span>
+          <div id="profChips" class="pp-chips"></div>
         </div>
-        <div class="entete-actions">
+
+        <h2 class="section-titre">Choisis un module</h2>
+        <div id="modulesGrille" class="modules-grille"></div>
+
+        <p class="note accueil-note">
+          <a href="dashboard.html">→ Tableau de bord éducateur</a>
+        </p>
+      </section>
+
+      <!-- ============================ LEÇON ============================= -->
+      <section id="lecon" class="lecon" hidden>
+        <header class="hud">
+          <button id="retour" type="button" class="hud-retour" aria-label="Retour aux modules">←</button>
+          <div class="hud-centre">
+            <div class="hud-titre" id="hudTitre"></div>
+            <div class="hud-barre-fond"><div id="barre" class="hud-barre"></div></div>
+          </div>
+          <span id="pct" class="hud-pct">0&nbsp;%</span>
           <button id="voix" type="button" class="icone-btn" hidden aria-pressed="false" title="Activer la voix" aria-label="Activer la voix">🔊</button>
-          <button id="changerProf" type="button" class="lien-prof" hidden>changer de prof</button>
-          <label class="palier">
-            présence
-            <select id="palier" aria-label="Palier de présence">
-              <option value="2d_svg">avatar</option>
-              <option value="texte">texte seul</option>
-            </select>
-          </label>
+        </header>
+
+        <!-- Le prof écrit la CONSIGNE au tableau et la LIT ; sa parole s'affiche
+             en SOUS-TITRES (but : « un prof devant toi »). Signaux synthétiques,
+             jamais de caméra (§1.4). -->
+        <section id="scene" class="scene" aria-hidden="true">
+          <div class="tableau">
+            <span id="tableauFormule" class="tableau-formule"></span>
+            <div id="tableauTexte" class="tableau-texte"></div>
+          </div>
+          <div id="avatarHost" class="avatar-host"></div>
+        </section>
+
+        <!-- Sous-titrage de la parole du prof (synchronisé à la voix). -->
+        <div id="soustitre" class="soustitre" aria-live="polite"></div>
+
+        <form id="form" class="saisie" autocomplete="off">
+          <input
+            id="reponse"
+            name="reponse"
+            type="text"
+            inputmode="text"
+            placeholder="Ta réponse…"
+            aria-label="Ta réponse"
+          />
+          <button id="micro" type="button" class="micro-btn" hidden title="Répondre à la voix" aria-label="Répondre à la voix">🎤</button>
+          <button id="envoyer" type="submit">Envoyer</button>
+        </form>
+
+        <div class="actions-sec">
+          <button id="perdu" type="button" class="secondaire" title="Demander de l'aide">Je suis perdu·e</button>
+          <button id="rejouer" type="button" class="rejouer" hidden>Recommencer</button>
         </div>
-      </header>
 
-      <!-- Scène — palier 2D expressif (R6, ADDENDUM v1/A1). Tableau + avatar
-           manga « riggé » (couches pilotées par l'ÉTAT déterministe). Signaux
-           synthétiques, jamais de caméra (§1.4). L'avatar est injecté par JS
-           selon le prof choisi. -->
-      <!-- Le prof écrit la CONSIGNE au tableau et la LIT à voix haute (but :
-           « un prof devant toi »). L'avatar se tient au tableau. -->
-      <section id="scene" class="scene" aria-hidden="true">
-        <div class="tableau">
-          <span id="tableauFormule" class="tableau-formule"></span>
-          <div id="tableauTexte" class="tableau-texte" aria-live="polite"></div>
-        </div>
-        <div id="avatarHost" class="avatar-host"></div>
+        <p class="note">Répétition illimitée, sans jugement. La vidéo ne quitte jamais l'appareil.</p>
       </section>
-
-      <!-- Ce que le prof dit (réaction) — l'écrit reste présent (P1). -->
-      <p id="parole" class="bulle-prof" aria-live="polite">…</p>
-      <span id="coup" class="coup" hidden></span>
-
-      <section class="progres">
-        <div class="barre-fond"><div id="barre" class="barre"></div></div>
-        <span id="pct" class="pct">0&nbsp;%</span>
-      </section>
-
-      <form id="form" class="saisie" autocomplete="off">
-        <input
-          id="reponse"
-          name="reponse"
-          type="text"
-          inputmode="text"
-          placeholder="Ta réponse…"
-          aria-label="Ta réponse"
-        />
-        <button id="micro" type="button" class="micro-btn" hidden title="Répondre à la voix" aria-label="Répondre à la voix">🎤</button>
-        <button id="envoyer" type="submit">Envoyer</button>
-        <button id="perdu" type="button" class="secondaire" title="Demander de l'aide">
-          Je suis perdu·e
-        </button>
-      </form>
-
-      <button id="rejouer" class="rejouer" hidden>Nouvelle séance</button>
-
-      <p class="note">
-        Répétition illimitée, sans jugement. La vidéo ne quitte jamais l'appareil.
-      </p>
-      <p class="note"><a href="dashboard.html">→ Tableau de bord éducateur</a></p>
     </main>
 
-    <!-- Écran de choix du prof (§7 : matching élève↔persona). Recouvre l'app
-         jusqu'à la sélection. -->
-    <div id="choix" class="choix" role="dialog" aria-label="Choix du professeur">
-      <div class="choix-panneau">
-        <h2>Bonjour ! Choisis ton prof de physique</h2>
-        <p class="choix-sous">Même programme de physique pour tous — choisis le style qui te met le plus à l'aise. Tu pourras en changer quand tu veux.</p>
-        <div id="choixGrille" class="choix-grille"></div>
-      </div>
-    </div>
-
-    <!-- Moteur déterministe embarqué (visu statique) — définit window.LeaEngine
-         avant app.js. Absent d'un déploiement backend : app.js bascule alors
-         automatiquement sur l'API HTTP. -->
+    <!-- Moteur déterministe embarqué (visu statique). Sur un déploiement
+         backend, app.js bascule automatiquement sur l'API HTTP. -->
     <script src="lea-engine.js"></script>
     <script src="app.js" type="module"></script>
   </body>

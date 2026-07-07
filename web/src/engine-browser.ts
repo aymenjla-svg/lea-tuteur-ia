@@ -66,13 +66,15 @@ const moteur = new MoteurLecon({
   catalogueErreurs: catalogueErreursPhysique(tenant_id, horloge),
 });
 
-async function creerSession(): Promise<{ session_id: string; etat: unknown }> {
+async function creerSession(
+  objectifId?: string,
+): Promise<{ session_id: string; etat: unknown }> {
   const session_id = nouvelId<SessionId>();
   const contexte: ContexteSession = {
     session_id,
     eleve_id: id<EleveId>('eleve-demo'),
     persona_id: id<PersonaId>('persona-lea'),
-    objectif_initial: OBJ_VITESSE as ObjectifId,
+    objectif_initial: (objectifId ? id<ObjectifId>(objectifId) : OBJ_VITESSE) as ObjectifId,
   };
   const etat = await moteur.demarrer(contexte);
   return { session_id, etat };
