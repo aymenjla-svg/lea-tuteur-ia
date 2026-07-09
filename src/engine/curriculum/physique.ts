@@ -432,7 +432,7 @@ export function curriculumPhysique(
 
   // Masse volumique (g/cm³)
   const IND_MV = 'La masse volumique est la masse divisée par le volume : ρ = m ÷ V.';
-  exo({ id: 'tmpl-mv-50-20', objectif: OBJ_MASSE_VOLUMIQUE, enonce: 'Un objet a une masse de 50 g et un volume de 20 cm³. Quelle est sa masse volumique, en g/cm³ ?', valeur: 2.5, indice: IND_MV, pieges: [{ valeur: 1000, erreur_type_id: P_DIV }, { valeur: 0.4, erreur_type_id: 'inverse_division', tolerance: 0.01 }] });
+  exo({ id: 'tmpl-mv-argent', objectif: OBJ_MASSE_VOLUMIQUE, enonce: 'Un lingot d’argent a une masse de 105 g et un volume de 10 cm³. Masse volumique, en g/cm³ ?', valeur: 10.5, indice: IND_MV, pieges: [{ valeur: 1050, erreur_type_id: P_DIV }] });
   exo({ id: 'tmpl-mv-27-10', objectif: OBJ_MASSE_VOLUMIQUE, enonce: 'Un bloc d’aluminium a une masse de 27 g et un volume de 10 cm³. Masse volumique, en g/cm³ ?', valeur: 2.7, indice: IND_MV, pieges: [{ valeur: 270, erreur_type_id: P_DIV }] });
   exo({ id: 'tmpl-mv-90-100', objectif: OBJ_MASSE_VOLUMIQUE, enonce: 'De l’huile a une masse de 90 g pour un volume de 100 cm³. Masse volumique, en g/cm³ ?', valeur: 0.9, indice: IND_MV, pieges: [{ valeur: 9000, erreur_type_id: P_DIV }] });
 
@@ -444,7 +444,7 @@ export function curriculumPhysique(
 
   // Vitesse d'un signal (m/s)
   const IND_SIG = 'La vitesse d’un signal est la distance parcourue divisée par la durée : v = d ÷ t.';
-  exo({ id: 'tmpl-sig-1700-5', objectif: OBJ_SIGNAUX, enonce: 'Un son parcourt 1700 m en 5 s dans l’air. Quelle est sa vitesse, en m/s ?', valeur: 340, indice: IND_SIG, pieges: [{ valeur: 8500, erreur_type_id: P_DIV }] });
+  exo({ id: 'tmpl-sig-1360-4', objectif: OBJ_SIGNAUX, enonce: 'Un son parcourt 1360 m en 4 s dans l’air. Quelle est sa vitesse, en m/s ?', valeur: 340, indice: IND_SIG, pieges: [{ valeur: 5440, erreur_type_id: P_DIV }] });
   exo({ id: 'tmpl-sig-1020-3', objectif: OBJ_SIGNAUX, enonce: 'Un son parcourt 1020 m en 3 s dans l’air. Quelle est sa vitesse, en m/s ?', valeur: 340, indice: IND_SIG, pieges: [{ valeur: 3060, erreur_type_id: P_DIV }] });
   exo({ id: 'tmpl-sig-900-3', objectif: OBJ_SIGNAUX, enonce: 'Un signal parcourt 900 m en 3 s. Quelle est sa vitesse, en m/s ?', valeur: 300, indice: IND_SIG, pieges: [{ valeur: 2700, erreur_type_id: P_DIV }] });
 

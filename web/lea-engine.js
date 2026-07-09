@@ -489,7 +489,7 @@
     exo({ id: "tmpl-ohm-100-05", objectif: OBJ_OHM, enonce: "Une r\xE9sistance de 100 \u03A9 est parcourue par un courant de 0,5 A. Quelle tension, en volts ?", valeur: 50, indice: IND_OHM, pieges: [{ valeur: 200, erreur_type_id: "inverse_relation" }] });
     exo({ id: "tmpl-ohm-15-4", objectif: OBJ_OHM, enonce: "Une r\xE9sistance de 15 \u03A9 est parcourue par un courant de 4 A. Quelle tension, en volts ?", valeur: 60, indice: IND_OHM, pieges: [{ valeur: 19, erreur_type_id: "additionne_au_lieu_de_multiplier" }] });
     const IND_MV = "La masse volumique est la masse divis\xE9e par le volume : \u03C1 = m \xF7 V.";
-    exo({ id: "tmpl-mv-50-20", objectif: OBJ_MASSE_VOLUMIQUE, enonce: "Un objet a une masse de 50 g et un volume de 20 cm\xB3. Quelle est sa masse volumique, en g/cm\xB3 ?", valeur: 2.5, indice: IND_MV, pieges: [{ valeur: 1e3, erreur_type_id: P_DIV }, { valeur: 0.4, erreur_type_id: "inverse_division", tolerance: 0.01 }] });
+    exo({ id: "tmpl-mv-argent", objectif: OBJ_MASSE_VOLUMIQUE, enonce: "Un lingot d\u2019argent a une masse de 105 g et un volume de 10 cm\xB3. Masse volumique, en g/cm\xB3 ?", valeur: 10.5, indice: IND_MV, pieges: [{ valeur: 1050, erreur_type_id: P_DIV }] });
     exo({ id: "tmpl-mv-27-10", objectif: OBJ_MASSE_VOLUMIQUE, enonce: "Un bloc d\u2019aluminium a une masse de 27 g et un volume de 10 cm\xB3. Masse volumique, en g/cm\xB3 ?", valeur: 2.7, indice: IND_MV, pieges: [{ valeur: 270, erreur_type_id: P_DIV }] });
     exo({ id: "tmpl-mv-90-100", objectif: OBJ_MASSE_VOLUMIQUE, enonce: "De l\u2019huile a une masse de 90 g pour un volume de 100 cm\xB3. Masse volumique, en g/cm\xB3 ?", valeur: 0.9, indice: IND_MV, pieges: [{ valeur: 9e3, erreur_type_id: P_DIV }] });
     const IND_PUISS = "La puissance \xE9lectrique est le produit de la tension par l\u2019intensit\xE9 : P = U \xD7 I.";
@@ -497,7 +497,7 @@
     exo({ id: "tmpl-puiss-6-05", objectif: OBJ_PUISSANCE, enonce: "Une lampe sous 6 V est parcourue par un courant de 0,5 A. Quelle est sa puissance, en watts ?", valeur: 3, indice: IND_PUISS, pieges: [{ valeur: 12, erreur_type_id: "inverse_relation" }] });
     exo({ id: "tmpl-puiss-230-10", objectif: OBJ_PUISSANCE, enonce: "Un four sous 230 V est parcouru par un courant de 10 A. Quelle est sa puissance, en watts ?", valeur: 2300, indice: IND_PUISS, pieges: [{ valeur: 240, erreur_type_id: "additionne_au_lieu_de_multiplier" }] });
     const IND_SIG = "La vitesse d\u2019un signal est la distance parcourue divis\xE9e par la dur\xE9e : v = d \xF7 t.";
-    exo({ id: "tmpl-sig-1700-5", objectif: OBJ_SIGNAUX, enonce: "Un son parcourt 1700 m en 5 s dans l\u2019air. Quelle est sa vitesse, en m/s ?", valeur: 340, indice: IND_SIG, pieges: [{ valeur: 8500, erreur_type_id: P_DIV }] });
+    exo({ id: "tmpl-sig-1360-4", objectif: OBJ_SIGNAUX, enonce: "Un son parcourt 1360 m en 4 s dans l\u2019air. Quelle est sa vitesse, en m/s ?", valeur: 340, indice: IND_SIG, pieges: [{ valeur: 5440, erreur_type_id: P_DIV }] });
     exo({ id: "tmpl-sig-1020-3", objectif: OBJ_SIGNAUX, enonce: "Un son parcourt 1020 m en 3 s dans l\u2019air. Quelle est sa vitesse, en m/s ?", valeur: 340, indice: IND_SIG, pieges: [{ valeur: 3060, erreur_type_id: P_DIV }] });
     exo({ id: "tmpl-sig-900-3", objectif: OBJ_SIGNAUX, enonce: "Un signal parcourt 900 m en 3 s. Quelle est sa vitesse, en m/s ?", valeur: 300, indice: IND_SIG, pieges: [{ valeur: 2700, erreur_type_id: P_DIV }] });
     c.ajouterExplication({
