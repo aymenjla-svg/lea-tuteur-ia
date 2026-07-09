@@ -125,7 +125,7 @@ export function curriculumPhysique(
 
   c.ajouterTemplate({
     ...meta,
-    id: id('tmpl-vitesse-150-3'),
+    id: id('tmpl-vitesse-150-2h30'),
     objectif_id: OBJ_VITESSE,
     origine: 'prof',
     statut: 'valide',
@@ -137,20 +137,39 @@ export function curriculumPhysique(
           kind: 'numeric',
           modalite: 'textuel',
           enonce:
-            'Une voiture parcourt 150 km en 3 h. Quelle est sa vitesse moyenne, en km/h ?',
-          attendu: { valeur: 50, tolerance: 0 },
+            'Une voiture parcourt 150 km en 2 h 30 min. Quelle est sa vitesse moyenne, en km/h ?',
+          attendu: { valeur: 60, tolerance: 0 },
           pieges: [
-            // 450 = 150 × 3 (multiplie au lieu de diviser).
-            { valeur: 450, erreur_type_id: 'multiplie_au_lieu_de_diviser' },
-            // 0.02 = 3 ÷ 150 (division inversée).
-            { valeur: 0.02, erreur_type_id: 'inverse_division' },
+            // 75 = 150 ÷ 2 (on oublie de convertir les 30 min en heures).
+            { valeur: 75, erreur_type_id: 'oubli_conversion_duree' },
+            // 375 = 150 × 2,5 (multiplie au lieu de diviser).
+            { valeur: 375, erreur_type_id: 'multiplie_au_lieu_de_diviser' },
           ],
         },
-        indice: 'Divise la distance par la durée : v = d ÷ t.',
+        indice: 'D’abord convertis la durée en heures, puis applique v = d ÷ t.',
+        // Étayage « pas-à-pas » révélé SEULEMENT si l'élève bloque (P1) : on
+        // guide l'enchaînement (conversion → division), jamais le résultat.
+        decomposition: [
+          {
+            enonce: 'Étape 1 — convertis la durée en heures : 2 h 30 min = combien d’heures ?',
+            attendu: 2.5,
+            tolerance: 0,
+            unite: 'h',
+            indice: '30 min, c’est une demi-heure, soit 0,5 h. Ajoute-la aux 2 h.',
+          },
+          {
+            enonce:
+              'Étape 2 — applique v = d ÷ t : divise 150 km par la durée en heures. Vitesse en km/h ?',
+            attendu: 60,
+            tolerance: 0,
+            unite: 'km/h',
+            indice: 'Reprends v = d ÷ t : 150 km divisé par la durée (en heures).',
+          },
+        ],
       },
     ],
     representations: [
-      { modalite: 'textuel', texte: 'Écris v = d / t, remplace d et t, puis calcule.' },
+      { modalite: 'textuel', texte: 'Convertis la durée en heures, écris v = d / t, puis calcule.' },
     ],
   });
 
@@ -252,6 +271,13 @@ export function catalogueErreursPhysique(
       libelle: 'Division inversée',
       description: 'Le dividende et le diviseur ont été échangés.',
       remediation: 'Vérifie l’ordre : on divise la distance par la durée, pas l’inverse.',
+    },
+    {
+      id: 'oubli_conversion_duree',
+      libelle: 'Durée non convertie',
+      description: 'La durée n’a pas été convertie en heures avant le calcul.',
+      remediation:
+        'Pense à convertir la durée en heures d’abord : 2 h 30 min font 2,5 h, pas 2 h.',
     },
     {
       id: 'confond_masse_poids',

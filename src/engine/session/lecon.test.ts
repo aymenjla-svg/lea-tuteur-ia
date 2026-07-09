@@ -14,6 +14,11 @@ import {
   OBJ_ADDITION,
   OBJ_PREREQ,
 } from '../curriculum/in-memory-curriculum.js';
+import {
+  catalogueErreursPhysique,
+  curriculumPhysique,
+  OBJ_VITESSE,
+} from '../curriculum/physique.js';
 import { catalogueErreursDemo } from '../erreurs/catalogue-erreurs.js';
 import { HorlogeManuelle, id } from '../core.js';
 import { HeuristicLearnerModel } from '../learner-model/heuristic-learner-model.js';
@@ -158,4 +163,69 @@ test('détresse pendant la leçon → alerte persistée + événement safety', a
   assert.equal(magasin.alertes.length, 1);
   assert.equal(magasin.alertes[0]?.escalade_requise, true);
   assert.ok(magasin.evenements.evenements.some((e) => e.type === 'safety_alert'));
+});
+
+/* --- Étayage : décomposition guidée (P1) --------------------------------- */
+
+function bancPhysique() {
+  const tenant_id = id<TenantId>('t');
+  const horloge = new HorlogeManuelle(new Date('2026-06-28T09:00:00.000Z'));
+  const curriculum = curriculumPhysique(tenant_id, horloge);
+  const magasin = new MagasinMemoire();
+  const moteur = new MoteurLecon({
+    tenant_id,
+    curriculum,
+    verifier: new VerifierStandard(),
+    learnerModel: new HeuristicLearnerModel(tenant_id, curriculum, horloge),
+    safety: new MinimalSafetyFilter(tenant_id, horloge),
+    magasin,
+    horloge,
+    pedagogie,
+    catalogueErreurs: catalogueErreursPhysique(tenant_id, horloge),
+  });
+  const session_id = id<SessionId>('s');
+  const contexte: ContexteSession = {
+    session_id,
+    eleve_id: id<EleveId>('e'),
+    persona_id: id<PersonaId>('p'),
+    objectif_initial: OBJ_VITESSE,
+  };
+  return { moteur, magasin, session_id, contexte };
+}
+
+test('« je suis perdu » → décomposition guidée pas-à-pas, sans donner la réponse', async () => {
+  const { moteur, contexte, session_id } = bancPhysique();
+  await moteur.demarrer(contexte);
+
+  // Demande d'aide → on entre en mode pas-à-pas sur la 1ʳᵉ sous-étape.
+  const e1 = await moteur.repondre(session_id, 'je suis perdu');
+  assert.equal(e1.guidage?.etape, 1);
+  assert.equal(e1.guidage?.total, 2);
+  assert.match(e1.texte_tuteur, /Étape 1/);
+  assert.doesNotMatch(e1.texte_tuteur, /\b60\b/); // jamais le résultat final
+
+  // Sous-étape 1 (conversion) : 2 h 30 = 2,5 h → on avance.
+  const e2 = await moteur.repondre(session_id, '2,5');
+  assert.equal(e2.guidage?.etape, 2);
+  assert.equal(e2.guidage?.unite, 'km/h');
+  assert.match(e2.texte_tuteur, /Étape 2/);
+
+  // Sous-étape 2 (division) : 150 / 2,5 = 60 → fin du déroulé, on repose l'exo.
+  const e3 = await moteur.repondre(session_id, '60');
+  assert.equal(e3.guidage, undefined);
+  assert.match(e3.texte_tuteur, /exercice complet/i);
+
+  // « Tu fais » : l'élève pose la réponse complète tout seul → acceptée.
+  const e4 = await moteur.repondre(session_id, '60');
+  assert.notEqual(e4.dernier_coup.type, 'encourager');
+});
+
+test('blocage (2 échecs) → bascule en décomposition guidée plutôt que la réponse', async () => {
+  const { moteur, contexte, session_id } = bancPhysique();
+  await moteur.demarrer(contexte);
+  await moteur.repondre(session_id, '75'); // faux (oubli de conversion)
+  const bloque = await moteur.repondre(session_id, '75'); // 2ᵉ échec → seuil
+  assert.equal(bloque.guidage?.etape, 1);
+  assert.match(bloque.texte_tuteur, /pas à pas|Étape 1/i);
+  assert.doesNotMatch(bloque.texte_tuteur, /\b60\b/);
 });

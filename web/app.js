@@ -449,10 +449,20 @@ function rendre(etat) {
   expression = etat.expression ?? 'idle';
   if (expression === 'celebrate') celebreJusqua = performance.now() + 1800;
 
+  // Mode « pas-à-pas » (décomposition guidée) : bandeau + pastilles adaptées
+  // à l'unité de la sous-étape courante.
+  const g = etat.guidage;
+  $('#figLabel').textContent = g
+    ? `◦ Pas à pas · étape ${g.etape}/${g.total}`
+    : '◦ Salle d’expérience — en direct';
+
   // Pastilles d'unités contextuelles (reconstruites au changement d'objectif
   // pour préserver le choix entre deux questions du même objectif).
   if (fini) {
     $('#unites').hidden = true;
+  } else if (g) {
+    construireUnites(g.unite ? { bonne: g.unite, choix: CHIPS_PAR_UNITE[g.unite] ?? [g.unite] } : null);
+    uniteObjectifId = null; // force la reconstruction en sortie de guidage
   } else if (etat.objectif_courant !== uniteObjectifId) {
     uniteObjectifId = etat.objectif_courant;
     construireUnites(UNITES[etat.objectif_courant]);

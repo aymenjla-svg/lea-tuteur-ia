@@ -84,12 +84,35 @@ export interface ParametreTemplate {
   readonly domaine: string;
 }
 
+/**
+ * Sous-étape d'une DÉCOMPOSITION GUIDÉE (P1 : étayage à la demande). Révélée
+ * seulement si l'élève bloque : on déroule l'enchaînement une étape à la fois,
+ * chacune vérifiée, sans jamais énoncer le résultat final (l'élève le calcule).
+ */
+export interface SousEtapeGuidee {
+  readonly enonce: string;
+  /** Valeur numérique attendue à cette sous-étape. */
+  readonly attendu: number;
+  /** Tolérance absolue (0 = exact). */
+  readonly tolerance?: number;
+  /** Unité de la sous-étape (pilote les pastilles côté UI). */
+  readonly unite?: string;
+  /** Coup de pouce ciblé sur cette sous-étape (jamais le résultat). */
+  readonly indice: string;
+}
+
 /** Étape d'un exercice à étapes (D5 : exercices à étapes). */
 export interface EtapeTemplate {
   readonly ordre: number;
   readonly question: Question;
   /** Indice progressif lié à l'étape (jamais la solution d'emblée). */
   readonly indice?: string;
+  /**
+   * Décomposition en sous-étapes, révélée UNIQUEMENT si l'élève bloque
+   * (étayage « on fait ensemble »). L'énoncé principal reste posé en une seule
+   * question ; on ne déroule les sous-étapes que sur demande d'aide/blocage.
+   */
+  readonly decomposition?: readonly SousEtapeGuidee[];
 }
 
 /**

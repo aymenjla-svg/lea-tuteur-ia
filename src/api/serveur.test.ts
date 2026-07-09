@@ -50,7 +50,7 @@ test('parcours complet via HTTP jusqu’à la maîtrise + dashboard', async () =
 
   let etat = dem.etat;
   for (let i = 0; i < 6 && !etat.termine; i++) {
-    const r = await post(`/sessions/${sid}/repondre`, { texte: '50' });
+    const r = await post(`/sessions/${sid}/repondre`, { texte: '60' });
     assert.equal(r.code, 200);
     etat = r.data.etat;
   }

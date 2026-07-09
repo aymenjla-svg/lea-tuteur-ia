@@ -37,19 +37,42 @@ import type {
   Question,
   SafetyFilter,
   SessionId,
+  SousEtapeGuidee,
   TenantId,
   Tentative,
   TypeEvaluation,
   Verdict,
   Verifier,
 } from '../../contracts/index.js';
-import { evenement, type Horloge, nouvelId } from '../core.js';
+import { evenement, type Horloge, normaliser, nouvelId } from '../core.js';
 import { politiqueEvaluation } from '../planning/eval-types.js';
 import type { MagasinMemoire } from '../persistence/in-memory-store.js';
 import { expressionVerdict } from '../presence/emotion.js';
 
 /* Petit alias local : le type des leviers, extrait du répertoire R7. */
 type Levier = 'reformuler' | 'simplifier' | 'changer_de_modalite';
+
+/** Reconnaît une demande d'aide explicite (« je suis perdu·e », etc.). */
+function estDemandeAide(texte: string): boolean {
+  const t = normaliser(texte);
+  return /(perdu|perdue|besoin d aide|aide moi|aidez|sais pas|comprends pas|comprend pas|bloque|explique)/.test(
+    t,
+  );
+}
+
+/** Construit une question numérique jetable pour vérifier une sous-étape. */
+function questionSousEtape(se: SousEtapeGuidee): Question {
+  return {
+    kind: 'numeric',
+    modalite: 'textuel',
+    enonce: se.enonce,
+    attendu: {
+      valeur: se.attendu,
+      tolerance: se.tolerance ?? 0,
+      ...(se.unite ? { unite: se.unite } : {}),
+    },
+  };
+}
 
 /**
  * Expression par défaut d'un tour NON lié à une correction (ADDENDUM v1/A1).
@@ -88,6 +111,16 @@ export interface EtatLecon {
   /** Maîtrise effective (après decay) de l'objectif VISÉ (progression). */
   readonly maitrise_cible: MaitriseEffective;
   readonly termine: boolean;
+  /**
+   * Présent quand on déroule une DÉCOMPOSITION GUIDÉE (étayage « pas-à-pas »).
+   * `etape`/`total` = 1-indexé pour l'affichage ; `unite` = unité de la
+   * sous-étape courante (pastilles). Absent en mode normal.
+   */
+  readonly guidage?: {
+    readonly etape: number;
+    readonly total: number;
+    readonly unite?: string;
+  };
 }
 
 interface SessionInterne {
@@ -99,6 +132,13 @@ interface SessionInterne {
   indice: string | undefined;
   echecs: number;
   termine: boolean;
+  /** Décomposition disponible pour l'exercice courant (si l'auteur en a fourni). */
+  decomposition: readonly SousEtapeGuidee[] | undefined;
+  /** État du déroulé guidé (index de sous-étape) ; absent hors étayage. */
+  guidage?: { index: number } | undefined;
+  /** Sauvegardes pour restaurer l'exercice complet après le déroulé guidé. */
+  questionPrincipale?: Question | undefined;
+  indicePrincipal?: string | undefined;
 }
 
 export interface DependancesLecon {
@@ -122,7 +162,7 @@ export class MoteurLecon {
 
   /** Démarre une session : sélectionne l'objectif et PROPOSE le 1ᵉʳ exercice. */
   async demarrer(contexte: ContexteSession): Promise<EtatLecon> {
-    const { template_id, question, indice } = await this.#proposer(
+    const { template_id, question, indice, decomposition } = await this.#proposer(
       contexte.objectif_initial,
     );
     const session: SessionInterne = {
@@ -134,6 +174,7 @@ export class MoteurLecon {
       indice,
       echecs: 0,
       termine: false,
+      decomposition,
     };
     this.#sessions.set(contexte.session_id, session);
 
@@ -173,6 +214,17 @@ export class MoteurLecon {
 
     // 1) Entrée élève : trace + scan de détresse (R5) AVANT toute pédagogie.
     await this.#entreeEleve(session_id, session.eleve_id, texte);
+
+    // 1bis) Déroulé guidé en cours → la réponse porte sur la sous-étape.
+    if (session.guidage) {
+      return this.#repondreGuidage(session_id, session, texte);
+    }
+    // 1ter) Demande d'aide explicite → étayage (décomposition si dispo, sinon
+    // indice). On ne compte PAS ça comme une erreur (P1 : demander de l'aide
+    // est encouragé, jamais pénalisé).
+    if (estDemandeAide(texte)) {
+      return this.#demanderAide(session_id, session);
+    }
 
     // 2) Vérification CODE DUR (seul producteur de Verdict — §1.1).
     const verdict = await this.deps.verifier.verifier(session.question, {
@@ -294,8 +346,13 @@ export class MoteurLecon {
   ): Promise<EtatLecon> {
     session.echecs += 1;
 
-    // Blocage détecté → on déclenche un levier d'adaptation (R7).
+    // Blocage détecté → on GUIDE d'abord l'enchaînement (décomposition), si
+    // l'auteur en a fourni une (P1 : on explique le chemin, on ne donne jamais
+    // la réponse). Sinon, on retombe sur les leviers d'adaptation (R7).
     if (session.echecs >= this.deps.pedagogie.seuil_blocage) {
+      if (session.decomposition && session.decomposition.length > 0) {
+        return this.#entrerGuidage(session_id, session);
+      }
       return this.#appliquerLevier(session_id, session);
     }
 
@@ -390,6 +447,123 @@ export class MoteurLecon {
   }
 
   /* --------------------------------------------------------------------- */
+  /* Étayage : décomposition guidée (P1 : on explique l'enchaînement)       */
+  /* --------------------------------------------------------------------- */
+
+  /** L'élève demande de l'aide : on déroule la décomposition, sinon un indice. */
+  async #demanderAide(
+    session_id: SessionId,
+    session: SessionInterne,
+  ): Promise<EtatLecon> {
+    if (session.decomposition && session.decomposition.length > 0) {
+      return this.#entrerGuidage(session_id, session);
+    }
+    // Pas de décomposition : coup de pouce (indice) sans donner la réponse.
+    const aide = politiqueEvaluation(this.#typeEval()).aide
+      ? await this.#aideRemediation({ correct: false } as Verdict, session.indice)
+      : '';
+    const coup: CoupTuteur = { type: 'encourager' };
+    const texte = await this.#direTuteur(
+      session_id,
+      `Pas de souci, on regarde ça ensemble.${aide} Réessaie : ${session.question.enonce}`,
+      coup,
+    );
+    return this.#etat(session_id, session, texte, coup, 'encouraging');
+  }
+
+  /** Entre en mode « pas-à-pas » : pose la 1ʳᵉ sous-étape. */
+  async #entrerGuidage(
+    session_id: SessionId,
+    session: SessionInterne,
+  ): Promise<EtatLecon> {
+    const deco = session.decomposition as readonly SousEtapeGuidee[];
+    // Sauvegarde l'exercice complet pour le reproposer à la fin (« tu fais »).
+    session.questionPrincipale = session.question;
+    session.indicePrincipal = session.indice;
+    session.echecs = 0;
+    session.guidage = { index: 0 };
+    session.question = questionSousEtape(deco[0] as SousEtapeGuidee);
+
+    await this.#emettre(session_id, 'guidage_demarre', {
+      objectif_id: session.objectif_courant,
+      etapes: deco.length,
+    });
+    const coup: CoupTuteur = { type: 'encourager' };
+    const texte = await this.#direTuteur(
+      session_id,
+      `On va y aller pas à pas, ensemble. Étape 1 sur ${deco.length} : ${(deco[0] as SousEtapeGuidee).enonce}`,
+      coup,
+    );
+    return this.#etat(session_id, session, texte, coup, 'encouraging');
+  }
+
+  /** Traite une réponse pendant le déroulé guidé (vérifie la sous-étape). */
+  async #repondreGuidage(
+    session_id: SessionId,
+    session: SessionInterne,
+    texte: string,
+  ): Promise<EtatLecon> {
+    const deco = session.decomposition as readonly SousEtapeGuidee[];
+    const g = session.guidage as { index: number };
+    const se = deco[g.index] as SousEtapeGuidee;
+
+    // Aide pendant le pas-à-pas → on redonne l'indice de la sous-étape.
+    if (estDemandeAide(texte)) {
+      const coup: CoupTuteur = { type: 'encourager' };
+      const t = await this.#direTuteur(
+        session_id,
+        `Indice : ${se.indice} ${se.enonce}`,
+        coup,
+      );
+      return this.#etat(session_id, session, t, coup, 'encouraging');
+    }
+
+    const verdict = await this.deps.verifier.verifier(questionSousEtape(se), {
+      texte,
+    });
+    if (!verdict.correct) {
+      const coup: CoupTuteur = { type: 'encourager' };
+      const t = await this.#direTuteur(
+        session_id,
+        `Pas encore. ${se.indice} ${se.enonce}`,
+        coup,
+      );
+      return this.#etat(session_id, session, t, coup, expressionVerdict(false, 0));
+    }
+
+    // Sous-étape réussie → étape suivante, ou fin du déroulé.
+    g.index += 1;
+    if (g.index < deco.length) {
+      const suiv = deco[g.index] as SousEtapeGuidee;
+      session.question = questionSousEtape(suiv);
+      const coup: CoupTuteur = { type: 'encourager' };
+      const t = await this.#direTuteur(
+        session_id,
+        `Bien vu ! Étape ${g.index + 1} sur ${deco.length} : ${suiv.enonce}`,
+        coup,
+      );
+      return this.#etat(session_id, session, t, coup, expressionVerdict(true));
+    }
+
+    // Décomposition terminée → on restaure l'exercice complet (phase « tu
+    // fais »). L'élève a construit la réponse ; il la pose maintenant seul.
+    session.guidage = undefined;
+    session.question = session.questionPrincipale as Question;
+    session.indice = session.indicePrincipal;
+    session.echecs = 0;
+    await this.#emettre(session_id, 'guidage_termine', {
+      objectif_id: session.objectif_courant,
+    });
+    const coup: CoupTuteur = { type: 'proposer', objectif_id: session.objectif_courant };
+    const cloture = await this.#direTuteur(
+      session_id,
+      `Tu as déroulé tout l’enchaînement, bravo ! Maintenant, donne la réponse de l’exercice complet. ${session.question.enonce}`,
+      coup,
+    );
+    return this.#etat(session_id, session, cloture, coup, expressionVerdict(true));
+  }
+
+  /* --------------------------------------------------------------------- */
   /* Outils & helpers                                                       */
   /* --------------------------------------------------------------------- */
 
@@ -425,6 +599,7 @@ export class MoteurLecon {
     template_id: ExerciceTemplateId;
     question: Question;
     indice: string | undefined;
+    decomposition: readonly SousEtapeGuidee[] | undefined;
   }> {
     const templates =
       await this.deps.curriculum.templatesPourObjectif(objectif_id);
@@ -436,16 +611,25 @@ export class MoteurLecon {
     if (!etape) {
       throw new Error(`Template ${tmpl.id} sans étape.`);
     }
-    return { template_id: tmpl.id, question: etape.question, indice: etape.indice };
+    return {
+      template_id: tmpl.id,
+      question: etape.question,
+      indice: etape.indice,
+      decomposition: etape.decomposition,
+    };
   }
 
   /** Charge l'objectif `cible` comme objectif courant de la session. */
   async #charger(session: SessionInterne, cible: ObjectifId): Promise<void> {
-    const { template_id, question, indice } = await this.#proposer(cible);
+    const { template_id, question, indice, decomposition } =
+      await this.#proposer(cible);
     session.objectif_courant = cible;
     session.template_id = template_id;
     session.question = question;
     session.indice = indice;
+    session.decomposition = decomposition;
+    // Charger un nouvel exercice sort de tout déroulé guidé en cours.
+    session.guidage = undefined;
   }
 
   /** Entrée élève : enregistre le tour + scanne la détresse (R5). */
@@ -534,7 +718,20 @@ export class MoteurLecon {
       maitrise_cible,
       termine: session.termine,
     };
-    return session.termine ? base : { ...base, question_courante: session.question };
+    if (session.termine) return base;
+    const q = { ...base, question_courante: session.question };
+    if (session.guidage && session.decomposition) {
+      const se = session.decomposition[session.guidage.index];
+      return {
+        ...q,
+        guidage: {
+          etape: session.guidage.index + 1,
+          total: session.decomposition.length,
+          ...(se?.unite ? { unite: se.unite } : {}),
+        },
+      };
+    }
+    return q;
   }
 
   async #emettre(

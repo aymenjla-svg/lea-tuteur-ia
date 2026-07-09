@@ -232,7 +232,7 @@
     });
     c.ajouterTemplate({
       ...meta,
-      id: id("tmpl-vitesse-150-3"),
+      id: id("tmpl-vitesse-150-2h30"),
       objectif_id: OBJ_VITESSE,
       origine: "prof",
       statut: "valide",
@@ -243,20 +243,38 @@
           question: {
             kind: "numeric",
             modalite: "textuel",
-            enonce: "Une voiture parcourt 150 km en 3 h. Quelle est sa vitesse moyenne, en km/h ?",
-            attendu: { valeur: 50, tolerance: 0 },
+            enonce: "Une voiture parcourt 150 km en 2 h 30 min. Quelle est sa vitesse moyenne, en km/h ?",
+            attendu: { valeur: 60, tolerance: 0 },
             pieges: [
-              // 450 = 150 × 3 (multiplie au lieu de diviser).
-              { valeur: 450, erreur_type_id: "multiplie_au_lieu_de_diviser" },
-              // 0.02 = 3 ÷ 150 (division inversée).
-              { valeur: 0.02, erreur_type_id: "inverse_division" }
+              // 75 = 150 ÷ 2 (on oublie de convertir les 30 min en heures).
+              { valeur: 75, erreur_type_id: "oubli_conversion_duree" },
+              // 375 = 150 × 2,5 (multiplie au lieu de diviser).
+              { valeur: 375, erreur_type_id: "multiplie_au_lieu_de_diviser" }
             ]
           },
-          indice: "Divise la distance par la dur\xE9e : v = d \xF7 t."
+          indice: "D\u2019abord convertis la dur\xE9e en heures, puis applique v = d \xF7 t.",
+          // Étayage « pas-à-pas » révélé SEULEMENT si l'élève bloque (P1) : on
+          // guide l'enchaînement (conversion → division), jamais le résultat.
+          decomposition: [
+            {
+              enonce: "\xC9tape 1 \u2014 convertis la dur\xE9e en heures : 2 h 30 min = combien d\u2019heures ?",
+              attendu: 2.5,
+              tolerance: 0,
+              unite: "h",
+              indice: "30 min, c\u2019est une demi-heure, soit 0,5 h. Ajoute-la aux 2 h."
+            },
+            {
+              enonce: "\xC9tape 2 \u2014 applique v = d \xF7 t : divise 150 km par la dur\xE9e en heures. Vitesse en km/h ?",
+              attendu: 60,
+              tolerance: 0,
+              unite: "km/h",
+              indice: "Reprends v = d \xF7 t : 150 km divis\xE9 par la dur\xE9e (en heures)."
+            }
+          ]
         }
       ],
       representations: [
-        { modalite: "textuel", texte: "\xC9cris v = d / t, remplace d et t, puis calcule." }
+        { modalite: "textuel", texte: "Convertis la dur\xE9e en heures, \xE9cris v = d / t, puis calcule." }
       ]
     });
     c.ajouterTemplate({
@@ -342,6 +360,12 @@
         libelle: "Division invers\xE9e",
         description: "Le dividende et le diviseur ont \xE9t\xE9 \xE9chang\xE9s.",
         remediation: "V\xE9rifie l\u2019ordre : on divise la distance par la dur\xE9e, pas l\u2019inverse."
+      },
+      {
+        id: "oubli_conversion_duree",
+        libelle: "Dur\xE9e non convertie",
+        description: "La dur\xE9e n\u2019a pas \xE9t\xE9 convertie en heures avant le calcul.",
+        remediation: "Pense \xE0 convertir la dur\xE9e en heures d\u2019abord : 2 h 30 min font 2,5 h, pas 2 h."
       },
       {
         id: "confond_masse_poids",
@@ -910,6 +934,24 @@
   }
 
   // src/engine/session/lecon.ts
+  function estDemandeAide(texte) {
+    const t = normaliser(texte);
+    return /(perdu|perdue|besoin d aide|aide moi|aidez|sais pas|comprends pas|comprend pas|bloque|explique)/.test(
+      t
+    );
+  }
+  function questionSousEtape(se) {
+    return {
+      kind: "numeric",
+      modalite: "textuel",
+      enonce: se.enonce,
+      attendu: {
+        valeur: se.attendu,
+        tolerance: se.tolerance ?? 0,
+        ...se.unite ? { unite: se.unite } : {}
+      }
+    };
+  }
   function expressionParDefaut(coup) {
     switch (coup.type) {
       case "clore":
@@ -924,7 +966,7 @@
         return "idle";
     }
   }
-  var _sessions, _MoteurLecon_instances, surSucces_fn, surEchec_fn, aideRemediation_fn, appliquerLevier_fn, enregistrerResultat_fn, proposer_fn, charger_fn, entreeEleve_fn, direTuteur_fn, choisirLevier_fn, autreModalite_fn, etat_fn, emettre_fn, typeEval_fn, session_fn;
+  var _sessions, _MoteurLecon_instances, surSucces_fn, surEchec_fn, aideRemediation_fn, appliquerLevier_fn, demanderAide_fn, entrerGuidage_fn, repondreGuidage_fn, enregistrerResultat_fn, proposer_fn, charger_fn, entreeEleve_fn, direTuteur_fn, choisirLevier_fn, autreModalite_fn, etat_fn, emettre_fn, typeEval_fn, session_fn;
   var MoteurLecon = class {
     constructor(deps) {
       __publicField(this, "deps", deps);
@@ -933,7 +975,7 @@
     }
     /** Démarre une session : sélectionne l'objectif et PROPOSE le 1ᵉʳ exercice. */
     async demarrer(contexte) {
-      const { template_id, question, indice } = await __privateMethod(this, _MoteurLecon_instances, proposer_fn).call(this, contexte.objectif_initial);
+      const { template_id, question, indice, decomposition } = await __privateMethod(this, _MoteurLecon_instances, proposer_fn).call(this, contexte.objectif_initial);
       const session = {
         eleve_id: contexte.eleve_id,
         objectif_initial: contexte.objectif_initial,
@@ -942,7 +984,8 @@
         question,
         indice,
         echecs: 0,
-        termine: false
+        termine: false,
+        decomposition
       };
       __privateGet(this, _sessions).set(contexte.session_id, session);
       await __privateMethod(this, _MoteurLecon_instances, emettre_fn).call(this, contexte.session_id, "session_demarree", {
@@ -967,6 +1010,12 @@
         return __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, "La s\xE9ance est termin\xE9e. \xC0 bient\xF4t !", coup);
       }
       await __privateMethod(this, _MoteurLecon_instances, entreeEleve_fn).call(this, session_id, session.eleve_id, texte);
+      if (session.guidage) {
+        return __privateMethod(this, _MoteurLecon_instances, repondreGuidage_fn).call(this, session_id, session, texte);
+      }
+      if (estDemandeAide(texte)) {
+        return __privateMethod(this, _MoteurLecon_instances, demanderAide_fn).call(this, session_id, session);
+      }
       const verdict = await this.deps.verifier.verifier(session.question, {
         texte
       });
@@ -1044,6 +1093,9 @@
   surEchec_fn = async function(session_id, session, verdict) {
     session.echecs += 1;
     if (session.echecs >= this.deps.pedagogie.seuil_blocage) {
+      if (session.decomposition && session.decomposition.length > 0) {
+        return __privateMethod(this, _MoteurLecon_instances, entrerGuidage_fn).call(this, session_id, session);
+      }
       return __privateMethod(this, _MoteurLecon_instances, appliquerLevier_fn).call(this, session_id, session);
     }
     const aide = politiqueEvaluation(__privateMethod(this, _MoteurLecon_instances, typeEval_fn).call(this)).aide ? await __privateMethod(this, _MoteurLecon_instances, aideRemediation_fn).call(this, verdict, session.indice) : "";
@@ -1094,6 +1146,66 @@
       }
     }
   };
+  demanderAide_fn = async function(session_id, session) {
+    if (session.decomposition && session.decomposition.length > 0) {
+      return __privateMethod(this, _MoteurLecon_instances, entrerGuidage_fn).call(this, session_id, session);
+    }
+    const aide = politiqueEvaluation(__privateMethod(this, _MoteurLecon_instances, typeEval_fn).call(this)).aide ? await __privateMethod(this, _MoteurLecon_instances, aideRemediation_fn).call(this, { correct: false }, session.indice) : "";
+    const coup = { type: "encourager" };
+    const texte = await __privateMethod(this, _MoteurLecon_instances, direTuteur_fn).call(this, session_id, `Pas de souci, on regarde \xE7a ensemble.${aide} R\xE9essaie : ${session.question.enonce}`, coup);
+    return __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, texte, coup, "encouraging");
+  };
+  entrerGuidage_fn = async function(session_id, session) {
+    const deco = session.decomposition;
+    session.questionPrincipale = session.question;
+    session.indicePrincipal = session.indice;
+    session.echecs = 0;
+    session.guidage = { index: 0 };
+    session.question = questionSousEtape(deco[0]);
+    await __privateMethod(this, _MoteurLecon_instances, emettre_fn).call(this, session_id, "guidage_demarre", {
+      objectif_id: session.objectif_courant,
+      etapes: deco.length
+    });
+    const coup = { type: "encourager" };
+    const texte = await __privateMethod(this, _MoteurLecon_instances, direTuteur_fn).call(this, session_id, `On va y aller pas \xE0 pas, ensemble. \xC9tape 1 sur ${deco.length} : ${deco[0].enonce}`, coup);
+    return __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, texte, coup, "encouraging");
+  };
+  repondreGuidage_fn = async function(session_id, session, texte) {
+    const deco = session.decomposition;
+    const g = session.guidage;
+    const se = deco[g.index];
+    if (estDemandeAide(texte)) {
+      const coup2 = { type: "encourager" };
+      const t = await __privateMethod(this, _MoteurLecon_instances, direTuteur_fn).call(this, session_id, `Indice : ${se.indice} ${se.enonce}`, coup2);
+      return __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, t, coup2, "encouraging");
+    }
+    const verdict = await this.deps.verifier.verifier(questionSousEtape(se), {
+      texte
+    });
+    if (!verdict.correct) {
+      const coup2 = { type: "encourager" };
+      const t = await __privateMethod(this, _MoteurLecon_instances, direTuteur_fn).call(this, session_id, `Pas encore. ${se.indice} ${se.enonce}`, coup2);
+      return __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, t, coup2, expressionVerdict(false, 0));
+    }
+    g.index += 1;
+    if (g.index < deco.length) {
+      const suiv = deco[g.index];
+      session.question = questionSousEtape(suiv);
+      const coup2 = { type: "encourager" };
+      const t = await __privateMethod(this, _MoteurLecon_instances, direTuteur_fn).call(this, session_id, `Bien vu ! \xC9tape ${g.index + 1} sur ${deco.length} : ${suiv.enonce}`, coup2);
+      return __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, t, coup2, expressionVerdict(true));
+    }
+    session.guidage = void 0;
+    session.question = session.questionPrincipale;
+    session.indice = session.indicePrincipal;
+    session.echecs = 0;
+    await __privateMethod(this, _MoteurLecon_instances, emettre_fn).call(this, session_id, "guidage_termine", {
+      objectif_id: session.objectif_courant
+    });
+    const coup = { type: "proposer", objectif_id: session.objectif_courant };
+    const cloture = await __privateMethod(this, _MoteurLecon_instances, direTuteur_fn).call(this, session_id, `Tu as d\xE9roul\xE9 tout l\u2019encha\xEEnement, bravo ! Maintenant, donne la r\xE9ponse de l\u2019exercice complet. ${session.question.enonce}`, coup);
+    return __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, cloture, coup, expressionVerdict(true));
+  };
   enregistrerResultat_fn = async function(session_id, session, verdict) {
     const t = this.deps.horloge.maintenant();
     const tentative = {
@@ -1125,14 +1237,21 @@
     if (!etape) {
       throw new Error(`Template ${tmpl.id} sans \xE9tape.`);
     }
-    return { template_id: tmpl.id, question: etape.question, indice: etape.indice };
+    return {
+      template_id: tmpl.id,
+      question: etape.question,
+      indice: etape.indice,
+      decomposition: etape.decomposition
+    };
   };
   charger_fn = async function(session, cible) {
-    const { template_id, question, indice } = await __privateMethod(this, _MoteurLecon_instances, proposer_fn).call(this, cible);
+    const { template_id, question, indice, decomposition } = await __privateMethod(this, _MoteurLecon_instances, proposer_fn).call(this, cible);
     session.objectif_courant = cible;
     session.template_id = template_id;
     session.question = question;
     session.indice = indice;
+    session.decomposition = decomposition;
+    session.guidage = void 0;
   };
   entreeEleve_fn = async function(session_id, eleve_id, texte) {
     const res = await this.deps.safety.filtrer(texte, "eleve_entree", {
@@ -1199,7 +1318,20 @@
       maitrise_cible,
       termine: session.termine
     };
-    return session.termine ? base : { ...base, question_courante: session.question };
+    if (session.termine) return base;
+    const q = { ...base, question_courante: session.question };
+    if (session.guidage && session.decomposition) {
+      const se = session.decomposition[session.guidage.index];
+      return {
+        ...q,
+        guidage: {
+          etape: session.guidage.index + 1,
+          total: session.decomposition.length,
+          ...se?.unite ? { unite: se.unite } : {}
+        }
+      };
+    }
+    return q;
   };
   emettre_fn = async function(session_id, type, payload) {
     await this.deps.magasin.evenements.emettre(
