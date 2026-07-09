@@ -1,11 +1,11 @@
 // Léa — CONTENU des cours (déterministe, écrit depuis le programme cycle 4).
-// Un cours = une séquence de scènes. Le tableau change à chaque scène : un
-// visuel animé (figures.js) se construit, le prof raconte (voix + sous-titres),
-// et des mini-exos d'application ponctuent le parcours. À la fin → la série.
+// Le cours EST la leçon principale : chaque module se veut complet, comme un
+// vrai prof qui explique tout (accroche, définitions + valeurs réelles, exemple
+// résolu pas à pas, question conceptuelle, contexte/sécurité, puis application).
 //
-// Chaque scène : { titre, figure, focus, points[], narration, checkpoint? }.
-// checkpoint (mini-exo) : { enonce, valeur, tolerance, unite, pieges? } — vérifié
-// localement (même logique numérique que le moteur : virgule ↔ point, pièges).
+// Chaque scène : { titre, focus, points[], narration, qcm?, checkpoint? }.
+// - qcm : { question, options:[{txt, ok?, retour?}] } — vérifié côté client.
+// - checkpoint (mini-exo) : { enonce, valeur, tolerance, unite, pieges? }.
 
 export const COURS = {
   // ------------------------------------------------------------ Mouvement ---
@@ -13,36 +13,72 @@ export const COURS = {
     figure: 'vitesse',
     scenes: [
       {
+        titre: 'À quoi sert la vitesse ?',
+        focus: 'mobile',
+        points: ['Comparer qui va le plus vite.', 'Sécurité routière, sport, transports…'],
+        narration:
+          'La vitesse, on l’utilise tous les jours : pour savoir qui court le plus vite, combien ' +
+          'de temps dure un trajet, ou respecter les limitations sur la route. On va apprendre à ' +
+          'la calculer précisément.',
+      },
+      {
         titre: 'La vitesse, c’est comparer',
         focus: 'mobile',
         points: ['On regarde une distance…', '…et le temps mis pour la parcourir.'],
         narration:
-          'Regarde ce mobile qui avance. Pour savoir s’il va vite, on ne regarde pas ' +
-          'qu’une seule chose : on compare la distance parcourue au temps qu’il a fallu.',
+          'Regarde ce mobile qui avance. Pour savoir s’il va vite, on ne regarde pas une seule ' +
+          'chose : on compare la distance parcourue au temps qu’il a fallu. Deux informations, ' +
+          'toujours.',
       },
       {
         titre: 'La distance (d)',
         focus: 'd',
-        points: ['Distance = le chemin parcouru.', 'En mètres (m) ou kilomètres (km).'],
+        points: ['Distance = le chemin parcouru.', 'En mètres (m) ou kilomètres (km).', 'Terrain de foot ≈ 100 m · Paris-Lyon ≈ 400 km.'],
         narration:
-          'La distance, c’est la longueur du trajet. On la mesure en mètres, ou en ' +
-          'kilomètres pour les longs trajets.',
+          'La distance, c’est la longueur du trajet. On la mesure en mètres pour de petits ' +
+          'déplacements, en kilomètres pour les longs trajets : un terrain de foot fait environ ' +
+          '100 mètres, Paris-Lyon environ 400 kilomètres.',
       },
       {
         titre: 'Le temps (t)',
         focus: 't',
-        points: ['Durée = le temps écoulé.', 'En secondes (s) ou heures (h).'],
+        points: ['Durée = le temps écoulé.', 'En secondes (s) ou heures (h).', '1 h = 60 min · 2 h 30 = 2,5 h.'],
         narration:
-          'Le temps, c’est la durée du déplacement. En secondes, ou en heures pour ' +
-          'les longs voyages. Même distance mais moins de temps : c’est plus rapide !',
+          'Le temps, c’est la durée du déplacement : en secondes, ou en heures pour les longs ' +
+          'voyages. Attention, une durée comme 2 h 30 se convertit d’abord en heures : 2 h 30, ' +
+          'c’est 2,5 heures, car une demi-heure vaut 0,5 heure.',
       },
       {
         titre: 'La relation : v = d / t',
         focus: 'vitesse',
         points: ['Vitesse = distance ÷ temps.', 'Grande distance en peu de temps → grande vitesse.'],
         narration:
-          'La vitesse relie les deux : on divise la distance par le temps. Beaucoup de ' +
-          'distance en peu de temps, ça fait une grande vitesse.',
+          'La vitesse relie les deux : on divise la distance par le temps. Beaucoup de distance ' +
+          'en peu de temps, ça fait une grande vitesse. Même distance mais moins de temps : c’est ' +
+          'aller plus vite.',
+      },
+      {
+        titre: 'Les unités de vitesse',
+        focus: 'vitesse',
+        points: ['m/s (mètres par seconde) ou km/h.', 'Marche ≈ 5 km/h · voiture 50→130 km/h · TGV ≈ 300 km/h.'],
+        narration:
+          'La vitesse s’exprime en mètres par seconde, ou en kilomètres par heure. Quelques ' +
+          'repères : on marche à environ 5 kilomètres par heure, une voiture roule entre 50 et ' +
+          '130, et un TGV file à près de 300 kilomètres par heure.',
+      },
+      {
+        titre: 'Un exemple résolu ensemble',
+        focus: 'vitesse',
+        points: [
+          'Données : d = 300 km, t = 4 h.',
+          '1) On écrit la loi : v = d ÷ t.',
+          '2) On remplace : v = 300 ÷ 4.',
+          '3) Résultat : v = 75 km/h.',
+        ],
+        narration:
+          'Regarde la méthode. Une voiture parcourt 300 kilomètres en 4 heures. On écrit la loi, ' +
+          'v égale d divisé par t ; on remplace, 300 divisé par 4 ; on calcule : 75 kilomètres ' +
+          'par heure. Toujours ces trois étapes : la loi, on remplace, on calcule.',
       },
       {
         titre: 'Vérifie que tu as compris',
@@ -59,10 +95,19 @@ export const COURS = {
         },
       },
       {
+        titre: 'Attention aux unités',
+        focus: 't',
+        points: ['Convertis la durée AVANT de diviser.', '2 h 30 = 2,5 h (pas 2,30 !).'],
+        narration:
+          'Le piège le plus fréquent, c’est le temps. Avant de diviser, convertis toujours la ' +
+          'durée en heures : 2 h 30, c’est 2,5 heures, pas 2,30. Si tu bloques sur un exercice, ' +
+          'clique sur « je suis perdu » et je te guiderai étape par étape.',
+      },
+      {
         titre: 'À toi de jouer',
         focus: 'vitesse',
-        points: ['Applique v = d / t.'],
-        narration: 'Essaie celui-ci. Prends ton temps, tu peux recommencer autant que tu veux.',
+        points: ['Applique v = d ÷ t.'],
+        narration: 'À toi. Prends ton temps, tu peux recommencer autant que tu veux.',
         checkpoint: {
           enonce: 'Un vélo parcourt 20 m en 5 s. Quelle est sa vitesse, en m/s ?',
           valeur: 4, tolerance: 0, unite: 'm/s',
@@ -77,36 +122,63 @@ export const COURS = {
     figure: 'poids',
     scenes: [
       {
+        titre: 'Masse ou poids ?',
+        focus: 'masse',
+        points: ['Deux mots que l’on confond souvent.', 'Ils ne mesurent pas la même chose.'],
+        narration:
+          'Dans la vie courante, on dit « je pèse 50 kilos ». Mais en physique, masse et poids ' +
+          'sont deux choses différentes ! On va apprendre à les distinguer, puis à calculer un ' +
+          'poids.',
+      },
+      {
         titre: 'La masse (m)',
         focus: 'masse',
-        points: ['Masse = quantité de matière.', 'En kilogrammes (kg). Elle ne change pas.'],
+        points: ['Masse = quantité de matière.', 'En kilogrammes (kg), à la balance.', 'Elle ne change JAMAIS.', 'Pomme ≈ 150 g · élève ≈ 50 kg.'],
         narration:
-          'La masse, c’est la quantité de matière d’un objet. On la mesure en kilogrammes. ' +
-          'Où que tu ailles, sur Terre ou sur la Lune, ta masse reste la même.',
+          'La masse, c’est la quantité de matière d’un objet. On la mesure à la balance, en ' +
+          'kilogrammes. Point essentiel : où que tu ailles, sur Terre, sur la Lune ou dans ' +
+          'l’espace, ta masse reste la même.',
       },
       {
         titre: 'Le poids (P)',
         focus: 'poids',
-        points: ['Poids = force d’attraction.', 'En newtons (N). Dirigé vers le bas.'],
+        points: ['Poids = force d’attraction.', 'En newtons (N), au dynamomètre.', 'Dirigé vers le bas.'],
         narration:
-          'Le poids, lui, c’est une force : l’astre attire l’objet vers lui. C’est une ' +
-          'force, donc en newtons, et elle est dirigée vers le bas.',
+          'Le poids, lui, c’est une force : l’astre attire l’objet vers lui. Comme c’est une ' +
+          'force, il se mesure en newtons, avec un dynamomètre, et il est toujours dirigé vers le ' +
+          'bas, vers le centre de l’astre.',
       },
       {
         titre: 'Terre ou Lune ?',
         focus: 'astre',
-        points: ['La Terre attire fort (g = 10 N/kg).', 'La Lune, 6 fois moins.'],
+        points: ['La Terre attire fort : g = 10 N/kg.', 'La Lune, environ 6 fois moins.'],
         narration:
-          'Voilà l’idée-clé : même objet, même masse, mais la Terre tire bien plus fort ' +
-          'que la Lune. Le poids dépend de l’astre ; la masse, non.',
+          'Voilà l’idée-clé : même objet, même masse, mais la Terre tire bien plus fort que la ' +
+          'Lune. C’est pour ça que les astronautes sautent haut sur la Lune ! Le poids dépend de ' +
+          'l’astre ; la masse, jamais.',
       },
       {
         titre: 'La relation : P = m × g',
         focus: 'relation',
-        points: ['Poids = masse × intensité de pesanteur.', 'Sur Terre, g = 10 N/kg.'],
+        points: ['Poids = masse × intensité de pesanteur.', 'Sur Terre, g = 10 N/kg.', 'Donc 1 kg pèse 10 N sur Terre.'],
         narration:
-          'On relie tout : le poids est la masse multipliée par g, l’intensité de la ' +
-          'pesanteur. Sur Terre, g vaut environ 10 newtons par kilogramme.',
+          'On relie tout : le poids est égal à la masse multipliée par g, l’intensité de la ' +
+          'pesanteur. Sur Terre, g vaut environ 10 newtons par kilogramme : une masse de 1 ' +
+          'kilogramme y pèse donc 10 newtons.',
+      },
+      {
+        titre: 'Un exemple résolu ensemble',
+        focus: 'relation',
+        points: [
+          'Données : m = 4 kg, g = 10 N/kg.',
+          '1) On écrit la loi : P = m × g.',
+          '2) On remplace : P = 4 × 10.',
+          '3) Résultat : P = 40 N.',
+        ],
+        narration:
+          'Regarde la méthode. Un objet a une masse de 4 kilogrammes, sur Terre. On écrit la loi, ' +
+          'P égale m fois g ; on remplace, 4 fois 10 ; on calcule : son poids vaut 40 newtons. ' +
+          'La loi, on remplace, on calcule.',
       },
       {
         titre: 'Vérifie que tu as compris',
@@ -123,10 +195,19 @@ export const COURS = {
         },
       },
       {
+        titre: 'Ne confonds pas les unités',
+        focus: 'poids',
+        points: ['Masse en kilogrammes (kg).', 'Poids en newtons (N).'],
+        narration:
+          'Dernier réflexe à prendre : la masse se donne en kilogrammes, le poids en newtons. Si ' +
+          'on te demande un poids et que tu réponds en kilogrammes, c’est que tu as confondu les ' +
+          'deux grandeurs.',
+      },
+      {
         titre: 'À toi de jouer',
         focus: 'relation',
         points: ['Applique P = m × g (g = 10).'],
-        narration: 'À toi. Souviens-toi : la masse est en kg, le poids en newtons.',
+        narration: 'À toi. La masse est en kg, le poids en newtons.',
         checkpoint: {
           enonce: 'Sur Terre (g = 10 N/kg), quel est le poids d’une masse de 3 kg, en newtons ?',
           valeur: 30, tolerance: 0, unite: 'N',
@@ -253,28 +334,71 @@ export const COURS = {
     figure: 'matiere',
     scenes: [
       {
+        titre: 'Pourquoi la masse volumique ?',
+        focus: 'relation',
+        points: ['Reconnaître un matériau sans le voir.', 'Comprendre pourquoi ça flotte ou coule.'],
+        narration:
+          'Pourquoi un morceau de bois flotte-t-il alors qu’un clou coule ? Comment savoir si un ' +
+          'bijou est vraiment en or ? La réponse tient dans une grandeur : la masse volumique. On ' +
+          'va la découvrir.',
+      },
+      {
         titre: 'La masse (m)',
         focus: 'masse',
-        points: ['Masse = quantité de matière.', 'Mesurée à la balance, en grammes (g).'],
+        points: ['Masse = quantité de matière.', 'À la balance, en grammes (g).'],
         narration:
           'On part d’un bloc de matière. Sa masse, c’est la quantité de matière qu’il contient : ' +
-          'on la mesure à la balance, en grammes.',
+          'on la mesure à la balance, ici en grammes.',
       },
       {
         titre: 'Le volume (V)',
         focus: 'volume',
-        points: ['Volume = la place occupée.', 'En centimètres cubes (cm³).'],
+        points: ['Volume = la place occupée.', 'En centimètres cubes (cm³).', 'Solide : par déplacement d’eau.'],
         narration:
-          'Son volume, c’est la place qu’il occupe dans l’espace. Pour un solide, on peut le ' +
-          'mesurer en le plongeant dans l’eau. On l’exprime en centimètres cubes.',
+          'Son volume, c’est la place qu’il occupe dans l’espace. Pour un solide de forme ' +
+          'compliquée, on le plonge dans de l’eau et on mesure la montée du niveau : c’est le ' +
+          'volume déplacé. On l’exprime en centimètres cubes.',
       },
       {
         titre: 'La masse volumique : ρ = m / V',
         focus: 'relation',
-        points: ['ρ = masse ÷ volume.', 'Elle identifie le matériau (fer, or, bois…).'],
+        points: ['ρ (rhô) = masse ÷ volume.', 'C’est la carte d’identité du matériau.'],
         narration:
-          'La masse volumique relie les deux : on divise la masse par le volume. Sa valeur est ' +
-          'la carte d’identité du matériau : le fer, l’or ou le bois n’ont pas la même.',
+          'La masse volumique relie les deux : on divise la masse par le volume. Sa valeur est la ' +
+          'carte d’identité du matériau : le fer, l’or ou le bois n’ont pas la même, quelle que ' +
+          'soit la taille du morceau.',
+      },
+      {
+        titre: 'Quelques valeurs à connaître',
+        focus: 'relation',
+        points: ['Eau = 1 g/cm³.', 'Bois ≈ 0,5 · Huile ≈ 0,9.', 'Fer ≈ 7,9 · Or ≈ 19,3 g/cm³.'],
+        narration:
+          'Voici des repères. L’eau vaut exactement 1 gramme par centimètre cube. Le bois et ' +
+          'l’huile sont en dessous ; le fer est bien plus lourd, environ 7,9 ; et l’or, très ' +
+          'dense, atteint 19,3 grammes par centimètre cube.',
+      },
+      {
+        titre: 'Flotte ou coule ?',
+        focus: 'relation',
+        points: ['Plus léger que l’eau (ρ < 1) → flotte.', 'Plus lourd que l’eau (ρ > 1) → coule.'],
+        narration:
+          'La masse volumique explique la flottaison. Un matériau moins dense que l’eau, comme le ' +
+          'bois ou l’huile, flotte. Un matériau plus dense, comme le fer, coule. Tout se compare ' +
+          'à l’eau, qui vaut 1.',
+      },
+      {
+        titre: 'Un exemple résolu ensemble',
+        focus: 'relation',
+        points: [
+          'Données : m = 60 g, V = 8 cm³.',
+          '1) On écrit la loi : ρ = m ÷ V.',
+          '2) On remplace : ρ = 60 ÷ 8.',
+          '3) Résultat : ρ = 7,5 g/cm³.',
+        ],
+        narration:
+          'Regarde la méthode. Un objet a une masse de 60 grammes pour un volume de 8 centimètres ' +
+          'cubes. On écrit la loi, rhô égale m divisé par V ; on remplace, 60 divisé par 8 ; on ' +
+          'calcule : 7,5 grammes par centimètre cube. C’est proche du fer.',
       },
       {
         titre: 'Vérifie que tu as compris',
@@ -309,27 +433,38 @@ export const COURS = {
     figure: 'energie',
     scenes: [
       {
+        titre: 'La puissance, ça se paie',
+        focus: 'puissance',
+        points: ['Les appareils consomment de l’énergie.', 'La puissance mesure « combien, par seconde ».'],
+        narration:
+          'Une ampoule, un four, un chargeur… tous consomment de l’électricité, mais pas à la ' +
+          'même vitesse. Ce « combien par seconde », c’est la puissance. C’est elle qui fait ' +
+          'grimper la facture. Apprenons à la calculer.',
+      },
+      {
         titre: 'La tension (U)',
         focus: 'tension',
         points: ['Le générateur fournit une tension U.', 'En volts (V).'],
         narration:
-          'Un appareil électrique est alimenté par un générateur, qui impose une tension : ' +
-          'la « poussée » électrique, mesurée en volts.',
+          'Un appareil électrique est alimenté par un générateur, qui impose une tension : la ' +
+          '« poussée » électrique, mesurée en volts. C’est la même grandeur que dans la loi d’Ohm.',
       },
       {
         titre: 'L’intensité (I)',
         focus: 'intensite',
         points: ['Le courant qui traverse l’appareil.', 'En ampères (A).'],
         narration:
-          'À travers l’appareil circule un courant électrique, dont l’intensité se mesure en ampères.',
+          'À travers l’appareil circule un courant électrique, dont l’intensité se mesure en ' +
+          'ampères. Plus l’appareil « tire » de courant, plus il est gourmand.',
       },
       {
         titre: 'La puissance (P)',
         focus: 'puissance',
-        points: ['Puissance = énergie consommée chaque seconde.', 'En watts (W).'],
+        points: ['Puissance = énergie consommée chaque seconde.', 'En watts (W).', 'LED ≈ 5 W · box ≈ 10 W · four ≈ 2000 W.'],
         narration:
-          'La puissance, c’est l’énergie que l’appareil consomme chaque seconde — ici, la chaleur ' +
-          'du radiateur. On la mesure en watts.',
+          'La puissance, c’est l’énergie que l’appareil consomme chaque seconde. On la mesure en ' +
+          'watts. Quelques repères : une ampoule LED fait environ 5 watts, une box internet 10, ' +
+          'et un four peut atteindre 2000 watts.',
       },
       {
         titre: 'La relation : P = U × I',
@@ -337,7 +472,21 @@ export const COURS = {
         points: ['Puissance = tension × intensité.'],
         narration:
           'On relie tout : la puissance électrique est le produit de la tension par l’intensité. ' +
-          'Plus l’une ou l’autre est grande, plus l’appareil est puissant.',
+          'Plus la tension ou le courant est grand, plus l’appareil est puissant.',
+      },
+      {
+        titre: 'Un exemple résolu ensemble',
+        focus: 'loi',
+        points: [
+          'Données : U = 12 V, I = 3 A.',
+          '1) On écrit la loi : P = U × I.',
+          '2) On remplace : P = 12 × 3.',
+          '3) Résultat : P = 36 W.',
+        ],
+        narration:
+          'Regarde la méthode. Un appareil fonctionne sous 12 volts et est parcouru par 3 ' +
+          'ampères. On écrit la loi, P égale U fois I ; on remplace, 12 fois 3 ; on calcule : sa ' +
+          'puissance vaut 36 watts. La loi, on remplace, on calcule.',
       },
       {
         titre: 'Vérifie que tu as compris',
@@ -352,6 +501,15 @@ export const COURS = {
             { txt: 'aussi puissant', retour: 'La puissance dépend aussi de I : ici elle augmente.' },
           ],
         },
+      },
+      {
+        titre: 'Puissance et énergie',
+        focus: 'puissance',
+        points: ['Énergie = puissance × durée (E = P × t).', 'Un appareil puissant longtemps → grosse consommation.'],
+        narration:
+          'La puissance dit « combien par seconde ». L’énergie totale consommée, elle, dépend ' +
+          'aussi de la durée : un appareil puissant utilisé longtemps consomme beaucoup. C’est ' +
+          'pour ça qu’on éteint ce qui ne sert pas — pour économiser l’énergie.',
       },
       {
         titre: 'À toi de jouer',
@@ -372,28 +530,69 @@ export const COURS = {
     figure: 'signaux',
     scenes: [
       {
+        titre: 'Observer et communiquer',
+        focus: 'distance',
+        points: ['La lumière et le son transportent de l’information.', 'On peut mesurer leur vitesse.'],
+        narration:
+          'On voit les étoiles, on entend une cloche au loin : la lumière et le son sont des ' +
+          'signaux qui voyagent jusqu’à nous. Et comme tout ce qui se déplace, ils ont une ' +
+          'vitesse que l’on peut calculer.',
+      },
+      {
         titre: 'Un signal se propage',
         focus: 'distance',
-        points: ['Son ou lumière parcourt une distance d.', 'En mètres (m).'],
+        points: ['Il part d’une source et parcourt une distance d.', 'En mètres (m).'],
         narration:
-          'Un signal — un son, une lumière — part d’une source et se propage. Il parcourt une ' +
-          'distance jusqu’à nous.',
+          'Un signal — un son, une lumière — part d’une source et se propage en ligne droite ' +
+          'jusqu’à nous. Il parcourt une certaine distance, mesurée en mètres.',
       },
       {
         titre: 'Le temps de trajet (t)',
         focus: 'temps',
-        points: ['Il met un certain temps t.', 'En secondes (s).'],
+        points: ['Le voyage prend un certain temps t.', 'En secondes (s).'],
         narration:
-          'Ce trajet prend du temps. Le son est lent : c’est pourquoi on voit l’éclair avant ' +
-          'd’entendre le tonnerre. La lumière, elle, va beaucoup plus vite.',
+          'Ce voyage prend du temps, mesuré en secondes. Selon le signal, ce temps est très ' +
+          'court… ou pas : le son est lent, la lumière extrêmement rapide.',
       },
       {
         titre: 'La vitesse : v = d / t',
         focus: 'vitesse',
-        points: ['v = distance ÷ temps.', 'Son ≈ 340 m/s, lumière ≈ 300 000 km/s.'],
+        points: ['v = distance ÷ temps.', 'Même relation que pour un mobile.'],
         narration:
-          'La vitesse du signal, c’est la distance divisée par le temps. Dans l’air, le son file ' +
-          'à environ 340 mètres par seconde ; la lumière, à 300 000 kilomètres par seconde !',
+          'La vitesse du signal, c’est la distance divisée par le temps — exactement la même ' +
+          'relation que pour une voiture. On la calcule de la même façon.',
+      },
+      {
+        titre: 'Deux vitesses à connaître',
+        focus: 'vitesse',
+        points: ['Son dans l’air ≈ 340 m/s.', 'Lumière ≈ 300 000 km/s.'],
+        narration:
+          'Deux repères essentiels. Dans l’air, le son file à environ 340 mètres par seconde. La ' +
+          'lumière, elle, va presque un million de fois plus vite : 300 000 kilomètres par ' +
+          'seconde. Rien ne va plus vite que la lumière.',
+      },
+      {
+        titre: 'L’éclair et le tonnerre',
+        focus: 'vitesse',
+        points: ['Ils partent ensemble.', 'La lumière arrive avant le son.'],
+        narration:
+          'Pendant un orage, l’éclair et le tonnerre naissent au même instant. Mais tu vois ' +
+          'l’éclair tout de suite, et tu entends le tonnerre quelques secondes après : c’est la ' +
+          'preuve que la lumière va beaucoup plus vite que le son.',
+      },
+      {
+        titre: 'Un exemple résolu ensemble',
+        focus: 'vitesse',
+        points: [
+          'Données : d = 1020 m, t = 3 s.',
+          '1) On écrit la loi : v = d ÷ t.',
+          '2) On remplace : v = 1020 ÷ 3.',
+          '3) Résultat : v = 340 m/s.',
+        ],
+        narration:
+          'Regarde la méthode. Un son parcourt 1020 mètres en 3 secondes. On écrit la loi, v ' +
+          'égale d divisé par t ; on remplace, 1020 divisé par 3 ; on calcule : 340 mètres par ' +
+          'seconde. C’est bien la vitesse du son dans l’air.',
       },
       {
         titre: 'Vérifie que tu as compris',
@@ -408,6 +607,15 @@ export const COURS = {
             { txt: 'l’éclair part avant le tonnerre', retour: 'Les deux partent ensemble ; la lumière arrive juste avant.' },
           ],
         },
+      },
+      {
+        titre: 'L’année-lumière',
+        focus: 'vitesse',
+        points: ['C’est une DISTANCE, pas une durée.', 'La distance parcourue par la lumière en un an.'],
+        narration:
+          'Comme la lumière est très rapide, on l’utilise pour mesurer les distances de ' +
+          'l’Univers. Une année-lumière, c’est la distance que la lumière parcourt en un an. ' +
+          'Attention : malgré son nom, c’est une distance, pas une durée.',
       },
       {
         titre: 'À toi de jouer',
