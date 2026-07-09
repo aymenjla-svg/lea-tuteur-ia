@@ -5,6 +5,9 @@
 import { MODULES, progressModule } from './modules.js';
 import { lireSuivi, ERREUR_LIB, effacerSuivi } from './suivi.js';
 import { serie } from './jeu.js';
+import { appliquerA11y } from './accessibilite.js';
+
+appliquerA11y();
 
 const $ = (s) => document.querySelector(s);
 const pct = (n, d) => (d ? Math.round((n / d) * 100) : 0);

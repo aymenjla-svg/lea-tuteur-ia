@@ -26,12 +26,30 @@ html[data-vibe="jeune"] { --fs: 17.5px; --rad: 24px; --rad-lg: 32px; --glow: 1.3
 html[data-vibe="moyen"] { --fs: 16px; --rad: 20px; --rad-lg: 26px; --glow: 1; }
 html[data-vibe="grand"] { --fs: 15px; --rad: 16px; --rad-lg: 20px; --glow: 0.75; }
 
+/* Accessibilité — taille du texte (multiplie l'échelle de base). */
+:root { --a11y: 1; }
+:root[data-taille="petit"] { --a11y: 0.9; }
+:root[data-taille="grand"] { --a11y: 1.18; }
+/* Contraste élevé : panneaux plus opaques, bordures et textes renforcés. */
+:root[data-contraste="on"] {
+  --panel: rgba(6, 22, 40, 0.82);
+  --panel-2: rgba(6, 22, 40, 0.92);
+  --border: rgba(255, 255, 255, 0.55);
+  --txt2: #eaf7ff;
+}
+/* Lecture facilitée : police standard + espacement lettres/mots/lignes. */
+:root[data-lecture="on"] { --round: var(--sans); }
+:root[data-lecture="on"] body { letter-spacing: 0.04em; word-spacing: 0.14em; line-height: 1.65; }
+:root[data-lecture="on"] .soustitre,
+:root[data-lecture="on"] .tableau-texte,
+:root[data-lecture="on"] .cours-points li { text-align: left; }
+
 * { box-sizing: border-box; }
 
 body {
   margin: 0;
   font-family: var(--sans);
-  font-size: var(--fs);
+  font-size: calc(var(--fs) * var(--a11y));
   color: var(--txt);
   min-height: 100vh;
   display: flex;
@@ -388,6 +406,27 @@ body::after {
 .bilan-err { margin-top: 10px; font-size: 0.95rem; color: #ffd98a; }
 .bilan-err.bilan-clean { color: var(--ok); }
 .bilan-note { margin-top: 10px; font-size: 0.86rem; color: var(--txt2); line-height: 1.4; }
+
+/* Accessibilité & avis : bouton + modales */
+.a11y-btn { font-family: var(--round); font-weight: 700; font-size: 0.92rem; padding: 8px 13px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--panel); color: #fff; cursor: pointer; backdrop-filter: blur(10px); flex: 0 0 auto; }
+.a11y-btn:hover { background: var(--panel-2); }
+.modale { position: fixed; inset: 0; z-index: 80; display: flex; align-items: center; justify-content: center; padding: 18px; background: rgba(3, 12, 26, 0.62); backdrop-filter: blur(4px); }
+.modale-carte { width: 100%; max-width: 430px; background: linear-gradient(180deg, #133b5d, #0d2c47); border: 1.5px solid var(--border); border-radius: var(--rad-lg); padding: 22px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(3, 12, 26, 0.5); }
+.modale-carte h2 { font-family: var(--round); color: #fff; margin: 0 0 16px; font-size: 1.25rem; }
+.a11y-groupe { margin-bottom: 16px; }
+.a11y-lib { font-size: 0.85rem; color: var(--txt2); margin-bottom: 8px; font-weight: 600; }
+.a11y-seg { display: flex; gap: 6px; }
+.a11y-seg button { flex: 1; font-family: var(--round); font-weight: 700; padding: 10px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--panel); color: #fff; cursor: pointer; }
+.a11y-seg button.actif { background: var(--accent); border-color: transparent; color: #06202a; }
+.a11y-toggle { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 12px 14px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--panel); cursor: pointer; color: #fff; font-family: var(--round); font-weight: 600; width: 100%; }
+.a11y-toggle .etat { font-size: 0.85rem; color: var(--txt2); }
+.a11y-toggle.on { border-color: var(--accent); }
+.a11y-toggle.on .etat { color: var(--accent); font-weight: 700; }
+.modale-liens { display: flex; gap: 8px; margin-top: 6px; flex-wrap: wrap; }
+.modale-liens a, .modale-liens button { flex: 1; text-align: center; font-family: var(--round); font-weight: 700; font-size: 0.88rem; padding: 11px; border-radius: 12px; border: 1.5px solid var(--border); background: var(--panel); color: #fff; cursor: pointer; text-decoration: none; }
+.modale-fermer { margin-top: 16px; width: 100%; font-family: var(--round); font-weight: 700; padding: 12px; border: none; border-radius: var(--rad); background: linear-gradient(120deg, var(--or), #ffd166); color: #4a2f00; cursor: pointer; }
+.fb-zone { width: 100%; min-height: 110px; border-radius: 12px; border: 1.5px solid var(--border); background: rgba(10, 26, 42, 0.55); color: #fff; font-family: var(--sans); padding: 11px 13px; font-size: 0.95rem; resize: vertical; }
+.fb-note { font-size: 0.82rem; color: var(--txt2); margin: 8px 0 0; }
 
 .actions-sec { display: flex; gap: 10px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }
 .secondaire { font-family: var(--round); background: var(--panel); color: #fff; border: 1.5px solid var(--border); border-radius: var(--rad); padding: 10px 18px; font-size: 0.9rem; cursor: pointer; }

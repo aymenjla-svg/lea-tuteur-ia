@@ -11,6 +11,7 @@ import { MODULES, chargerProgress, majProgress, progressModule } from './modules
 import { COURS, verifierCheckpoint } from './cours.js';
 import { figure } from './figures.js';
 import { enregistrerReponse, ERREUR_LIB } from './suivi.js';
+import { lireA11y, appliquerA11y, definirA11y } from './accessibilite.js';
 import {
   NIVEAUX, niveauCourant, definirNiveau, appliquerVibe,
   xp, ajouterXp, niveauJeu, progNiveauJeu, majSerie, serie, etoiles,
@@ -755,7 +756,68 @@ if (voix.stt) {
   $('#micro').addEventListener('click', ecouterMic);
 }
 
-// Démarrage : série du jour + interface adaptée à la classe + accueil.
+/* --- Accessibilité & avis ------------------------------------------------- */
+
+const CLE_AVIS = 'lea.feedback.v1';
+function majA11yUI() {
+  const s = lireA11y();
+  for (const b of document.querySelectorAll('#segTaille button')) {
+    b.classList.toggle('actif', b.dataset.taille === s.taille);
+  }
+  for (const t of [['tgLecture', 'lecture'], ['tgContraste', 'contraste']]) {
+    const el = $('#' + t[0]);
+    const on = s[t[1]] === 'on';
+    el.classList.toggle('on', on);
+    el.querySelector('.etat').textContent = on ? 'Oui' : 'Non';
+  }
+}
+$('#a11yBtn').addEventListener('click', () => { majA11yUI(); $('#a11yModale').hidden = false; });
+$('#segTaille').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  definirA11y({ taille: b.dataset.taille });
+  majA11yUI();
+});
+for (const id of ['tgLecture', 'tgContraste']) {
+  $('#' + id).addEventListener('click', () => {
+    const cle = $('#' + id).dataset.cle;
+    const s = lireA11y();
+    definirA11y({ [cle]: s[cle] === 'on' ? 'off' : 'on' });
+    majA11yUI();
+  });
+}
+$('#ouvrirAvis').addEventListener('click', () => {
+  $('#a11yModale').hidden = true;
+  $('#avisModale').hidden = false;
+});
+$('#avisEnregistrer').addEventListener('click', () => {
+  const t = $('#avisTexte').value.trim();
+  if (!t) return;
+  let liste = [];
+  try { liste = JSON.parse(localStorage.getItem(CLE_AVIS) ?? '[]') || []; } catch { liste = []; }
+  liste.push({ date: new Date().toISOString().slice(0, 16).replace('T', ' '), texte: t });
+  try { localStorage.setItem(CLE_AVIS, JSON.stringify(liste)); } catch { /* ignore */ }
+  $('#avisTexte').value = '';
+  $('#avisEnregistrer').textContent = 'Enregistré ✓';
+  setTimeout(() => { $('#avisEnregistrer').textContent = 'Enregistrer'; }, 1500);
+});
+$('#avisCopier').addEventListener('click', async () => {
+  let liste = [];
+  try { liste = JSON.parse(localStorage.getItem(CLE_AVIS) ?? '[]') || []; } catch { liste = []; }
+  const txt = liste.map((a) => `• [${a.date}] ${a.texte}`).join('\n') || '(aucun avis enregistré)';
+  try { await navigator.clipboard.writeText(txt); $('#avisCopier').textContent = 'Copié ✓'; }
+  catch { $('#avisTexte').value = txt; $('#avisCopier').textContent = 'Sélectionné'; }
+  setTimeout(() => { $('#avisCopier').textContent = 'Copier tout'; }, 1500);
+});
+for (const el of document.querySelectorAll('[data-fermer]')) {
+  el.addEventListener('click', () => { $('#' + el.dataset.fermer).hidden = true; });
+}
+for (const id of ['a11yModale', 'avisModale']) {
+  $('#' + id).addEventListener('click', (e) => { if (e.target.id === id) $('#' + id).hidden = true; });
+}
+
+// Démarrage : accessibilité + série du jour + interface adaptée à la classe.
+appliquerA11y();
 majSerie();
 appliquerVibe();
 construireAccueil();

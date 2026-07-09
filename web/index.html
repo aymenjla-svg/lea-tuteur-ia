@@ -22,6 +22,7 @@
         <header class="hud-top">
           <div class="logo">LÉA<svg class="logo-tube" viewBox="0 0 28 28" aria-hidden="true"><g transform="rotate(24 14 14)"><rect x="10.5" y="3" width="7" height="20" rx="3.5" fill="rgba(255,255,255,.22)" stroke="#fff" stroke-width="1.4"/><path d="M10.5 14 h7 v5.5 a3.5 3.5 0 0 1 -7 0 z" fill="#ffc23c"/><circle class="bub bb1" cx="14" cy="17" r="1.1" fill="#fff"/><circle class="bub bb2" cx="15.2" cy="18" r="0.8" fill="#fff"/><circle class="bub bb3" cx="12.9" cy="18.4" r="0.7" fill="#fff"/></g></svg></div>
           <div class="stats" id="stats"></div>
+          <button id="a11yBtn" class="a11y-btn" type="button" aria-label="Accessibilité et avis" title="Accessibilité et avis">Aa</button>
         </header>
 
         <div class="hero">
@@ -120,6 +121,51 @@
         <p class="note">Répétition illimitée, sans jugement. La vidéo ne quitte jamais l'appareil.</p>
       </section>
     </main>
+
+    <!-- Modale accessibilité -->
+    <div id="a11yModale" class="modale" hidden>
+      <div class="modale-carte" role="dialog" aria-modal="true" aria-label="Accessibilité">
+        <h2>Accessibilité</h2>
+        <div class="a11y-groupe">
+          <div class="a11y-lib">Taille du texte</div>
+          <div class="a11y-seg" id="segTaille">
+            <button type="button" data-taille="petit">A−</button>
+            <button type="button" data-taille="normal">A</button>
+            <button type="button" data-taille="grand">A+</button>
+          </div>
+        </div>
+        <div class="a11y-groupe">
+          <button type="button" class="a11y-toggle" id="tgLecture" data-cle="lecture">
+            <span>Lecture facilitée</span><span class="etat">Non</span>
+          </button>
+        </div>
+        <div class="a11y-groupe">
+          <button type="button" class="a11y-toggle" id="tgContraste" data-cle="contraste">
+            <span>Contraste élevé</span><span class="etat">Non</span>
+          </button>
+        </div>
+        <div class="a11y-lib">Prof</div>
+        <div class="modale-liens">
+          <a href="guide.html">Guide de test</a>
+          <button type="button" id="ouvrirAvis">Donner mon avis</button>
+        </div>
+        <button type="button" class="modale-fermer" data-fermer="a11yModale">Fermer</button>
+      </div>
+    </div>
+
+    <!-- Modale avis / feedback -->
+    <div id="avisModale" class="modale" hidden>
+      <div class="modale-carte" role="dialog" aria-modal="true" aria-label="Donner mon avis">
+        <h2>Ton avis compte</h2>
+        <textarea id="avisTexte" class="fb-zone" placeholder="Ce qui marche, ce qui bloque, tes idées…"></textarea>
+        <p class="fb-note">Enregistré sur cet appareil. Utilise « Copier » pour transmettre tous les retours.</p>
+        <div class="modale-liens">
+          <button type="button" id="avisEnregistrer">Enregistrer</button>
+          <button type="button" id="avisCopier">Copier tout</button>
+        </div>
+        <button type="button" class="modale-fermer" data-fermer="avisModale">Fermer</button>
+      </div>
+    </div>
 
     <script src="lea-engine.js"></script>
     <script src="app.js" type="module"></script>
