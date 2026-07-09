@@ -144,50 +144,78 @@ export const COURS = {
     figure: 'ohm',
     scenes: [
       {
+        titre: 'Pourquoi la loi d’Ohm ?',
+        focus: 'circuit',
+        points: ['L’électricité est partout : lampes, téléphone, voiture.', 'Une seule loi permet de la maîtriser.'],
+        narration:
+          'L’électricité alimente presque tout autour de toi. Pour la comprendre et l’utiliser ' +
+          'sans danger, les scientifiques ont trouvé une relation très simple entre trois ' +
+          'grandeurs. On va la construire ensemble, pas à pas.',
+      },
+      {
         titre: 'Un circuit, comme de l’eau',
         focus: 'circuit',
-        points: ['Le courant tourne en boucle.', 'Imagine de l’eau dans des tuyaux.'],
+        points: ['Le courant tourne en boucle fermée.', 'Image utile : de l’eau dans des tuyaux.'],
         narration:
-          'Un circuit électrique, c’est une boucle fermée. Pour bien le comprendre, ' +
-          'imagine de l’eau qui circule dans des tuyaux. Tout va découler de cette image.',
+          'Un circuit électrique, c’est une boucle fermée : si on la coupe, plus rien ne passe. ' +
+          'Pour bien le comprendre, imagine de l’eau qui circule dans des tuyaux — toute la ' +
+          'leçon va découler de cette image.',
       },
       {
         titre: 'La tension (U) : la pompe',
         focus: 'U',
-        points: ['Tension = ce qui pousse le courant.', 'En volts (V).'],
+        points: ['Tension = ce qui « pousse » le courant.', 'En volts (V).', 'Pile plate : 4,5 V · prise : 230 V.'],
         narration:
-          'La pile, c’est la pompe : c’est elle qui pousse l’eau, qui met le courant en ' +
-          'mouvement. Cette « poussée », c’est la tension, mesurée en volts.',
+          'Le générateur, c’est la pompe : c’est lui qui pousse l’eau et met le courant en ' +
+          'mouvement. Cette poussée, c’est la tension, en volts. Une pile plate fait 4,5 volts, ' +
+          'une prise de courant 230 volts — beaucoup plus.',
       },
       {
         titre: 'L’intensité (I) : le débit',
         focus: 'I',
-        points: ['Intensité = quantité de courant qui passe.', 'En ampères (A).'],
+        points: ['Intensité = quantité de courant qui passe.', 'En ampères (A).', 'Une petite lampe : environ 0,3 A.'],
         narration:
-          'L’intensité, c’est le débit : la quantité d’eau qui passe chaque seconde. ' +
-          'Plus il passe de courant, plus l’intensité est grande. On la mesure en ampères.',
+          'L’intensité, c’est le débit : la quantité d’électricité qui passe chaque seconde, ' +
+          'comme l’eau qui traverse le tuyau. Plus il en passe, plus l’intensité est grande. ' +
+          'On la mesure en ampères ; une petite lampe consomme environ 0,3 ampère.',
       },
       {
         titre: 'La résistance (R) : le rétrécissement',
         focus: 'R',
-        points: ['Résistance = ce qui freine le courant.', 'En ohms (Ω).'],
+        points: ['Résistance = ce qui freine le courant.', 'En ohms (Ω).', 'R grand → courant plus faible.'],
         narration:
-          'La résistance, c’est un rétrécissement du tuyau : elle freine le débit. Plus ' +
-          'la résistance est grande, plus le courant est gêné. On la mesure en ohms.',
+          'La résistance, c’est un rétrécissement du tuyau : elle freine le passage. Plus la ' +
+          'résistance est grande, plus le courant a du mal à passer, donc plus l’intensité est ' +
+          'faible. On la mesure en ohms.',
       },
       {
         titre: 'La loi d’Ohm : U = R × I',
         focus: 'loi',
-        points: ['Tension = résistance × intensité.', 'Les trois grandeurs sont liées.'],
+        points: ['Tension = résistance × intensité.', 'Connaître deux grandeurs donne la troisième.'],
         narration:
-          'Voici la loi d’Ohm : la tension est égale à la résistance multipliée par ' +
-          'l’intensité. Ces trois grandeurs sont reliées pour toujours.',
+          'Voici la loi d’Ohm : la tension aux bornes d’une résistance est égale à la ' +
+          'résistance multipliée par l’intensité. C’est puissant : si tu connais deux des trois ' +
+          'grandeurs, tu peux toujours calculer la troisième.',
+      },
+      {
+        titre: 'Un exemple résolu ensemble',
+        focus: 'loi',
+        points: [
+          'Données : R = 20 Ω et I = 0,5 A.',
+          '1) On écrit la loi : U = R × I.',
+          '2) On remplace : U = 20 × 0,5.',
+          '3) Résultat : U = 10 V.',
+        ],
+        narration:
+          'Regarde comment on procède. On a une résistance de 20 ohms parcourue par 0,5 ampère. ' +
+          'On écrit la loi, U égale R fois I ; on remplace par les valeurs, 20 fois 0,5 ; et on ' +
+          'calcule : la tension vaut 10 volts. Toujours ces trois étapes : la loi, on remplace, on calcule.',
       },
       {
         titre: 'Vérifie que tu as compris',
         focus: 'R',
         points: ['Une question rapide avant de calculer.'],
-        narration: 'D’abord, une petite question de réflexion.',
+        narration: 'Avant de calculer, une petite question de réflexion.',
         qcm: {
           question: 'Dans un circuit, à quoi sert une résistance ?',
           options: [
@@ -198,10 +226,19 @@ export const COURS = {
         },
       },
       {
+        titre: 'Attention au danger',
+        focus: 'circuit',
+        points: ['La tension du secteur (230 V) est dangereuse.', 'On n’expérimente qu’avec des piles.'],
+        narration:
+          'Un mot de sécurité : la tension d’une prise, 230 volts, peut être mortelle. En classe ' +
+          'comme à la maison, on n’expérimente jamais avec le secteur — seulement avec des piles, ' +
+          'sous basse tension.',
+      },
+      {
         titre: 'À toi de jouer',
         focus: 'loi',
-        points: ['Applique U = R × I.'],
-        narration: 'Dernier effort : applique la loi d’Ohm sur cet exemple.',
+        points: ['Applique les 3 étapes : la loi, on remplace, on calcule.'],
+        narration: 'À toi maintenant, exactement comme dans l’exemple.',
         checkpoint: {
           enonce: 'Une résistance de 10 Ω est parcourue par un courant de 3 A. Quelle tension, en volts ?',
           valeur: 30, tolerance: 0, unite: 'V',
