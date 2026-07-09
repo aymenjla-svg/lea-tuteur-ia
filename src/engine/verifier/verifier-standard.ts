@@ -22,6 +22,21 @@ import type {
 import { normaliser } from '../core.js';
 import { equivalentes } from './expression.js';
 
+/**
+ * Lecture TOLÉRANTE d'un nombre saisi par l'élève : virgule décimale, espaces
+ * (y compris insécables, séparateurs de milliers) et unité écrite après le
+ * nombre (« 60 km/h », « 1 150 W ») sont acceptés. On extrait le premier nombre.
+ * Renvoie `null` si aucun nombre n'est présent. Ne valide jamais du faux : on
+ * ne fait qu'assouplir la SAISIE, la comparaison de valeur reste stricte.
+ */
+export function lireNombre(texte: string): number | null {
+  const norm = texte.replace(/,/g, '.').replace(/\s/g, '');
+  const m = norm.match(/-?\d+(?:\.\d+)?/);
+  if (!m) return null;
+  const v = Number(m[0]);
+  return Number.isFinite(v) ? v : null;
+}
+
 export class VerifierStandard implements Verifier {
   readonly kinds: readonly VerifierKind[] = [
     'numeric',
@@ -47,9 +62,8 @@ export class VerifierStandard implements Verifier {
     question: Extract<Question, { kind: 'numeric' }>,
     reponse: ReponseEleve,
   ): Verdict {
-    const brut = (reponse.texte ?? '').trim().replace(',', '.');
-    const valeur = Number(brut);
-    if (brut === '' || !Number.isFinite(valeur)) {
+    const valeur = lireNombre(reponse.texte ?? '');
+    if (valeur === null) {
       return creerVerdict({
         correct: false,
         criteres_satisfaits: [],

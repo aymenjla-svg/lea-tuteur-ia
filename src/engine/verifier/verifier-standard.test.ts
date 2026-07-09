@@ -29,6 +29,23 @@ test('numeric : accepte la virgule décimale et la tolérance', async () => {
   assert.equal((await v.verifier(q, { texte: '3,2' })).correct, false);
 });
 
+test('numeric : saisie tolérante (unité écrite, espaces, virgule)', async () => {
+  const q: Question = {
+    kind: 'numeric',
+    modalite: 'textuel',
+    enonce: 'v ?',
+    attendu: { valeur: 60, tolerance: 0 },
+  };
+  for (const t of ['60 km/h', '60km/h', ' 60 ', '=60']) {
+    assert.equal((await v.verifier(q, { texte: t })).correct, true, `« ${t} » devrait passer`);
+  }
+  // séparateur de milliers + unité
+  const q2: Question = { kind: 'numeric', modalite: 'textuel', enonce: 'P ?', attendu: { valeur: 1150, tolerance: 0 } };
+  assert.equal((await v.verifier(q2, { texte: '1 150 W' })).correct, true);
+  // on n'accepte pas du faux pour autant
+  assert.equal((await v.verifier(q, { texte: '600 km/h' })).correct, false);
+});
+
 test('numeric : réponse fausse → diagnostic + erreur-type', async () => {
   const verdict = await v.verifier(numerique, { texte: '70' });
   assert.equal(verdict.correct, false);

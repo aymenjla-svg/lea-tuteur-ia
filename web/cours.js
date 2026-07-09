@@ -303,11 +303,19 @@ export const COURS = {
   },
 };
 
+/** Lecture tolérante d'un nombre (virgule, espaces, unité écrite après). */
+function lireNombre(texte) {
+  const norm = String(texte ?? '').replace(/,/g, '.').replace(/\s/g, '');
+  const m = norm.match(/-?\d+(?:\.\d+)?/);
+  if (!m) return null;
+  const v = Number(m[0]);
+  return Number.isFinite(v) ? v : null;
+}
+
 /** Vérifie un mini-exo (même logique numérique que le moteur). */
 export function verifierCheckpoint(cp, texte) {
-  const brut = (texte ?? '').trim().replace(',', '.');
-  const valeur = Number(brut);
-  if (brut === '' || !Number.isFinite(valeur)) {
+  const valeur = lireNombre(texte);
+  if (valeur === null) {
     return { correct: false, message: 'Écris un nombre pour répondre.' };
   }
   if (Math.abs(valeur - cp.valeur) <= cp.tolerance) {

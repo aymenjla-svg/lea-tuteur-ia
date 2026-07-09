@@ -66,6 +66,19 @@ const moteur = new MoteurLecon({
   catalogueErreurs: catalogueErreursPhysique(tenant_id, horloge),
 });
 
+/**
+ * Anti-« spoiler » : la question envoyée au navigateur ne doit JAMAIS contenir
+ * la réponse. On ne garde que ce que l'UI affiche (énoncé + type) ; `attendu`,
+ * `pieges`, `bonnes_reponses`, etc. restent côté moteur (mémoire), qui reste le
+ * seul à vérifier. La vérification n'utilise pas l'objet renvoyé.
+ */
+function nettoyerEtat(etat: unknown): unknown {
+  const e = etat as { question_courante?: { kind?: string; modalite?: string; enonce?: string } };
+  if (!e || !e.question_courante) return etat;
+  const q = e.question_courante;
+  return { ...e, question_courante: { kind: q.kind, modalite: q.modalite, enonce: q.enonce } };
+}
+
 async function creerSession(
   objectifId?: string,
 ): Promise<{ session_id: string; etat: unknown }> {
@@ -77,13 +90,13 @@ async function creerSession(
     objectif_initial: (objectifId ? id<ObjectifId>(objectifId) : OBJ_VITESSE) as ObjectifId,
   };
   const etat = await moteur.demarrer(contexte);
-  return { session_id, etat };
+  return { session_id, etat: nettoyerEtat(etat) };
 }
 
 async function repondre(session_id: string, texte: string): Promise<{ etat: unknown }> {
   horloge.avancer(30_000); // 30 s par échange (comme la démo) → maîtrise/decay réalistes
   const etat = await moteur.repondre(id<SessionId>(session_id), texte);
-  return { etat };
+  return { etat: nettoyerEtat(etat) };
 }
 
 function dashboard(): unknown {

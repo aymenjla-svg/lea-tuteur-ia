@@ -962,6 +962,13 @@
   }
 
   // src/engine/verifier/verifier-standard.ts
+  function lireNombre(texte) {
+    const norm = texte.replace(/,/g, ".").replace(/\s/g, "");
+    const m = norm.match(/-?\d+(?:\.\d+)?/);
+    if (!m) return null;
+    const v = Number(m[0]);
+    return Number.isFinite(v) ? v : null;
+  }
   var _VerifierStandard_instances, numeric_fn, qcm_fn, symbolic_fn, libre_fn;
   var VerifierStandard = class {
     constructor() {
@@ -988,9 +995,8 @@
   };
   _VerifierStandard_instances = new WeakSet();
   numeric_fn = function(question, reponse) {
-    const brut = (reponse.texte ?? "").trim().replace(",", ".");
-    const valeur = Number(brut);
-    if (brut === "" || !Number.isFinite(valeur)) {
+    const valeur = lireNombre(reponse.texte ?? "");
+    if (valeur === null) {
       return creerVerdict({
         correct: false,
         criteres_satisfaits: [],
@@ -1584,6 +1590,12 @@
     pedagogie: PEDAGOGIE,
     catalogueErreurs: catalogueErreursPhysique(tenant_id, horloge)
   });
+  function nettoyerEtat(etat) {
+    const e = etat;
+    if (!e || !e.question_courante) return etat;
+    const q = e.question_courante;
+    return { ...e, question_courante: { kind: q.kind, modalite: q.modalite, enonce: q.enonce } };
+  }
   async function creerSession(objectifId) {
     const session_id = nouvelId();
     const contexte = {
@@ -1593,12 +1605,12 @@
       objectif_initial: objectifId ? id(objectifId) : OBJ_VITESSE
     };
     const etat = await moteur.demarrer(contexte);
-    return { session_id, etat };
+    return { session_id, etat: nettoyerEtat(etat) };
   }
   async function repondre(session_id, texte) {
     horloge.avancer(3e4);
     const etat = await moteur.repondre(id(session_id), texte);
-    return { etat };
+    return { etat: nettoyerEtat(etat) };
   }
   function dashboard() {
     return tableauDeBord(magasin);
