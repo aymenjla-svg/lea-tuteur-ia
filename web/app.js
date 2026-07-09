@@ -10,6 +10,7 @@ import { voix } from './voix.js';
 import { MODULES, chargerProgress, majProgress, progressModule } from './modules.js';
 import { COURS, verifierCheckpoint } from './cours.js';
 import { figure } from './figures.js';
+import { enregistrerReponse, ERREUR_LIB } from './suivi.js';
 import {
   NIVEAUX, niveauCourant, definirNiveau, appliquerVibe,
   xp, ajouterXp, niveauJeu, progNiveauJeu, majSerie, serie, etoiles,
@@ -54,16 +55,6 @@ let checkpointOk = true;
 const cpFaits = new Set();
 // Bilan de séance (série d'exercices) : alimenté par etat.correction.
 let bilan = { total: 0, reussis: 0, erreurs: {} };
-const ERREUR_LIB = {
-  multiplie_au_lieu_de_diviser: 'multiplier au lieu de diviser',
-  inverse_division: 'division inversée',
-  inverse_relation: 'relation inversée',
-  additionne_au_lieu_de_multiplier: 'additionner au lieu de multiplier',
-  confond_masse_poids: 'confusion masse / poids',
-  oubli_conversion_duree: 'durée non convertie',
-  ecart_numerique: 'écart de calcul',
-  reponse_non_numerique: 'réponse non numérique',
-};
 
 /* --- Transport ------------------------------------------------------------ */
 
@@ -471,7 +462,7 @@ function rendre(etat) {
   const enonce = etat.question_courante?.enonce ?? '';
   const fini = !!etat.termine;
 
-  // Bilan de séance : on cumule chaque correction (réussite / erreur-type).
+  // Bilan de séance + suivi persistant : on cumule chaque correction.
   if (etat.correction) {
     bilan.total += 1;
     if (etat.correction.correct) bilan.reussis += 1;
@@ -479,6 +470,12 @@ function rendre(etat) {
       const t = etat.correction.erreur_type_id;
       bilan.erreurs[t] = (bilan.erreurs[t] ?? 0) + 1;
     }
+    // Trace pour le tableau de bord éducateur (localStorage).
+    enregistrerReponse(
+      etat.objectif_courant,
+      etat.correction.correct,
+      etat.correction.erreur_type_id,
+    );
   }
 
   // TABLEAU = la consigne (ce que le prof « écrit ») + la relation en coin.
