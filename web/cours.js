@@ -168,6 +168,139 @@ export const COURS = {
       },
     ],
   },
+
+  // ------------------------------------------------------------- Matière ---
+  matiere: {
+    figure: 'matiere',
+    scenes: [
+      {
+        titre: 'La masse (m)',
+        focus: 'masse',
+        points: ['Masse = quantité de matière.', 'Mesurée à la balance, en grammes (g).'],
+        narration:
+          'On part d’un bloc de matière. Sa masse, c’est la quantité de matière qu’il contient : ' +
+          'on la mesure à la balance, en grammes.',
+      },
+      {
+        titre: 'Le volume (V)',
+        focus: 'volume',
+        points: ['Volume = la place occupée.', 'En centimètres cubes (cm³).'],
+        narration:
+          'Son volume, c’est la place qu’il occupe dans l’espace. Pour un solide, on peut le ' +
+          'mesurer en le plongeant dans l’eau. On l’exprime en centimètres cubes.',
+      },
+      {
+        titre: 'La masse volumique : ρ = m / V',
+        focus: 'relation',
+        points: ['ρ = masse ÷ volume.', 'Elle identifie le matériau (fer, or, bois…).'],
+        narration:
+          'La masse volumique relie les deux : on divise la masse par le volume. Sa valeur est ' +
+          'la carte d’identité du matériau : le fer, l’or ou le bois n’ont pas la même.',
+      },
+      {
+        titre: 'À toi de jouer',
+        focus: 'relation',
+        points: ['Applique ρ = m ÷ V.'],
+        narration: 'À toi. Divise bien la masse par le volume.',
+        checkpoint: {
+          enonce: 'Un caillou a une masse de 50 g et un volume de 20 cm³. Sa masse volumique, en g/cm³ ?',
+          valeur: 2.5, tolerance: 0, unite: 'g/cm³',
+          pieges: [{ valeur: 1000, indice: 'Ici on divise la masse par le volume, on ne multiplie pas.' }],
+        },
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------- Énergie ---
+  energie: {
+    figure: 'energie',
+    scenes: [
+      {
+        titre: 'La tension (U)',
+        focus: 'tension',
+        points: ['Le générateur fournit une tension U.', 'En volts (V).'],
+        narration:
+          'Un appareil électrique est alimenté par un générateur, qui impose une tension : ' +
+          'la « poussée » électrique, mesurée en volts.',
+      },
+      {
+        titre: 'L’intensité (I)',
+        focus: 'intensite',
+        points: ['Le courant qui traverse l’appareil.', 'En ampères (A).'],
+        narration:
+          'À travers l’appareil circule un courant électrique, dont l’intensité se mesure en ampères.',
+      },
+      {
+        titre: 'La puissance (P)',
+        focus: 'puissance',
+        points: ['Puissance = énergie consommée chaque seconde.', 'En watts (W).'],
+        narration:
+          'La puissance, c’est l’énergie que l’appareil consomme chaque seconde — ici, la chaleur ' +
+          'du radiateur. On la mesure en watts.',
+      },
+      {
+        titre: 'La relation : P = U × I',
+        focus: 'loi',
+        points: ['Puissance = tension × intensité.'],
+        narration:
+          'On relie tout : la puissance électrique est le produit de la tension par l’intensité. ' +
+          'Plus l’une ou l’autre est grande, plus l’appareil est puissant.',
+      },
+      {
+        titre: 'À toi de jouer',
+        focus: 'loi',
+        points: ['Applique P = U × I.'],
+        narration: 'À toi. Multiplie la tension par l’intensité.',
+        checkpoint: {
+          enonce: 'Une lampe fonctionne sous 6 V et est parcourue par 0,5 A. Sa puissance, en watts ?',
+          valeur: 3, tolerance: 0, unite: 'W',
+          pieges: [{ valeur: 12, indice: 'On multiplie U et I : 6 × 0,5.' }],
+        },
+      },
+    ],
+  },
+
+  // -------------------------------------------------------------- Signaux ---
+  signaux: {
+    figure: 'signaux',
+    scenes: [
+      {
+        titre: 'Un signal se propage',
+        focus: 'distance',
+        points: ['Son ou lumière parcourt une distance d.', 'En mètres (m).'],
+        narration:
+          'Un signal — un son, une lumière — part d’une source et se propage. Il parcourt une ' +
+          'distance jusqu’à nous.',
+      },
+      {
+        titre: 'Le temps de trajet (t)',
+        focus: 'temps',
+        points: ['Il met un certain temps t.', 'En secondes (s).'],
+        narration:
+          'Ce trajet prend du temps. Le son est lent : c’est pourquoi on voit l’éclair avant ' +
+          'd’entendre le tonnerre. La lumière, elle, va beaucoup plus vite.',
+      },
+      {
+        titre: 'La vitesse : v = d / t',
+        focus: 'vitesse',
+        points: ['v = distance ÷ temps.', 'Son ≈ 340 m/s, lumière ≈ 300 000 km/s.'],
+        narration:
+          'La vitesse du signal, c’est la distance divisée par le temps. Dans l’air, le son file ' +
+          'à environ 340 mètres par seconde ; la lumière, à 300 000 kilomètres par seconde !',
+      },
+      {
+        titre: 'À toi de jouer',
+        focus: 'vitesse',
+        points: ['Applique v = d ÷ t.'],
+        narration: 'À toi. Divise la distance par le temps.',
+        checkpoint: {
+          enonce: 'Un son parcourt 1700 m en 5 s. Quelle est sa vitesse, en m/s ?',
+          valeur: 340, tolerance: 0, unite: 'm/s',
+          pieges: [{ valeur: 8500, indice: 'Ici on divise la distance par le temps, on ne multiplie pas.' }],
+        },
+      },
+    ],
+  },
 };
 
 /** Vérifie un mini-exo (même logique numérique que le moteur). */

@@ -162,6 +162,9 @@
   var OBJ_VITESSE_PREREQ = id("obj-vitesse-relation");
   var OBJ_POIDS = id("obj-poids");
   var OBJ_OHM = id("obj-ohm");
+  var OBJ_MASSE_VOLUMIQUE = id("obj-masse-volumique");
+  var OBJ_PUISSANCE = id("obj-puissance");
+  var OBJ_SIGNAUX = id("obj-signaux");
   function curriculumPhysique(tenant_id2, horloge2) {
     const t = horloge2.maintenant();
     const meta = { tenant_id: tenant_id2, cree_le: t, modifie_le: t };
@@ -204,7 +207,32 @@
       notion: "L\u2019\xE9nergie, ses transferts et ses conversions",
       competences: ["modeliser", "calculer"]
     });
+    c.ajouterObjectif({
+      ...meta,
+      id: OBJ_MASSE_VOLUMIQUE,
+      referentiel_id: referentiel.id,
+      libelle: "Calculer une masse volumique (\u03C1 = m/V)",
+      notion: "Organisation et transformations de la mati\xE8re",
+      competences: ["modeliser", "calculer"]
+    });
+    c.ajouterObjectif({
+      ...meta,
+      id: OBJ_PUISSANCE,
+      referentiel_id: referentiel.id,
+      libelle: "Exploiter la puissance \xE9lectrique (P = U\xB7I)",
+      notion: "L\u2019\xE9nergie, ses transferts et ses conversions",
+      competences: ["modeliser", "calculer"]
+    });
+    c.ajouterObjectif({
+      ...meta,
+      id: OBJ_SIGNAUX,
+      referentiel_id: referentiel.id,
+      libelle: "Calculer la vitesse d\u2019un signal (son, lumi\xE8re)",
+      notion: "Des signaux pour observer et communiquer",
+      competences: ["calculer", "raisonner"]
+    });
     c.ajouterPrerequis({ ...meta, objectif_id: OBJ_VITESSE, prerequis_id: OBJ_VITESSE_PREREQ });
+    c.ajouterPrerequis({ ...meta, objectif_id: OBJ_SIGNAUX, prerequis_id: OBJ_VITESSE_PREREQ });
     c.ajouterTemplate({
       ...meta,
       id: id("tmpl-vitesse-relation-12-4"),
@@ -333,6 +361,93 @@
       ],
       representations: [
         { modalite: "textuel", texte: "U (V) = R (\u03A9) \xD7 I (A)." }
+      ]
+    });
+    c.ajouterTemplate({
+      ...meta,
+      id: id("tmpl-masse-volumique-fer"),
+      objectif_id: OBJ_MASSE_VOLUMIQUE,
+      origine: "prof",
+      statut: "valide",
+      parametres: [],
+      etapes: [
+        {
+          ordre: 1,
+          question: {
+            kind: "numeric",
+            modalite: "textuel",
+            enonce: "Un bloc de fer a une masse de 79 g et un volume de 10 cm\xB3. Quelle est sa masse volumique, en g/cm\xB3 ?",
+            attendu: { valeur: 7.9, tolerance: 0 },
+            pieges: [
+              // 790 = m × V (multiplie au lieu de diviser).
+              { valeur: 790, erreur_type_id: "multiplie_au_lieu_de_diviser" },
+              // 0,127 ≈ V / m (division inversée).
+              { valeur: 0.13, erreur_type_id: "inverse_division", tolerance: 0.01 }
+            ]
+          },
+          indice: "La masse volumique est la masse divis\xE9e par le volume : \u03C1 = m \xF7 V."
+        }
+      ],
+      representations: [
+        { modalite: "textuel", texte: "\u03C1 (g/cm\xB3) = m (g) \xF7 V (cm\xB3)." }
+      ]
+    });
+    c.ajouterTemplate({
+      ...meta,
+      id: id("tmpl-puissance-230-5"),
+      objectif_id: OBJ_PUISSANCE,
+      origine: "prof",
+      statut: "valide",
+      parametres: [],
+      etapes: [
+        {
+          ordre: 1,
+          question: {
+            kind: "numeric",
+            modalite: "textuel",
+            enonce: "Un radiateur fonctionne sous une tension de 230 V et est parcouru par un courant de 5 A. Quelle est sa puissance, en watts ?",
+            attendu: { valeur: 1150, tolerance: 0 },
+            pieges: [
+              // 46 = U ÷ I (relation inversée).
+              { valeur: 46, erreur_type_id: "inverse_relation" },
+              // 235 = U + I (additionne au lieu de multiplier).
+              { valeur: 235, erreur_type_id: "additionne_au_lieu_de_multiplier" }
+            ]
+          },
+          indice: "La puissance \xE9lectrique est le produit de la tension par l\u2019intensit\xE9 : P = U \xD7 I."
+        }
+      ],
+      representations: [
+        { modalite: "textuel", texte: "P (W) = U (V) \xD7 I (A)." }
+      ]
+    });
+    c.ajouterTemplate({
+      ...meta,
+      id: id("tmpl-signal-son-680-2"),
+      objectif_id: OBJ_SIGNAUX,
+      origine: "prof",
+      statut: "valide",
+      parametres: [],
+      etapes: [
+        {
+          ordre: 1,
+          question: {
+            kind: "numeric",
+            modalite: "textuel",
+            enonce: "Dans l\u2019air, un son parcourt 680 m en 2 s. Quelle est la vitesse du son, en m/s ?",
+            attendu: { valeur: 340, tolerance: 0 },
+            pieges: [
+              // 1360 = d × t (multiplie au lieu de diviser).
+              { valeur: 1360, erreur_type_id: "multiplie_au_lieu_de_diviser" },
+              // 0,003 ≈ t / d (division inversée).
+              { valeur: 3e-3, erreur_type_id: "inverse_division", tolerance: 1e-3 }
+            ]
+          },
+          indice: "La vitesse d\u2019un signal est la distance parcourue divis\xE9e par la dur\xE9e : v = d \xF7 t."
+        }
+      ],
+      representations: [
+        { modalite: "textuel", texte: "v (m/s) = d (m) \xF7 t (s)." }
       ]
     });
     c.ajouterExplication({

@@ -233,6 +233,7 @@ function retourAccueil() {
 const CHIPS_PAR_UNITE = {
   'm/s': ['m/s', 'km/h', 'm', 's'], 'km/h': ['km/h', 'm/s', 'km', 'h'],
   'N': ['N', 'kg', 'g', 'N/kg'], 'V': ['V', 'Ω', 'A', 'W'],
+  'g/cm³': ['g/cm³', 'cm³', 'g', 'kg/L'], 'W': ['W', 'V', 'A', 'J'],
 };
 
 function ouvrirCours(m) {
@@ -353,6 +354,8 @@ async function repondre(texte) {
 const FORMULES = {
   'obj-vitesse': 'v = d / t', 'obj-vitesse-relation': 'v = d / t',
   'obj-poids': 'P = m × g', 'obj-ohm': 'U = R × I',
+  'obj-masse-volumique': 'ρ = m / V', 'obj-puissance': 'P = U × I',
+  'obj-signaux': 'v = d / t',
 };
 
 // Unités par objectif : la « bonne » (précisée dans l'énoncé) + des pastilles
@@ -363,6 +366,9 @@ const UNITES = {
   'obj-vitesse-relation': { bonne: 'm/s',  choix: ['m/s', 'km/h', 'm', 's'] },
   'obj-poids':            { bonne: 'N',    choix: ['N', 'kg', 'g', 'N/kg'] },
   'obj-ohm':              { bonne: 'V',    choix: ['V', 'Ω', 'A', 'W'] },
+  'obj-masse-volumique':  { bonne: 'g/cm³', choix: ['g/cm³', 'cm³', 'g', 'kg/L'] },
+  'obj-puissance':        { bonne: 'W',    choix: ['W', 'V', 'A', 'J'] },
+  'obj-signaux':          { bonne: 'm/s',  choix: ['m/s', 'km/h', 'm', 's'] },
 };
 let uniteObjectif = null;   // { bonne, choix } de l'objectif courant
 let uniteObjectifId = null; // pour ne reconstruire les pastilles qu'au changement

@@ -30,6 +30,9 @@ export const OBJ_VITESSE = id<ObjectifId>('obj-vitesse');
 export const OBJ_VITESSE_PREREQ = id<ObjectifId>('obj-vitesse-relation');
 export const OBJ_POIDS = id<ObjectifId>('obj-poids');
 export const OBJ_OHM = id<ObjectifId>('obj-ohm');
+export const OBJ_MASSE_VOLUMIQUE = id<ObjectifId>('obj-masse-volumique');
+export const OBJ_PUISSANCE = id<ObjectifId>('obj-puissance');
+export const OBJ_SIGNAUX = id<ObjectifId>('obj-signaux');
 
 /** Relation quantitative affichée au tableau, par objectif (indicatif UI). */
 export const FORMULE_OBJECTIF: Readonly<Record<string, string>> = {
@@ -37,6 +40,9 @@ export const FORMULE_OBJECTIF: Readonly<Record<string, string>> = {
   'obj-vitesse-relation': 'v = d / t',
   'obj-poids': 'P = m × g',
   'obj-ohm': 'U = R × I',
+  'obj-masse-volumique': 'ρ = m / V',
+  'obj-puissance': 'P = U × I',
+  'obj-signaux': 'v = d / t',
 };
 
 /** Construit le curriculum de physique (cycle 4). */
@@ -93,8 +99,37 @@ export function curriculumPhysique(
     competences: ['modeliser', 'calculer'],
   });
 
+  c.ajouterObjectif({
+    ...meta,
+    id: OBJ_MASSE_VOLUMIQUE,
+    referentiel_id: referentiel.id,
+    libelle: 'Calculer une masse volumique (ρ = m/V)',
+    notion: 'Organisation et transformations de la matière',
+    competences: ['modeliser', 'calculer'],
+  });
+
+  c.ajouterObjectif({
+    ...meta,
+    id: OBJ_PUISSANCE,
+    referentiel_id: referentiel.id,
+    libelle: 'Exploiter la puissance électrique (P = U·I)',
+    notion: 'L’énergie, ses transferts et ses conversions',
+    competences: ['modeliser', 'calculer'],
+  });
+
+  c.ajouterObjectif({
+    ...meta,
+    id: OBJ_SIGNAUX,
+    referentiel_id: referentiel.id,
+    libelle: 'Calculer la vitesse d’un signal (son, lumière)',
+    notion: 'Des signaux pour observer et communiquer',
+    competences: ['calculer', 'raisonner'],
+  });
+
   // DAG : calculer une vitesse suppose d'avoir compris la grandeur-quotient.
   c.ajouterPrerequis({ ...meta, objectif_id: OBJ_VITESSE, prerequis_id: OBJ_VITESSE_PREREQ });
+  // La vitesse d'un signal réutilise la même grandeur-quotient (v = d/t).
+  c.ajouterPrerequis({ ...meta, objectif_id: OBJ_SIGNAUX, prerequis_id: OBJ_VITESSE_PREREQ });
 
   // --- Templates PROF (R1), numériques, une étape --------------------------
   c.ajouterTemplate({
@@ -233,6 +268,104 @@ export function curriculumPhysique(
     ],
     representations: [
       { modalite: 'textuel', texte: 'U (V) = R (Ω) × I (A).' },
+    ],
+  });
+
+  // Masse volumique : ρ = m / V (thème « matière »).
+  c.ajouterTemplate({
+    ...meta,
+    id: id('tmpl-masse-volumique-fer'),
+    objectif_id: OBJ_MASSE_VOLUMIQUE,
+    origine: 'prof',
+    statut: 'valide',
+    parametres: [],
+    etapes: [
+      {
+        ordre: 1,
+        question: {
+          kind: 'numeric',
+          modalite: 'textuel',
+          enonce:
+            'Un bloc de fer a une masse de 79 g et un volume de 10 cm³. ' +
+            'Quelle est sa masse volumique, en g/cm³ ?',
+          attendu: { valeur: 7.9, tolerance: 0 },
+          pieges: [
+            // 790 = m × V (multiplie au lieu de diviser).
+            { valeur: 790, erreur_type_id: 'multiplie_au_lieu_de_diviser' },
+            // 0,127 ≈ V / m (division inversée).
+            { valeur: 0.13, erreur_type_id: 'inverse_division', tolerance: 0.01 },
+          ],
+        },
+        indice: 'La masse volumique est la masse divisée par le volume : ρ = m ÷ V.',
+      },
+    ],
+    representations: [
+      { modalite: 'textuel', texte: 'ρ (g/cm³) = m (g) ÷ V (cm³).' },
+    ],
+  });
+
+  // Puissance électrique : P = U × I (thème « énergie »).
+  c.ajouterTemplate({
+    ...meta,
+    id: id('tmpl-puissance-230-5'),
+    objectif_id: OBJ_PUISSANCE,
+    origine: 'prof',
+    statut: 'valide',
+    parametres: [],
+    etapes: [
+      {
+        ordre: 1,
+        question: {
+          kind: 'numeric',
+          modalite: 'textuel',
+          enonce:
+            'Un radiateur fonctionne sous une tension de 230 V et est parcouru par un ' +
+            'courant de 5 A. Quelle est sa puissance, en watts ?',
+          attendu: { valeur: 1150, tolerance: 0 },
+          pieges: [
+            // 46 = U ÷ I (relation inversée).
+            { valeur: 46, erreur_type_id: 'inverse_relation' },
+            // 235 = U + I (additionne au lieu de multiplier).
+            { valeur: 235, erreur_type_id: 'additionne_au_lieu_de_multiplier' },
+          ],
+        },
+        indice: 'La puissance électrique est le produit de la tension par l’intensité : P = U × I.',
+      },
+    ],
+    representations: [
+      { modalite: 'textuel', texte: 'P (W) = U (V) × I (A).' },
+    ],
+  });
+
+  // Vitesse d'un signal : v = d / t (thème « signaux »).
+  c.ajouterTemplate({
+    ...meta,
+    id: id('tmpl-signal-son-680-2'),
+    objectif_id: OBJ_SIGNAUX,
+    origine: 'prof',
+    statut: 'valide',
+    parametres: [],
+    etapes: [
+      {
+        ordre: 1,
+        question: {
+          kind: 'numeric',
+          modalite: 'textuel',
+          enonce:
+            'Dans l’air, un son parcourt 680 m en 2 s. Quelle est la vitesse du son, en m/s ?',
+          attendu: { valeur: 340, tolerance: 0 },
+          pieges: [
+            // 1360 = d × t (multiplie au lieu de diviser).
+            { valeur: 1360, erreur_type_id: 'multiplie_au_lieu_de_diviser' },
+            // 0,003 ≈ t / d (division inversée).
+            { valeur: 0.003, erreur_type_id: 'inverse_division', tolerance: 0.001 },
+          ],
+        },
+        indice: 'La vitesse d’un signal est la distance parcourue divisée par la durée : v = d ÷ t.',
+      },
+    ],
+    representations: [
+      { modalite: 'textuel', texte: 'v (m/s) = d (m) ÷ t (s).' },
     ],
   });
 

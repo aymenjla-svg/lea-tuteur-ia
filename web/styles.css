@@ -326,6 +326,27 @@ body::after {
 .fig-poids .poids-fleche { animation: tirer 1.8s ease-in-out infinite; }
 @keyframes tirer { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(3px); } }
 
+/* Matière : masse volumique */
+.fig-matiere[data-foc="masse"] .part-masse, .fig-matiere[data-foc="volume"] .part-volume,
+.fig-matiere[data-foc="relation"] .part { opacity: 1; }
+.fig-matiere[data-foc="relation"] .loi { opacity: 1; }
+
+/* Énergie : puissance électrique (charges qui circulent + chaleur) */
+.fig-energie[data-foc="tension"] .part-U, .fig-energie[data-foc="intensite"] .part-I,
+.fig-energie[data-foc="puissance"] .part-P, .fig-energie[data-foc="loi"] .part { opacity: 1; }
+.fig-energie[data-foc="loi"] .loi { opacity: 1; }
+.fig-energie .charge { offset-path: path("M70 46 H250 Q268 46 268 64 V138 Q268 156 250 156 H70 Q52 156 52 138 V64 Q52 46 70 46 Z"); animation: flowLoop 3.6s linear infinite; }
+.fig-energie .chaleur { animation: chauffer 1.4s ease-in-out infinite; transform-origin: center; }
+@keyframes chauffer { 0%, 100% { opacity: 0.4; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+
+/* Signaux : ondes qui se propagent */
+.fig-signaux[data-foc="distance"] .part-d, .fig-signaux[data-foc="temps"] .part-t,
+.fig-signaux[data-foc="vitesse"] .part { opacity: 1; }
+.fig-signaux[data-foc="vitesse"] .loi { opacity: 1; }
+.fig-signaux .onde { animation: propager 2.7s ease-out infinite; }
+@keyframes propager { 0% { r: 10px; opacity: 0.9; } 100% { r: 96px; opacity: 0; } }
+.fig-signaux .aiguille { transform-origin: 0 0; animation: tourner 2.7s linear infinite; }
+
 .soustitre { margin-top: 12px; min-height: 22px; text-align: center; color: var(--txt); background: var(--panel-2); border: 1.5px solid var(--border); border-radius: var(--rad); padding: 12px 18px; font-size: 1rem; line-height: 1.4; backdrop-filter: blur(10px); }
 .soustitre:empty { display: none; }
 
@@ -366,7 +387,9 @@ body::after {
 @media (prefers-reduced-motion: reduce) {
   .hud-barre, .btn-neon, .mission, .classe-seg button { transition: none; }
   .logo-dot, .hero-holo::after, .dood, .micro-btn.actif { animation: none; }
-  .fig-ohm .charge, .fig-vitesse .mobile, .fig-vitesse .aiguille, .fig-poids .poids-fleche { animation: none; }
+  .fig-ohm .charge, .fig-vitesse .mobile, .fig-vitesse .aiguille, .fig-poids .poids-fleche,
+  .fig-energie .charge, .fig-energie .chaleur, .fig-signaux .onde, .fig-signaux .aiguille { animation: none; }
   .fig-vitesse .mobile { transform: translateX(200px); }
+  .fig-signaux .onde { opacity: 0.5; }
 }
 @media (max-width: 440px) { .pc-style { display: none; } .stats { flex-wrap: wrap; } }
