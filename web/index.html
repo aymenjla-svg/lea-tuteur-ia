@@ -61,10 +61,13 @@
           <button id="voix" type="button" class="icone-btn" hidden aria-pressed="false" title="Activer la voix" aria-label="Activer la voix">🔊</button>
         </header>
 
-        <div class="fig-label">◦ Salle d'expérience — en direct</div>
+        <div class="fig-label" id="figLabel">◦ Salle d'expérience — en direct</div>
         <section id="scene" class="scene" aria-hidden="true">
           <div class="tableau">
             <span id="tableauFormule" class="tableau-formule"></span>
+            <div id="coursTitre" class="cours-titre" hidden></div>
+            <div id="figureHost" class="figure-host" hidden></div>
+            <ul id="coursPoints" class="cours-points" hidden></ul>
             <div id="tableauTexte" class="tableau-texte"></div>
           </div>
           <div id="avatarHost" class="avatar-host"></div>
@@ -100,8 +103,15 @@
           </div>
         </form>
 
+        <nav id="coursNav" class="cours-nav" hidden aria-label="Navigation du cours">
+          <button id="coursPrec" type="button" class="cnav-btn">← Précédent</button>
+          <div id="coursDots" class="cours-dots" aria-hidden="true"></div>
+          <button id="coursSuivant" type="button" class="cnav-btn cnav-suivant">Suivant →</button>
+        </nav>
+
         <div class="actions-sec">
-          <button id="perdu" type="button" class="secondaire" title="Demander de l'aide">Je suis perdu·e</button>
+          <button id="perdu" type="button" class="secondaire" title="Demander de l'aide" hidden>Je suis perdu·e</button>
+          <button id="revoirCours" type="button" class="secondaire" hidden>Revoir le cours</button>
           <button id="rejouer" type="button" class="rejouer" hidden>Recommencer</button>
         </div>
 

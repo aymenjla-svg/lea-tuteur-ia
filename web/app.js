@@ -8,6 +8,8 @@
 import { PERSONAS, MATIERE, personaParId, avatarSVG } from './personas.js';
 import { voix } from './voix.js';
 import { MODULES, chargerProgress, majProgress, progressModule } from './modules.js';
+import { COURS, verifierCheckpoint } from './cours.js';
+import { figure } from './figures.js';
 import {
   NIVEAUX, niveauCourant, definirNiveau, appliquerVibe,
   xp, ajouterXp, niveauJeu, progNiveauJeu, majSerie, serie, etoiles,
@@ -43,6 +45,13 @@ let voixActive = false;
 let micActif = false;
 let micHandle = null;
 let stFallback = 0;
+// Cours (lecteur de scènes) : 'cours' (leçon animée) ou 'exos' (série moteur).
+let mode = 'exos';
+let coursScenes = [];
+let coursFigureId = '';
+let sceneIdx = 0;
+let checkpointOk = true;
+const cpFaits = new Set();
 
 /* --- Transport ------------------------------------------------------------ */
 
@@ -205,14 +214,116 @@ function ouvrirModule(m) {
   // « Un prof devant toi » : la voix s'active d'office (le clic = geste qui
   // débloque la synthèse). L'élève peut couper via 🔊.
   if (voix.tts) { voixActive = true; majVoixUI(); }
-  demarrer(m.objectifPrincipal);
+  // Chaque module commence par son COURS animé (s'il existe), puis la série.
+  if (COURS[m.id]) { cpFaits.clear(); ouvrirCours(m); }
+  else { mode = 'exos'; appliquerMode(); demarrer(m.objectifPrincipal); }
 }
 
 function retourAccueil() {
   voix.interrompre();
+  mode = 'exos';
   $('#lecon').hidden = true;
   $('#accueil').hidden = false;
   construireAccueil(); // rafraîchit les % de progression
+}
+
+/* --- Cours : lecteur de scènes animées ------------------------------------ */
+
+// Pastilles d'unités adaptées à l'unité correcte d'un mini-exo.
+const CHIPS_PAR_UNITE = {
+  'm/s': ['m/s', 'km/h', 'm', 's'], 'km/h': ['km/h', 'm/s', 'km', 'h'],
+  'N': ['N', 'kg', 'g', 'N/kg'], 'V': ['V', 'Ω', 'A', 'W'],
+};
+
+function ouvrirCours(m) {
+  mode = 'cours';
+  const c = COURS[m.id];
+  coursScenes = c?.scenes ?? [];
+  coursFigureId = c?.figure ?? '';
+  sceneIdx = 0;
+  appliquerMode();
+  rendreScene();
+}
+
+function appliquerMode() {
+  const cours = mode === 'cours';
+  $('#figLabel').textContent = cours ? '◦ Cours — le prof explique' : '◦ Salle d’expérience — en direct';
+  $('#coursTitre').hidden = !cours;
+  $('#figureHost').hidden = !cours;
+  $('#coursPoints').hidden = !cours;
+  $('#tableauTexte').hidden = cours;
+  $('#tableauFormule').hidden = cours;
+  $('#coursNav').hidden = !cours;
+  $('#perdu').hidden = cours;
+  $('#revoirCours').hidden = cours || !COURS[moduleActuel?.id];
+  if (cours) $('#rejouer').hidden = true;
+  else $('#form').hidden = false;
+}
+
+function rendreScene() {
+  const sc = coursScenes[sceneIdx];
+  if (!sc) return;
+  const cp = sc.checkpoint;
+  checkpointOk = !cp || cpFaits.has(sceneIdx);
+
+  $('#figureHost').innerHTML = figure(coursFigureId, sc.focus);
+  $('#coursTitre').textContent = sc.titre;
+  const pts = [...sc.points];
+  if (cp) pts.push(`<b class="cp-q">${cp.enonce}</b>`);
+  $('#coursPoints').innerHTML = pts.map((p) => `<li>${p}</li>`).join('');
+
+  expression = 'happy';
+  if (cp) {
+    $('#form').hidden = false;
+    $('#reponse').value = '';
+    construireUnites({ bonne: cp.unite, choix: CHIPS_PAR_UNITE[cp.unite] ?? [cp.unite] });
+    uniteObjectifId = null; // la série reconstruira ses propres pastilles
+    parler(`${sc.narration} ${cp.enonce}`);
+  } else {
+    $('#form').hidden = true;
+    $('#unites').hidden = true;
+    parler(sc.narration);
+  }
+  majNavCours();
+  majDots();
+}
+
+function repondreCheckpoint(texte) {
+  const cp = coursScenes[sceneIdx]?.checkpoint;
+  if (!cp || texte.trim() === '') return;
+  voix.interrompre();
+  const r = verifierCheckpoint(cp, texte);
+  if (r.correct) {
+    cpFaits.add(sceneIdx);
+    checkpointOk = true;
+    expression = 'celebrate';
+    celebreJusqua = performance.now() + 1800;
+    revelerUnite();
+    majNavCours();
+  } else {
+    expression = 'encouraging';
+  }
+  parler(r.message);
+}
+
+function majNavCours() {
+  const dernier = sceneIdx >= coursScenes.length - 1;
+  $('#coursPrec').disabled = sceneIdx === 0;
+  const suiv = $('#coursSuivant');
+  suiv.disabled = !checkpointOk;
+  suiv.textContent = dernier ? 'Commencer les exercices →' : 'Suivant →';
+}
+
+function majDots() {
+  $('#coursDots').innerHTML = coursScenes
+    .map((_, i) => `<span class="cdot${i === sceneIdx ? ' actif' : i < sceneIdx ? ' fait' : ''}"></span>`)
+    .join('');
+}
+
+function passerAuxExos() {
+  mode = 'exos';
+  appliquerMode();
+  demarrer(moduleActuel.objectifPrincipal);
 }
 
 /* --- Boucle de leçon ------------------------------------------------------ */
@@ -257,9 +368,9 @@ let uniteObjectif = null;   // { bonne, choix } de l'objectif courant
 let uniteObjectifId = null; // pour ne reconstruire les pastilles qu'au changement
 let uniteChoisie = '';
 
-function construireUnites(objectif) {
+function construireUnites(spec) {
   const box = $('#unites');
-  uniteObjectif = UNITES[objectif] ?? null;
+  uniteObjectif = spec ?? null;
   uniteChoisie = '';
   majUniteBadge();
   box.innerHTML = '';
@@ -344,7 +455,7 @@ function rendre(etat) {
     $('#unites').hidden = true;
   } else if (etat.objectif_courant !== uniteObjectifId) {
     uniteObjectifId = etat.objectif_courant;
-    construireUnites(etat.objectif_courant);
+    construireUnites(UNITES[etat.objectif_courant]);
   }
   if (expression === 'celebrate') revelerUnite();
 
@@ -538,8 +649,20 @@ $('#form').addEventListener('submit', (e) => {
   e.preventDefault();
   const v = $('#reponse').value;
   $('#reponse').value = '';
-  repondre(v);
+  if (mode === 'cours') repondreCheckpoint(v);
+  else repondre(v);
 });
+$('#coursSuivant').addEventListener('click', () => {
+  if (!checkpointOk) return;
+  if (sceneIdx >= coursScenes.length - 1) passerAuxExos();
+  else { sceneIdx++; rendreScene(); }
+});
+$('#coursPrec').addEventListener('click', () => {
+  if (sceneIdx === 0) return;
+  sceneIdx--;
+  rendreScene();
+});
+$('#revoirCours').addEventListener('click', () => { if (moduleActuel) ouvrirCours(moduleActuel); });
 // Pavé numérique tactile (alimente #reponse ; le clavier physique marche aussi).
 $('#pave').addEventListener('click', (e) => {
   const b = e.target.closest('.pk');
