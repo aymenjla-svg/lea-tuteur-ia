@@ -1099,6 +1099,7 @@
   }
 
   // src/engine/session/lecon.ts
+  var MIN_REUSSITES_MAITRISE = 4;
   function estDemandeAide(texte) {
     const t = normaliser(texte);
     return /(perdu|perdue|besoin d aide|aide moi|aidez|sais pas|comprends pas|comprend pas|bloque|explique)/.test(
@@ -1131,7 +1132,7 @@
         return "idle";
     }
   }
-  var _sessions, _MoteurLecon_instances, surSucces_fn, surEchec_fn, aideRemediation_fn, appliquerLevier_fn, demanderAide_fn, entrerGuidage_fn, repondreGuidage_fn, enregistrerResultat_fn, proposer_fn, charger_fn, entreeEleve_fn, direTuteur_fn, choisirLevier_fn, autreModalite_fn, etat_fn, emettre_fn, typeEval_fn, session_fn;
+  var _sessions, _MoteurLecon_instances, surSucces_fn, correction_fn, surEchec_fn, aideRemediation_fn, appliquerLevier_fn, demanderAide_fn, entrerGuidage_fn, repondreGuidage_fn, enregistrerResultat_fn, proposer_fn, charger_fn, entreeEleve_fn, direTuteur_fn, choisirLevier_fn, autreModalite_fn, etat_fn, emettre_fn, typeEval_fn, session_fn;
   var MoteurLecon = class {
     constructor(deps) {
       __publicField(this, "deps", deps);
@@ -1150,6 +1151,7 @@
         indice,
         echecs: 0,
         termine: false,
+        reussites: 0,
         proposalIndex: 0,
         decomposition
       };
@@ -1231,22 +1233,25 @@
         objectif_id: session.objectif_courant
       };
       const texte2 = await __privateMethod(this, _MoteurLecon_instances, direTuteur_fn).call(this, session_id, `Parfait, le pr\xE9requis est acquis. Revenons \xE0 l\u2019exercice de d\xE9part. ${session.question.enonce}`, coup2);
-      return __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, texte2, coup2, expressionVerdict(true));
+      return __privateMethod(this, _MoteurLecon_instances, correction_fn).call(this, await __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, texte2, coup2, expressionVerdict(true)), true);
     }
+    session.reussites += 1;
     const maitrise = await this.deps.learnerModel.niveauMaitrise(
       session.eleve_id,
       session.objectif_initial,
       this.deps.horloge.maintenant()
     );
-    if (maitrise.probabilite_effective >= this.deps.pedagogie.seuil_maitrise) {
+    const atteint = maitrise.probabilite_effective >= this.deps.pedagogie.seuil_maitrise && session.reussites >= MIN_REUSSITES_MAITRISE;
+    if (atteint) {
       session.termine = true;
       await __privateMethod(this, _MoteurLecon_instances, emettre_fn).call(this, session_id, "objectif_maitrise", {
         objectif_id: session.objectif_initial,
-        p: maitrise.probabilite_effective
+        p: maitrise.probabilite_effective,
+        reussites: session.reussites
       });
       const coup2 = { type: "clore" };
-      const texte2 = await __privateMethod(this, _MoteurLecon_instances, direTuteur_fn).call(this, session_id, "Bravo, c\u2019est juste \u2014 et tu ma\xEEtrises maintenant cet objectif. Excellente s\xE9ance !", coup2);
-      return __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, texte2, coup2, expressionVerdict(true));
+      const texte2 = await __privateMethod(this, _MoteurLecon_instances, direTuteur_fn).call(this, session_id, `Bravo ! ${session.reussites} exercices r\xE9ussis d\u2019affil\xE9e : objectif atteint. On le reverra un peu plus tard pour bien l\u2019ancrer.`, coup2);
+      return __privateMethod(this, _MoteurLecon_instances, correction_fn).call(this, await __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, texte2, coup2, expressionVerdict(true)), true);
     }
     await __privateMethod(this, _MoteurLecon_instances, charger_fn).call(this, session, session.objectif_initial);
     const coup = {
@@ -1254,7 +1259,14 @@
       objectif_id: session.objectif_courant
     };
     const texte = await __privateMethod(this, _MoteurLecon_instances, direTuteur_fn).call(this, session_id, `Bien jou\xE9, c\u2019est correct ! On continue pour consolider. ${session.question.enonce}`, coup);
-    return __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, texte, coup, expressionVerdict(true));
+    return __privateMethod(this, _MoteurLecon_instances, correction_fn).call(this, await __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, texte, coup, expressionVerdict(true)), true);
+  };
+  /** Attache le résumé de correction à un état (pour le bilan de séance). */
+  correction_fn = function(etat, correct, erreur_type_id) {
+    return {
+      ...etat,
+      correction: { correct, ...erreur_type_id ? { erreur_type_id } : {} }
+    };
   };
   surEchec_fn = async function(session_id, session, verdict) {
     session.echecs += 1;
@@ -1270,7 +1282,7 @@
       objectif_id: session.objectif_courant
     };
     const texte = await __privateMethod(this, _MoteurLecon_instances, direTuteur_fn).call(this, session_id, `Pas tout \xE0 fait, ce n\u2019est pas la bonne r\xE9ponse.${aide} R\xE9essaie : ${session.question.enonce}`, coup);
-    return __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, texte, coup, expressionVerdict(false, session.echecs - 1));
+    return __privateMethod(this, _MoteurLecon_instances, correction_fn).call(this, await __privateMethod(this, _MoteurLecon_instances, etat_fn).call(this, session_id, session, texte, coup, expressionVerdict(false, session.echecs - 1)), false, verdict.erreur_type_id);
   };
   aideRemediation_fn = async function(verdict, indice) {
     if (verdict.erreur_type_id && this.deps.catalogueErreurs) {

@@ -52,6 +52,14 @@ import { expressionVerdict } from '../presence/emotion.js';
 /* Petit alias local : le type des leviers, extrait du répertoire R7. */
 type Levier = 'reformuler' | 'simplifier' | 'changer_de_modalite';
 
+/**
+ * Crédibilité de la maîtrise : on n'annonce « objectif atteint » qu'après au
+ * moins ce nombre de bonnes réponses DANS la séance (en plus du seuil de
+ * probabilité). Évite la « maîtrise en une réponse ». La confirmation durable
+ * passe ensuite par la répétition espacée (D4).
+ */
+const MIN_REUSSITES_MAITRISE = 4;
+
 /** Reconnaît une demande d'aide explicite (« je suis perdu·e », etc.). */
 function estDemandeAide(texte: string): boolean {
   const t = normaliser(texte);
@@ -121,6 +129,15 @@ export interface EtatLecon {
     readonly total: number;
     readonly unite?: string;
   };
+  /**
+   * Sur un tour de correction, résume le verdict pour que l'UI puisse tenir un
+   * BILAN de séance (exercices faits, réussis, erreurs fréquentes). Absent sur
+   * les tours non liés à une correction.
+   */
+  readonly correction?: {
+    readonly correct: boolean;
+    readonly erreur_type_id?: string;
+  };
 }
 
 interface SessionInterne {
@@ -132,6 +149,8 @@ interface SessionInterne {
   indice: string | undefined;
   echecs: number;
   termine: boolean;
+  /** Bonnes réponses sur l'objectif VISÉ dans cette séance (crédibilité maîtrise). */
+  reussites: number;
   /** Compteur de propositions (rotation dans la banque d'exercices, D5). */
   proposalIndex: number;
   /** Décomposition disponible pour l'exercice courant (si l'auteur en a fourni). */
@@ -176,6 +195,7 @@ export class MoteurLecon {
       indice,
       echecs: 0,
       termine: false,
+      reussites: 0,
       proposalIndex: 0,
       decomposition,
     };
@@ -303,29 +323,43 @@ export class MoteurLecon {
         `Parfait, le prérequis est acquis. Revenons à l’exercice de départ. ${session.question.enonce}`,
         coup,
       );
-      return this.#etat(session_id, session, texte, coup, expressionVerdict(true));
+      return this.#correction(
+        await this.#etat(session_id, session, texte, coup, expressionVerdict(true)),
+        true,
+      );
     }
 
+    session.reussites += 1; // bonne réponse sur l'objectif visé
     const maitrise = await this.deps.learnerModel.niveauMaitrise(
       session.eleve_id,
       session.objectif_initial,
       this.deps.horloge.maintenant(),
     );
 
-    // Objectif atteint → on clôt (coup `clore`).
-    if (maitrise.probabilite_effective >= this.deps.pedagogie.seuil_maitrise) {
+    // Objectif atteint → on clôt (coup `clore`). Deux conditions : la probabilité
+    // ET un minimum de bonnes réponses dans la séance (crédibilité, pas de
+    // « maîtrise en une réponse »).
+    const atteint =
+      maitrise.probabilite_effective >= this.deps.pedagogie.seuil_maitrise &&
+      session.reussites >= MIN_REUSSITES_MAITRISE;
+    if (atteint) {
       session.termine = true;
       await this.#emettre(session_id, 'objectif_maitrise', {
         objectif_id: session.objectif_initial,
         p: maitrise.probabilite_effective,
+        reussites: session.reussites,
       });
       const coup: CoupTuteur = { type: 'clore' };
       const texte = await this.#direTuteur(
         session_id,
-        'Bravo, c’est juste — et tu maîtrises maintenant cet objectif. Excellente séance !',
+        `Bravo ! ${session.reussites} exercices réussis d’affilée : objectif atteint. ` +
+          'On le reverra un peu plus tard pour bien l’ancrer.',
         coup,
       );
-      return this.#etat(session_id, session, texte, coup, expressionVerdict(true));
+      return this.#correction(
+        await this.#etat(session_id, session, texte, coup, expressionVerdict(true)),
+        true,
+      );
     }
 
     // Sinon : encourager puis re-proposer (consolidation).
@@ -339,7 +373,22 @@ export class MoteurLecon {
       `Bien joué, c’est correct ! On continue pour consolider. ${session.question.enonce}`,
       coup,
     );
-    return this.#etat(session_id, session, texte, coup, expressionVerdict(true));
+    return this.#correction(
+      await this.#etat(session_id, session, texte, coup, expressionVerdict(true)),
+      true,
+    );
+  }
+
+  /** Attache le résumé de correction à un état (pour le bilan de séance). */
+  #correction(
+    etat: EtatLecon,
+    correct: boolean,
+    erreur_type_id?: string,
+  ): EtatLecon {
+    return {
+      ...etat,
+      correction: { correct, ...(erreur_type_id ? { erreur_type_id } : {}) },
+    };
   }
 
   async #surEchec(
@@ -377,12 +426,16 @@ export class MoteurLecon {
     );
     // Verdict faux → expression de soutien (jamais moqueuse). `echecs` vient
     // d'être incrémenté ; on passe le compte AVANT ce tour (A1).
-    return this.#etat(
-      session_id,
-      session,
-      texte,
-      coup,
-      expressionVerdict(false, session.echecs - 1),
+    return this.#correction(
+      await this.#etat(
+        session_id,
+        session,
+        texte,
+        coup,
+        expressionVerdict(false, session.echecs - 1),
+      ),
+      false,
+      verdict.erreur_type_id,
     );
   }
 

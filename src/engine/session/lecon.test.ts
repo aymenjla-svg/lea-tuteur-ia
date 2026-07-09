@@ -220,6 +220,21 @@ test('« je suis perdu » → décomposition guidée pas-à-pas, sans donner la 
   assert.notEqual(e4.dernier_coup.type, 'encourager');
 });
 
+test('maîtrise crédible : pas de « maîtrise en une réponse » (≥ N réussites)', async () => {
+  const { moteur, contexte, session_id } = bancPhysique();
+  let etat = await moteur.demarrer(contexte);
+  const rep = () =>
+    String((etat.question_courante as { attendu: { valeur: number } }).attendu.valeur);
+  // 3 bonnes réponses : pas encore « maîtrisé » (on exige plus qu'une réussite).
+  for (let i = 0; i < 3; i++) etat = await moteur.repondre(session_id, rep());
+  assert.equal(etat.termine, false);
+  assert.equal(etat.correction?.correct, true);
+  // La 4ᵉ bonne réponse valide l'objectif.
+  etat = await moteur.repondre(session_id, rep());
+  assert.equal(etat.termine, true);
+  assert.equal(etat.dernier_coup.type, 'clore');
+});
+
 test('la banque tourne : des exercices variés au fil d’une même session (D5)', async () => {
   const { moteur, contexte, session_id } = bancPhysique();
   const enonces = new Set<string>();

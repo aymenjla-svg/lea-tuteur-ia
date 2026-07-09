@@ -52,6 +52,18 @@ let coursFigureId = '';
 let sceneIdx = 0;
 let checkpointOk = true;
 const cpFaits = new Set();
+// Bilan de séance (série d'exercices) : alimenté par etat.correction.
+let bilan = { total: 0, reussis: 0, erreurs: {} };
+const ERREUR_LIB = {
+  multiplie_au_lieu_de_diviser: 'multiplier au lieu de diviser',
+  inverse_division: 'division inversée',
+  inverse_relation: 'relation inversée',
+  additionne_au_lieu_de_multiplier: 'additionner au lieu de multiplier',
+  confond_masse_poids: 'confusion masse / poids',
+  oubli_conversion_duree: 'durée non convertie',
+  ecart_numerique: 'écart de calcul',
+  reponse_non_numerique: 'réponse non numérique',
+};
 
 /* --- Transport ------------------------------------------------------------ */
 
@@ -331,6 +343,8 @@ function passerAuxExos() {
 
 async function demarrer(objectifId) {
   $('#soustitre').textContent = '';
+  bilan = { total: 0, reussis: 0, erreurs: {} };
+  $('#bilan').hidden = true;
   try {
     const d = await moteurCreer(objectifId);
     sessionId = d.session_id;
@@ -435,15 +449,44 @@ function confettis() {
   setTimeout(() => zone.remove(), 3200);
 }
 
+// Bilan de fin de séance : « vu / réussi / à revoir » (honnête, non moralisateur).
+function afficherBilan() {
+  const b = bilan;
+  const pct = b.total ? Math.round((b.reussis / b.total) * 100) : 0;
+  const top = Object.entries(b.erreurs).sort((a, c) => c[1] - a[1])[0];
+  const errLigne = top
+    ? `<div class="bilan-err">À revoir : <b>${ERREUR_LIB[top[0]] ?? top[0]}</b> (${top[1]}×)</div>`
+    : `<div class="bilan-err bilan-clean">Aucune erreur — parcours net ✨</div>`;
+  $('#bilan').innerHTML =
+    `<div class="bilan-titre">Bilan de la séance</div>` +
+    `<div class="bilan-stat"><span class="bilan-num">${b.reussis}/${b.total}</span> exercices réussis · ${pct}%</div>` +
+    errLigne +
+    `<div class="bilan-note">Objectif atteint 🎯 — on le reverra un peu plus tard pour bien l’ancrer.</div>`;
+  $('#bilan').hidden = false;
+  $('#form').hidden = true;
+  $('#unites').hidden = true;
+}
+
 function rendre(etat) {
   const enonce = etat.question_courante?.enonce ?? '';
   const fini = !!etat.termine;
+
+  // Bilan de séance : on cumule chaque correction (réussite / erreur-type).
+  if (etat.correction) {
+    bilan.total += 1;
+    if (etat.correction.correct) bilan.reussis += 1;
+    else if (etat.correction.erreur_type_id) {
+      const t = etat.correction.erreur_type_id;
+      bilan.erreurs[t] = (bilan.erreurs[t] ?? 0) + 1;
+    }
+  }
 
   // TABLEAU = la consigne (ce que le prof « écrit ») + la relation en coin.
   if (fini) {
     $('#tableauTexte').textContent = '★ Module réussi !';
     $('#tableauFormule').textContent = '';
     confettis();
+    afficherBilan();
   } else {
     $('#tableauTexte').textContent = enonce || FORMULES[etat.objectif_courant] || '';
     $('#tableauFormule').textContent = FORMULES[etat.objectif_courant] ?? '';
