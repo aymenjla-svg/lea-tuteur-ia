@@ -407,6 +407,16 @@ body::after {
 .bilan-err.bilan-clean { color: var(--ok); }
 .bilan-note { margin-top: 10px; font-size: 0.86rem; color: var(--txt2); line-height: 1.4; }
 
+/* QCM de cours (questions conceptuelles) */
+.qcm-zone { display: flex; flex-direction: column; gap: 10px; max-width: 420px; margin: 12px auto 0; }
+.qcm-opt { font-family: var(--round); font-weight: 600; font-size: 1rem; text-align: left; padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--border); background: rgba(10, 26, 42, 0.55); backdrop-filter: blur(10px); color: #fff; cursor: pointer; transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease; }
+.qcm-opt:hover:not(:disabled) { background: rgba(30, 52, 74, 0.7); }
+.qcm-opt:active:not(:disabled) { transform: scale(0.98); }
+.qcm-opt:disabled { cursor: default; }
+.qcm-opt.juste { background: rgba(52, 226, 168, 0.22); border-color: var(--ok); color: #eafff6; }
+.qcm-opt.faux { border-color: #ff8a8a; animation: qcmShake 0.3s ease; }
+@keyframes qcmShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
+
 /* Accessibilité & avis : bouton + modales */
 .a11y-btn { font-family: var(--round); font-weight: 700; font-size: 0.92rem; padding: 8px 13px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--panel); color: #fff; cursor: pointer; backdrop-filter: blur(10px); flex: 0 0 auto; }
 .a11y-btn:hover { background: var(--panel-2); }
@@ -440,5 +450,7 @@ body::after {
   .fig-energie .charge, .fig-energie .chaleur, .fig-signaux .onde, .fig-signaux .aiguille { animation: none; }
   .fig-vitesse .mobile { transform: translateX(200px); }
   .fig-signaux .onde { opacity: 0.5; }
+  .qcm-opt.faux { animation: none; }
+  .bilan { animation: none; }
 }
 @media (max-width: 440px) { .pc-style { display: none; } .stats { flex-wrap: wrap; } }

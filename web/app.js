@@ -262,28 +262,36 @@ function appliquerMode() {
   $('#perdu').hidden = cours;
   $('#revoirCours').hidden = cours || !COURS[moduleActuel?.id];
   if (cours) $('#rejouer').hidden = true;
-  else $('#form').hidden = false;
+  else { $('#form').hidden = false; $('#qcmZone').hidden = true; }
 }
 
 function rendreScene() {
   const sc = coursScenes[sceneIdx];
   if (!sc) return;
   const cp = sc.checkpoint;
-  checkpointOk = !cp || cpFaits.has(sceneIdx);
+  const q = sc.qcm;
+  checkpointOk = (!cp && !q) || cpFaits.has(sceneIdx);
 
   $('#figureHost').innerHTML = figure(coursFigureId, sc.focus);
   $('#coursTitre').textContent = sc.titre;
   const pts = [...sc.points];
   if (cp) pts.push(`<b class="cp-q">${cp.enonce}</b>`);
+  if (q) pts.push(`<b class="cp-q">${q.question}</b>`);
   $('#coursPoints').innerHTML = pts.map((p) => `<li>${p}</li>`).join('');
 
   expression = 'happy';
+  $('#qcmZone').hidden = true;
   if (cp) {
     $('#form').hidden = false;
     $('#reponse').value = '';
     construireUnites({ bonne: cp.unite, choix: CHIPS_PAR_UNITE[cp.unite] ?? [cp.unite] });
     uniteObjectifId = null; // la série reconstruira ses propres pastilles
     parler(`${sc.narration} ${cp.enonce}`);
+  } else if (q) {
+    $('#form').hidden = true;
+    $('#unites').hidden = true;
+    construireQcm(q);
+    parler(`${sc.narration} ${q.question}`);
   } else {
     $('#form').hidden = true;
     $('#unites').hidden = true;
@@ -291,6 +299,41 @@ function rendreScene() {
   }
   majNavCours();
   majDots();
+}
+
+// Rend les options d'un QCM de cours ; si déjà réussi, montre la bonne réponse.
+function construireQcm(q) {
+  const fait = cpFaits.has(sceneIdx);
+  $('#qcmZone').innerHTML = q.options
+    .map(
+      (o, i) =>
+        `<button type="button" class="qcm-opt${fait && o.ok ? ' juste' : ''}" data-idx="${i}"${fait ? ' disabled' : ''}>${o.txt}</button>`,
+    )
+    .join('');
+  $('#qcmZone').hidden = false;
+}
+
+function repondreQcm(idx) {
+  const q = coursScenes[sceneIdx]?.qcm;
+  if (!q || cpFaits.has(sceneIdx)) return;
+  const opt = q.options[idx];
+  if (!opt) return;
+  voix.interrompre();
+  const btn = $(`#qcmZone .qcm-opt[data-idx="${idx}"]`);
+  if (opt.ok) {
+    cpFaits.add(sceneIdx);
+    checkpointOk = true;
+    expression = 'celebrate';
+    celebreJusqua = performance.now() + 1800;
+    for (const b of document.querySelectorAll('#qcmZone .qcm-opt')) b.disabled = true;
+    btn?.classList.add('juste');
+    majNavCours();
+    parler(`Exact ! ${opt.retour ?? ''}`);
+  } else {
+    expression = 'encouraging';
+    btn?.classList.add('faux');
+    parler(opt.retour ?? 'Pas tout à fait, réessaie.');
+  }
 }
 
 function repondreCheckpoint(texte) {
@@ -720,6 +763,10 @@ $('#coursPrec').addEventListener('click', () => {
   rendreScene();
 });
 $('#revoirCours').addEventListener('click', () => { if (moduleActuel) ouvrirCours(moduleActuel); });
+$('#qcmZone').addEventListener('click', (e) => {
+  const b = e.target.closest('.qcm-opt');
+  if (b && !b.disabled) repondreQcm(Number(b.dataset.idx));
+});
 // Pavé numérique tactile (alimente #reponse ; le clavier physique marche aussi).
 $('#pave').addEventListener('click', (e) => {
   const b = e.target.closest('.pk');

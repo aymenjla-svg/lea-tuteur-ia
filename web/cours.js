@@ -45,6 +45,20 @@ export const COURS = {
           'distance en peu de temps, ça fait une grande vitesse.',
       },
       {
+        titre: 'Vérifie que tu as compris',
+        focus: 'vitesse',
+        points: ['Une question rapide avant de calculer.'],
+        narration: 'D’abord, une petite question de réflexion.',
+        qcm: {
+          question: 'Pour parcourir la même distance plus vite, il faut…',
+          options: [
+            { txt: 'mettre moins de temps', ok: true },
+            { txt: 'mettre plus de temps', retour: 'Moins de temps pour la même distance, c’est aller plus vite.' },
+            { txt: 'parcourir plus de distance', retour: 'Ici la distance est la même : ce qui change, c’est le temps.' },
+          ],
+        },
+      },
+      {
         titre: 'À toi de jouer',
         focus: 'vitesse',
         points: ['Applique v = d / t.'],
@@ -93,6 +107,20 @@ export const COURS = {
         narration:
           'On relie tout : le poids est la masse multipliée par g, l’intensité de la ' +
           'pesanteur. Sur Terre, g vaut environ 10 newtons par kilogramme.',
+      },
+      {
+        titre: 'Vérifie que tu as compris',
+        focus: 'astre',
+        points: ['Une question rapide avant de calculer.'],
+        narration: 'D’abord, une petite question de réflexion.',
+        qcm: {
+          question: 'Un objet de 6 kg est emmené sur la Lune. Sa masse…',
+          options: [
+            { txt: 'reste 6 kg', ok: true, retour: 'La masse ne change pas ; c’est le poids qui diminue.' },
+            { txt: 'devient plus petite', retour: 'C’est le POIDS qui diminue sur la Lune, pas la masse.' },
+            { txt: 'devient nulle', retour: 'La Lune attire aussi, environ 6 fois moins que la Terre.' },
+          ],
+        },
       },
       {
         titre: 'À toi de jouer',
@@ -156,6 +184,20 @@ export const COURS = {
           'l’intensité. Ces trois grandeurs sont reliées pour toujours.',
       },
       {
+        titre: 'Vérifie que tu as compris',
+        focus: 'R',
+        points: ['Une question rapide avant de calculer.'],
+        narration: 'D’abord, une petite question de réflexion.',
+        qcm: {
+          question: 'Dans un circuit, à quoi sert une résistance ?',
+          options: [
+            { txt: 'à freiner le courant', ok: true },
+            { txt: 'à produire le courant', retour: 'C’est le générateur (la pile) qui fournit le courant.' },
+            { txt: 'à augmenter le courant', retour: 'Au contraire, une résistance freine le courant.' },
+          ],
+        },
+      },
+      {
         titre: 'À toi de jouer',
         focus: 'loi',
         points: ['Applique U = R × I.'],
@@ -196,6 +238,20 @@ export const COURS = {
         narration:
           'La masse volumique relie les deux : on divise la masse par le volume. Sa valeur est ' +
           'la carte d’identité du matériau : le fer, l’or ou le bois n’ont pas la même.',
+      },
+      {
+        titre: 'Vérifie que tu as compris',
+        focus: 'relation',
+        points: ['Une question rapide avant de calculer.'],
+        narration: 'D’abord, une petite question de réflexion.',
+        qcm: {
+          question: 'Deux cubes ont le même volume mais des masses différentes. Alors…',
+          options: [
+            { txt: 'leurs masses volumiques sont différentes', ok: true },
+            { txt: 'ils ont la même masse volumique', retour: 'Même volume mais masses différentes → ρ = m/V différent.' },
+            { txt: 'ils sont faits du même matériau', retour: 'Des masses volumiques différentes = des matériaux différents.' },
+          ],
+        },
       },
       {
         titre: 'À toi de jouer',
@@ -247,6 +303,20 @@ export const COURS = {
           'Plus l’une ou l’autre est grande, plus l’appareil est puissant.',
       },
       {
+        titre: 'Vérifie que tu as compris',
+        focus: 'puissance',
+        points: ['Une question rapide avant de calculer.'],
+        narration: 'D’abord, une petite question de réflexion.',
+        qcm: {
+          question: 'Sous la même tension, un appareil parcouru par plus de courant est…',
+          options: [
+            { txt: 'plus puissant', ok: true, retour: 'P = U × I : plus de courant → plus de puissance.' },
+            { txt: 'moins puissant', retour: 'P = U × I : à tension égale, plus de I donne plus de P.' },
+            { txt: 'aussi puissant', retour: 'La puissance dépend aussi de I : ici elle augmente.' },
+          ],
+        },
+      },
+      {
         titre: 'À toi de jouer',
         focus: 'loi',
         points: ['Applique P = U × I.'],
@@ -287,6 +357,20 @@ export const COURS = {
         narration:
           'La vitesse du signal, c’est la distance divisée par le temps. Dans l’air, le son file ' +
           'à environ 340 mètres par seconde ; la lumière, à 300 000 kilomètres par seconde !',
+      },
+      {
+        titre: 'Vérifie que tu as compris',
+        focus: 'vitesse',
+        points: ['Une question rapide avant de calculer.'],
+        narration: 'D’abord, une petite question de réflexion.',
+        qcm: {
+          question: 'Pendant un orage, on voit l’éclair avant d’entendre le tonnerre parce que…',
+          options: [
+            { txt: 'la lumière va plus vite que le son', ok: true },
+            { txt: 'le son va plus vite que la lumière', retour: 'C’est l’inverse : lumière ≈ 300 000 km/s, son ≈ 340 m/s.' },
+            { txt: 'l’éclair part avant le tonnerre', retour: 'Les deux partent ensemble ; la lumière arrive juste avant.' },
+          ],
+        },
       },
       {
         titre: 'À toi de jouer',
