@@ -220,6 +220,18 @@ test('« je suis perdu » → décomposition guidée pas-à-pas, sans donner la 
   assert.notEqual(e4.dernier_coup.type, 'encourager');
 });
 
+test('la banque tourne : des exercices variés au fil d’une même session (D5)', async () => {
+  const { moteur, contexte, session_id } = bancPhysique();
+  const enonces = new Set<string>();
+  let etat = await moteur.demarrer(contexte);
+  for (let i = 0; i < 6 && !etat.termine; i++) {
+    const q = etat.question_courante as { enonce: string; attendu: { valeur: number } };
+    enonces.add(q.enonce);
+    etat = await moteur.repondre(session_id, String(q.attendu.valeur));
+  }
+  assert.ok(enonces.size >= 2, `variété attendue, vu ${enonces.size} énoncé(s)`);
+});
+
 test('blocage (2 échecs) → bascule en décomposition guidée plutôt que la réponse', async () => {
   const { moteur, contexte, session_id } = bancPhysique();
   await moteur.demarrer(contexte);

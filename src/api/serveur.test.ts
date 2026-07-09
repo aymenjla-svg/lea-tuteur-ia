@@ -48,9 +48,12 @@ test('parcours complet via HTTP jusqu’à la maîtrise + dashboard', async () =
   const { data: dem } = await post('/sessions', {});
   const sid = dem.session_id as string;
 
+  // La banque tourne (variété d'exercices) : on répond à CHAQUE question par sa
+  // valeur attendue, quel que soit l'exercice proposé.
   let etat = dem.etat;
-  for (let i = 0; i < 6 && !etat.termine; i++) {
-    const r = await post(`/sessions/${sid}/repondre`, { texte: '60' });
+  for (let i = 0; i < 12 && !etat.termine; i++) {
+    const rep = String(etat.question_courante.attendu.valeur);
+    const r = await post(`/sessions/${sid}/repondre`, { texte: rep });
     assert.equal(r.code, 200);
     etat = r.data.etat;
   }

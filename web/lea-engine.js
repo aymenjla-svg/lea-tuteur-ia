@@ -450,6 +450,56 @@
         { modalite: "textuel", texte: "v (m/s) = d (m) \xF7 t (s)." }
       ]
     });
+    const exo = (o) => c.ajouterTemplate({
+      ...meta,
+      id: id(o.id),
+      objectif_id: o.objectif,
+      origine: "prof",
+      statut: "valide",
+      parametres: [],
+      etapes: [
+        {
+          ordre: 1,
+          question: {
+            kind: "numeric",
+            modalite: "textuel",
+            enonce: o.enonce,
+            attendu: { valeur: o.valeur, tolerance: o.tolerance ?? 0 },
+            ...o.pieges ? { pieges: o.pieges } : {}
+          },
+          indice: o.indice
+        }
+      ],
+      representations: o.repr ? [{ modalite: "textuel", texte: o.repr }] : []
+    });
+    const P_DIV = "multiplie_au_lieu_de_diviser";
+    const IND_VITESSE = "La vitesse est une distance divis\xE9e par une dur\xE9e : v = d \xF7 t.";
+    exo({ id: "tmpl-vq-100-20", objectif: OBJ_VITESSE_PREREQ, enonce: "Un coureur parcourt 100 m en 20 s. Quelle est sa vitesse, en m/s ?", valeur: 5, indice: IND_VITESSE, pieges: [{ valeur: 2e3, erreur_type_id: P_DIV }] });
+    exo({ id: "tmpl-vq-72-8", objectif: OBJ_VITESSE_PREREQ, enonce: "Un cycliste parcourt 72 m en 8 s. Quelle est sa vitesse, en m/s ?", valeur: 9, indice: IND_VITESSE, pieges: [{ valeur: 576, erreur_type_id: P_DIV }] });
+    exo({ id: "tmpl-vq-150-30", objectif: OBJ_VITESSE_PREREQ, enonce: "Un mobile parcourt 150 m en 30 s. Quelle est sa vitesse, en m/s ?", valeur: 5, indice: IND_VITESSE, pieges: [{ valeur: 4500, erreur_type_id: P_DIV }] });
+    exo({ id: "tmpl-vit-240-3", objectif: OBJ_VITESSE, enonce: "Un train parcourt 240 km en 3 h. Quelle est sa vitesse moyenne, en km/h ?", valeur: 80, indice: IND_VITESSE, pieges: [{ valeur: 720, erreur_type_id: P_DIV }] });
+    exo({ id: "tmpl-vit-90-2", objectif: OBJ_VITESSE, enonce: "Une voiture parcourt 90 km en 2 h. Quelle est sa vitesse moyenne, en km/h ?", valeur: 45, indice: IND_VITESSE, pieges: [{ valeur: 180, erreur_type_id: P_DIV }] });
+    exo({ id: "tmpl-vit-200-4", objectif: OBJ_VITESSE, enonce: "Un bus parcourt 200 km en 4 h. Quelle est sa vitesse moyenne, en km/h ?", valeur: 50, indice: IND_VITESSE, pieges: [{ valeur: 800, erreur_type_id: P_DIV }] });
+    const IND_POIDS = "Le poids s\u2019obtient avec P = m \xD7 g (g = 10 N/kg).";
+    exo({ id: "tmpl-poids-2", objectif: OBJ_POIDS, enonce: "Sur Terre (g = 10 N/kg), quel est le poids d\u2019une masse de 2 kg, en newtons ?", valeur: 20, indice: IND_POIDS, pieges: [{ valeur: 2, erreur_type_id: "confond_masse_poids" }, { valeur: 0.2, erreur_type_id: "inverse_relation" }] });
+    exo({ id: "tmpl-poids-8", objectif: OBJ_POIDS, enonce: "Sur Terre (g = 10 N/kg), quel est le poids d\u2019une masse de 8 kg, en newtons ?", valeur: 80, indice: IND_POIDS, pieges: [{ valeur: 8, erreur_type_id: "confond_masse_poids" }] });
+    exo({ id: "tmpl-poids-12", objectif: OBJ_POIDS, enonce: "Sur Terre (g = 10 N/kg), quel est le poids d\u2019une masse de 12 kg, en newtons ?", valeur: 120, indice: IND_POIDS, pieges: [{ valeur: 12, erreur_type_id: "confond_masse_poids" }] });
+    const IND_OHM = "La loi d\u2019Ohm relie tension, r\xE9sistance et intensit\xE9 : U = R \xD7 I.";
+    exo({ id: "tmpl-ohm-20-2", objectif: OBJ_OHM, enonce: "Une r\xE9sistance de 20 \u03A9 est parcourue par un courant de 2 A. Quelle tension \xE0 ses bornes, en volts ?", valeur: 40, indice: IND_OHM, pieges: [{ valeur: 10, erreur_type_id: "inverse_relation" }, { valeur: 22, erreur_type_id: "additionne_au_lieu_de_multiplier" }] });
+    exo({ id: "tmpl-ohm-100-05", objectif: OBJ_OHM, enonce: "Une r\xE9sistance de 100 \u03A9 est parcourue par un courant de 0,5 A. Quelle tension, en volts ?", valeur: 50, indice: IND_OHM, pieges: [{ valeur: 200, erreur_type_id: "inverse_relation" }] });
+    exo({ id: "tmpl-ohm-15-4", objectif: OBJ_OHM, enonce: "Une r\xE9sistance de 15 \u03A9 est parcourue par un courant de 4 A. Quelle tension, en volts ?", valeur: 60, indice: IND_OHM, pieges: [{ valeur: 19, erreur_type_id: "additionne_au_lieu_de_multiplier" }] });
+    const IND_MV = "La masse volumique est la masse divis\xE9e par le volume : \u03C1 = m \xF7 V.";
+    exo({ id: "tmpl-mv-50-20", objectif: OBJ_MASSE_VOLUMIQUE, enonce: "Un objet a une masse de 50 g et un volume de 20 cm\xB3. Quelle est sa masse volumique, en g/cm\xB3 ?", valeur: 2.5, indice: IND_MV, pieges: [{ valeur: 1e3, erreur_type_id: P_DIV }, { valeur: 0.4, erreur_type_id: "inverse_division", tolerance: 0.01 }] });
+    exo({ id: "tmpl-mv-27-10", objectif: OBJ_MASSE_VOLUMIQUE, enonce: "Un bloc d\u2019aluminium a une masse de 27 g et un volume de 10 cm\xB3. Masse volumique, en g/cm\xB3 ?", valeur: 2.7, indice: IND_MV, pieges: [{ valeur: 270, erreur_type_id: P_DIV }] });
+    exo({ id: "tmpl-mv-90-100", objectif: OBJ_MASSE_VOLUMIQUE, enonce: "De l\u2019huile a une masse de 90 g pour un volume de 100 cm\xB3. Masse volumique, en g/cm\xB3 ?", valeur: 0.9, indice: IND_MV, pieges: [{ valeur: 9e3, erreur_type_id: P_DIV }] });
+    const IND_PUISS = "La puissance \xE9lectrique est le produit de la tension par l\u2019intensit\xE9 : P = U \xD7 I.";
+    exo({ id: "tmpl-puiss-12-2", objectif: OBJ_PUISSANCE, enonce: "Un appareil sous 12 V est parcouru par un courant de 2 A. Quelle est sa puissance, en watts ?", valeur: 24, indice: IND_PUISS, pieges: [{ valeur: 6, erreur_type_id: "inverse_relation" }, { valeur: 14, erreur_type_id: "additionne_au_lieu_de_multiplier" }] });
+    exo({ id: "tmpl-puiss-6-05", objectif: OBJ_PUISSANCE, enonce: "Une lampe sous 6 V est parcourue par un courant de 0,5 A. Quelle est sa puissance, en watts ?", valeur: 3, indice: IND_PUISS, pieges: [{ valeur: 12, erreur_type_id: "inverse_relation" }] });
+    exo({ id: "tmpl-puiss-230-10", objectif: OBJ_PUISSANCE, enonce: "Un four sous 230 V est parcouru par un courant de 10 A. Quelle est sa puissance, en watts ?", valeur: 2300, indice: IND_PUISS, pieges: [{ valeur: 240, erreur_type_id: "additionne_au_lieu_de_multiplier" }] });
+    const IND_SIG = "La vitesse d\u2019un signal est la distance parcourue divis\xE9e par la dur\xE9e : v = d \xF7 t.";
+    exo({ id: "tmpl-sig-1700-5", objectif: OBJ_SIGNAUX, enonce: "Un son parcourt 1700 m en 5 s dans l\u2019air. Quelle est sa vitesse, en m/s ?", valeur: 340, indice: IND_SIG, pieges: [{ valeur: 8500, erreur_type_id: P_DIV }] });
+    exo({ id: "tmpl-sig-1020-3", objectif: OBJ_SIGNAUX, enonce: "Un son parcourt 1020 m en 3 s dans l\u2019air. Quelle est sa vitesse, en m/s ?", valeur: 340, indice: IND_SIG, pieges: [{ valeur: 3060, erreur_type_id: P_DIV }] });
+    exo({ id: "tmpl-sig-900-3", objectif: OBJ_SIGNAUX, enonce: "Un signal parcourt 900 m en 3 s. Quelle est sa vitesse, en m/s ?", valeur: 300, indice: IND_SIG, pieges: [{ valeur: 2700, erreur_type_id: P_DIV }] });
     c.ajouterExplication({
       ...meta,
       id: id("expl-vitesse"),
@@ -1100,6 +1150,7 @@
         indice,
         echecs: 0,
         termine: false,
+        proposalIndex: 0,
         decomposition
       };
       __privateGet(this, _sessions).set(contexte.session_id, session);
@@ -1342,9 +1393,9 @@
       correct: verdict.correct
     });
   };
-  proposer_fn = async function(objectif_id) {
+  proposer_fn = async function(objectif_id, index = 0) {
     const templates = await this.deps.curriculum.templatesPourObjectif(objectif_id);
-    const tmpl = templates[0];
+    const tmpl = templates.length > 0 ? templates[index % templates.length] : void 0;
     if (!tmpl) {
       throw new Error(`Aucun template d\u2019exercice pour l\u2019objectif ${objectif_id}.`);
     }
@@ -1360,7 +1411,8 @@
     };
   };
   charger_fn = async function(session, cible) {
-    const { template_id, question, indice, decomposition } = await __privateMethod(this, _MoteurLecon_instances, proposer_fn).call(this, cible);
+    session.proposalIndex += 1;
+    const { template_id, question, indice, decomposition } = await __privateMethod(this, _MoteurLecon_instances, proposer_fn).call(this, cible, session.proposalIndex);
     session.objectif_courant = cible;
     session.template_id = template_id;
     session.question = question;

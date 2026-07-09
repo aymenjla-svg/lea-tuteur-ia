@@ -132,6 +132,8 @@ interface SessionInterne {
   indice: string | undefined;
   echecs: number;
   termine: boolean;
+  /** Compteur de propositions (rotation dans la banque d'exercices, D5). */
+  proposalIndex: number;
   /** Décomposition disponible pour l'exercice courant (si l'auteur en a fourni). */
   decomposition: readonly SousEtapeGuidee[] | undefined;
   /** État du déroulé guidé (index de sous-étape) ; absent hors étayage. */
@@ -174,6 +176,7 @@ export class MoteurLecon {
       indice,
       echecs: 0,
       termine: false,
+      proposalIndex: 0,
       decomposition,
     };
     this.#sessions.set(contexte.session_id, session);
@@ -594,8 +597,12 @@ export class MoteurLecon {
     });
   }
 
-  /** Proposer : sélectionne le template prof et la question de l'objectif. */
-  async #proposer(objectif_id: ObjectifId): Promise<{
+  /**
+   * Proposer : sélectionne un template prof et la question de l'objectif.
+   * `index` fait TOURNER la banque (variété d'exercices d'une proposition à
+   * l'autre au sein d'une même session, D5) — déterministe (pas de random).
+   */
+  async #proposer(objectif_id: ObjectifId, index = 0): Promise<{
     template_id: ExerciceTemplateId;
     question: Question;
     indice: string | undefined;
@@ -603,7 +610,8 @@ export class MoteurLecon {
   }> {
     const templates =
       await this.deps.curriculum.templatesPourObjectif(objectif_id);
-    const tmpl = templates[0];
+    const tmpl =
+      templates.length > 0 ? templates[index % templates.length] : undefined;
     if (!tmpl) {
       throw new Error(`Aucun template d’exercice pour l’objectif ${objectif_id}.`);
     }
@@ -621,8 +629,9 @@ export class MoteurLecon {
 
   /** Charge l'objectif `cible` comme objectif courant de la session. */
   async #charger(session: SessionInterne, cible: ObjectifId): Promise<void> {
+    session.proposalIndex += 1; // rotation : exercice suivant de la banque
     const { template_id, question, indice, decomposition } =
-      await this.#proposer(cible);
+      await this.#proposer(cible, session.proposalIndex);
     session.objectif_courant = cible;
     session.template_id = template_id;
     session.question = question;
