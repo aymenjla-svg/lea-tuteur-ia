@@ -168,73 +168,64 @@ function construireNiveauSeg() {
 
 /* --- Hero (hologramme) + choix du prof ----------------------------------- */
 
-// Fenêtre de classe avec vue sur la cour (ciel selon l'heure, arbres, l'école
-// avec son drapeau) → « vraie école » en arrière-plan.
-function fenetreEcole() {
+// Grand HALL d'école (arrière-plan) : hautes fenêtres en arcade sur la cour,
+// colonnes, voûte au plafond, pendule de Foucault. Ciel selon l'heure.
+function ecoleHallSVG() {
   const h = new Date().getHours();
   const nuit = h < 6 || h >= 21, soir = !nuit && h >= 18;
-  const ciel = nuit ? ['#0d1a3a', '#26356a'] : soir ? ['#f4a15a', '#8a6aa0'] : ['#7ec6f5', '#d6efff'];
-  const herbe = nuit ? '#1c3320' : '#57bd68';
+  const sky0 = nuit ? '#0e1c40' : soir ? '#f2a15a' : '#8fd0f6';
+  const sky1 = nuit ? '#243360' : soir ? '#8a6aa0' : '#dcf1ff';
+  const herbe = nuit ? '#1d3322' : '#5cbe6a';
+  const mur = nuit ? ['#3b3b54', '#2b2b40'] : ['#e8dec4', '#ccbf9d'];
   const astre = nuit
-    ? '<circle cx="99" cy="16" r="8" fill="#eef2ff"/><circle cx="96" cy="13" r="6.5" fill="url(#spCiel)"/>'
-    : `<circle cx="99" cy="16" r="9" fill="${soir ? '#ffd98a' : '#fff3b0'}"/>`;
-  const cielHaut = nuit
-    ? '<g fill="#fff" opacity=".85"><circle cx="26" cy="12" r="1"/><circle cx="50" cy="9" r="1.2"/><circle cx="70" cy="20" r="1"/><circle cx="40" cy="24" r=".9"/></g>'
-    : '<g fill="#fff" opacity=".92"><ellipse cx="34" cy="18" rx="12" ry="5"/><ellipse cx="45" cy="16" rx="8" ry="4"/><ellipse cx="70" cy="26" rx="9" ry="4"/></g>';
-  const ecole = `<rect x="6" y="30" width="30" height="18" fill="${nuit ? '#3a3550' : '#e5d9bd'}"/>` +
-    `<polygon points="4,30 21,19 38,30" fill="${nuit ? '#2a2740' : '#b0503c'}"/>` +
-    `<rect x="19" y="14" width="4" height="6" fill="${nuit ? '#2a2740' : '#b0503c'}"/><polygon points="23,14 33,17 23,20" fill="#e0533a"/>` + // drapeau
-    `<g fill="${nuit ? '#c9b45a' : '#7fa8d8'}"><rect x="11" y="35" width="5" height="6"/><rect x="19" y="35" width="5" height="6"/><rect x="27" y="35" width="5" height="6"/></g>`;
-  const arbres = `<g fill="${nuit ? '#183018' : '#2f8f45'}"><circle cx="70" cy="40" r="8"/><circle cx="84" cy="42" r="6"/></g>` +
-    `<rect x="68.5" y="44" width="3" height="6" fill="#5a3a22"/><rect x="82.5" y="46" width="2.5" height="4" fill="#5a3a22"/>`;
-  return '<div class="sp-fenetre-ecole">' +
-    `<svg viewBox="0 0 120 70" preserveAspectRatio="none" aria-hidden="true">` +
-    `<defs><linearGradient id="spCiel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${ciel[0]}"/><stop offset="1" stop-color="${ciel[1]}"/></linearGradient></defs>` +
-    `<rect x="0" y="0" width="120" height="70" fill="url(#spCiel)"/>${cielHaut}${astre}` +
-    `<rect x="0" y="47" width="120" height="23" fill="${herbe}"/>${ecole}${arbres}` +
-    `<g stroke="#e6ecf6" stroke-width="3.2" fill="none"><line x1="60" y1="0" x2="60" y2="70"/><line x1="0" y1="35" x2="120" y2="35"/></g>` +
-    '</svg></div>' +
-    '<span class="sp-porte" aria-hidden="true"></span>' +
-    '<span class="sp-etagere" aria-hidden="true"></span>';
-}
-
-// Décor « salle de physique » sur le mur au-dessus des profs : planètes en
-// orbite, atome, pendule qui oscille, formules du programme à la craie.
-function salleDeco() {
-  return fenetreEcole() + (
-    // Saturne + sa lune (haut gauche)
-    '<svg class="sp-astre sp-saturne" viewBox="0 0 60 44" aria-hidden="true">' +
-      '<defs><radialGradient id="spSat" cx="40%" cy="34%" r="72%"><stop offset="0" stop-color="#ffe0a0"/><stop offset="1" stop-color="#c47b2c"/></radialGradient></defs>' +
-      '<ellipse cx="30" cy="22" rx="27" ry="8.5" fill="none" stroke="#ffe6b0" stroke-width="3" transform="rotate(-20 30 22)"/>' +
-      '<circle cx="30" cy="22" r="12" fill="url(#spSat)"/>' +
-      '<path d="M8 27 A27 8.5 -20 0 0 52 17" fill="none" stroke="#ffe6b0" stroke-width="3" transform="rotate(-20 30 22)"/>' +
-      '<g class="sp-orbite"><circle cx="30" cy="2" r="2.6" fill="#cfe6ff"/></g>' +
-    '</svg>' +
-    // Atome (haut droite)
-    '<svg class="sp-astre sp-atome" viewBox="0 0 52 52" aria-hidden="true">' +
-      '<g class="sp-spin" fill="none" stroke="#8fb8ff" stroke-width="2">' +
-        '<ellipse cx="26" cy="26" rx="24" ry="9"/>' +
-        '<ellipse cx="26" cy="26" rx="24" ry="9" transform="rotate(60 26 26)"/>' +
-        '<ellipse cx="26" cy="26" rx="24" ry="9" transform="rotate(120 26 26)"/>' +
-      '</g>' +
-      '<circle cx="26" cy="26" r="4.5" fill="#ffd54a"/>' +
-    '</svg>' +
-    // Pendule qui oscille (haut, à droite de la bannière)
-    '<svg class="sp-astre sp-pendule" viewBox="0 0 80 60" aria-hidden="true">' +
-      '<line x1="10" y1="4" x2="70" y2="4" stroke="#8a939f" stroke-width="3" stroke-linecap="round"/>' +
-      '<g class="sp-swing">' +
-        '<line x1="40" y1="4" x2="40" y2="46" stroke="#c9d2e0" stroke-width="2"/>' +
-        '<circle cx="40" cy="50" r="7" fill="#b7c2d6" stroke="#7d8798" stroke-width="1.5"/>' +
-      '</g>' +
-    '</svg>' +
-    // Formules du programme, à la craie
-    '<span class="sp-f f1">v = d ⁄ t</span>' +
-    '<span class="sp-f f2">P = m·g</span>' +
-    '<span class="sp-f f3">U = R·I</span>' +
-    '<span class="sp-f f4">ρ = m ⁄ V</span>' +
-    // Étoiles
-    '<span class="sp-etoile e1">✦</span><span class="sp-etoile e2">✧</span><span class="sp-etoile e3">✦</span>'
-  );
+    ? '<circle cx="300" cy="98" r="9" fill="#eef2ff"/><circle cx="296" cy="95" r="7" fill="#243360"/>'
+    : `<circle cx="300" cy="98" r="10" fill="${soir ? '#ffd98a' : '#fff2ad'}"/>`;
+  const cielDeco = nuit
+    ? '<g fill="#fff" opacity=".85"><circle cx="60" cy="92" r="1.2"/><circle cx="120" cy="86" r="1.4"/><circle cx="250" cy="90" r="1.2"/><circle cx="340" cy="86" r="1"/></g>'
+    : '<g fill="#fff" opacity=".9"><ellipse cx="108" cy="96" rx="16" ry="6"/><ellipse cx="124" cy="92" rx="10" ry="5"/><ellipse cx="250" cy="102" rx="14" ry="6"/></g>';
+  // La cour : une seule scène derrière le mur, vue à travers les 3 arcades.
+  const cour =
+    `<rect x="0" y="72" width="400" height="104" fill="url(#spSky)"/>${cielDeco}${astre}` +
+    `<rect x="0" y="150" width="400" height="26" fill="${herbe}"/>` +
+    `<rect x="150" y="118" width="72" height="36" fill="${nuit ? '#3a3550' : '#e7dcbe'}"/>` +
+    `<polygon points="146,118 186,100 226,118" fill="${nuit ? '#2a2740' : '#b0503c'}"/>` +
+    `<rect x="183" y="90" width="4" height="10" fill="${nuit ? '#2a2740' : '#8a3f30'}"/><polygon points="187,90 201,94 187,98" fill="#e0533a"/>` +
+    `<g fill="${nuit ? '#c9b45a' : '#7fb0e0'}"><rect x="158" y="126" width="8" height="12"/><rect x="174" y="126" width="8" height="12"/><rect x="204" y="126" width="8" height="12"/></g>` +
+    `<g fill="${nuit ? '#183018' : '#2f8f45'}"><circle cx="66" cy="146" r="12"/><circle cx="300" cy="148" r="10"/></g>` +
+    `<rect x="63" y="150" width="5" height="10" fill="#5a3a22"/><rect x="298" y="152" width="4" height="8" fill="#5a3a22"/>`;
+  const arc = (cx) => `M ${cx - 33} 170 L ${cx - 33} 104 A 33 33 0 0 1 ${cx + 33} 104 L ${cx + 33} 170 Z`;
+  const cx1 = 80, cx2 = 200, cx3 = 320;
+  const murPerce = `<path fill-rule="evenodd" fill="url(#spMur)" d="M0 0 H400 V240 H0 Z ${arc(cx1)} ${arc(cx2)} ${arc(cx3)}"/>`;
+  const cadre = (cx) =>
+    `<path d="${arc(cx)}" fill="none" stroke="#caa96a" stroke-width="4"/>` +
+    `<line x1="${cx}" y1="73" x2="${cx}" y2="169" stroke="#caa96a" stroke-width="2.4"/>` +
+    `<line x1="${cx - 32}" y1="130" x2="${cx + 32}" y2="130" stroke="#caa96a" stroke-width="2.4"/>`;
+  const col = (x) =>
+    `<rect x="${x - 12}" y="40" width="24" height="10" rx="2" fill="#efe6cb"/>` +
+    `<rect x="${x - 10}" y="50" width="20" height="190" fill="url(#spCol)"/>` +
+    `<rect x="${x - 10}" y="50" width="5" height="190" fill="#ffffff" opacity=".18"/>` +
+    `<g stroke="#0000001c" stroke-width="1"><line x1="${x - 3.5}" y1="52" x2="${x - 3.5}" y2="236"/><line x1="${x + 3.5}" y1="52" x2="${x + 3.5}" y2="236"/></g>` +
+    `<rect x="${x - 13}" y="232" width="26" height="10" rx="2" fill="#d8caa6"/>`;
+  const plafond =
+    `<rect x="0" y="0" width="400" height="42" fill="url(#spPlaf)"/>` +
+    `<rect x="0" y="38" width="400" height="6" fill="#b7a377"/>` +
+    `<g fill="none" stroke="#b7a377" stroke-width="3" opacity=".85"><path d="M34 42 Q80 14 126 42"/><path d="M154 42 Q200 14 246 42"/><path d="M274 42 Q320 14 366 42"/></g>`;
+  const pendule =
+    `<line x1="182" y1="44" x2="218" y2="44" stroke="#9a8a6a" stroke-width="3" stroke-linecap="round"/>` +
+    `<g class="sp-swing" style="transform-origin:200px 44px"><line x1="200" y1="44" x2="200" y2="82" stroke="#c9d2e0" stroke-width="2"/><circle cx="200" cy="86" r="6.5" fill="#b7c2d6" stroke="#7d8798" stroke-width="1.4"/></g>`;
+  const formules =
+    `<g fill="${nuit ? '#dfe7f5' : '#5a4a2a'}" font-family="var(--round,sans-serif)" font-weight="700" opacity=".8">` +
+    '<text x="38" y="62" font-size="13">v = d ⁄ t</text><text x="300" y="62" font-size="13">U = R·I</text></g>';
+  return '<svg class="sp-hall" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
+    '<defs>' +
+      `<linearGradient id="spSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky0}"/><stop offset="1" stop-color="${sky1}"/></linearGradient>` +
+      `<linearGradient id="spMur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${mur[0]}"/><stop offset="1" stop-color="${mur[1]}"/></linearGradient>` +
+      '<linearGradient id="spCol" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#efe6cb"/><stop offset=".5" stop-color="#dccfab"/><stop offset="1" stop-color="#c1b289"/></linearGradient>' +
+      `<linearGradient id="spPlaf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${nuit ? '#33334a' : '#d7c9a4'}"/><stop offset="1" stop-color="${nuit ? '#2b2b40' : '#c3b48d'}"/></linearGradient>` +
+    '</defs>' +
+    cour + murPerce + cadre(cx1) + cadre(cx2) + cadre(cx3) + plafond +
+    col(18) + col(140) + col(260) + col(382) + pendule + formules +
+  '</svg>';
 }
 
 // Salle commune : TOUS les profs sont présents pour accueillir l'élève. Le prof
@@ -244,8 +235,8 @@ function construireHero() {
   if (!box) return;
   box.innerHTML =
     '<div class="sp-mur" aria-hidden="true">' +
+      ecoleHallSVG() +
       '<span class="sp-fanion">L’École de Léa</span>' +
-      salleDeco() +
     '</div>' +
     '<div class="sp-rang">' +
     PERSONAS.map((p) =>

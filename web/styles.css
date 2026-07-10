@@ -156,70 +156,33 @@ body::after {
   box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.4); /* vignette → creuse la salle */
 }
 .sp-mur { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-/* Sol en PERSPECTIVE : un plan couché (rotateX) avec un damier qui fuit vers
-   le fond → la salle paraît en 3D, les profs sont debout dessus. */
+/* Le grand hall (fenêtres en arcade, colonnes, voûte) remplit tout le fond. */
+.sp-hall { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+/* Sol en PERSPECTIVE (marbre) : plan couché rotateX → la salle est en 3D. */
 .sp-mur::after {
-  content: ""; position: absolute; left: -45%; right: -45%; bottom: 0; height: 172px;
-  transform-origin: bottom center; transform: rotateX(64deg);
+  content: ""; position: absolute; left: -45%; right: -45%; bottom: 0; height: 168px;
+  transform-origin: bottom center; transform: rotateX(66deg);
   background:
-    linear-gradient(180deg, #141b30 0%, rgba(20, 27, 48, 0) 30%),
-    repeating-linear-gradient(90deg, rgba(160, 200, 255, 0.2) 0 2px, transparent 2px 46px),
-    repeating-linear-gradient(0deg, rgba(160, 200, 255, 0.16) 0 2px, transparent 2px 46px),
-    linear-gradient(180deg, #3a2c54, #1e1630);
-}
-.sp-mur::before { /* halo/mur du fond pour asseoir la profondeur */
-  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 70%;
-  background: radial-gradient(120% 90% at 50% 0%, rgba(90, 120, 190, 0.22), transparent 62%);
+    linear-gradient(180deg, rgba(20, 14, 6, 0.55) 0%, rgba(20, 14, 6, 0) 34%),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.12) 0 1.5px, transparent 1.5px 48px),
+    repeating-linear-gradient(0deg, rgba(0, 0, 0, 0.12) 0 1.5px, transparent 1.5px 48px),
+    linear-gradient(180deg, #cdba93, #9c8862);
 }
 .sp-fanion {
-  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  position: absolute; z-index: 2; top: 4px; left: 50%; transform: translateX(-50%);
   font: 700 13px/1 var(--round, sans-serif); color: #3a2a06;
   background: linear-gradient(180deg, #ffcf5a, #e0a83e);
-  padding: 5px 14px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+  padding: 5px 14px; border-radius: 8px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.35);
+  border: 1.5px solid #b98a2e;
 }
-/* Arrière-plan « vraie école » : fenêtre sur la cour + porte + étagère ------ */
-.sp-fenetre-ecole {
-  position: absolute; z-index: 0; top: 24px; left: 50%; transform: translateX(-50%);
-  width: 44%; max-width: 236px; height: 74px;
-  border: 4px solid #cbb68c; border-radius: 5px; overflow: hidden;
-  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.4), inset 0 0 0 1px rgba(0, 0, 0, 0.25);
-}
-.sp-fenetre-ecole svg { display: block; width: 100%; height: 100%; }
-.sp-porte {
-  position: absolute; z-index: 0; right: 6px; bottom: 24px; width: 34px; height: 116px;
-  border-radius: 4px 4px 0 0; border: 2px solid #5f3f22;
-  background: linear-gradient(90deg, #7a5533, #9a6c40 45%, #7a5533);
-}
-.sp-porte::before { content: ""; position: absolute; inset: 7px; border: 2px solid rgba(0, 0, 0, 0.2); border-radius: 2px; }
-.sp-porte::after { content: ""; position: absolute; right: 5px; top: 52%; width: 5px; height: 5px; border-radius: 50%; background: #ffd54a; box-shadow: 0 0 0 1px #5f3f22; }
-.sp-etagere {
-  position: absolute; z-index: 0; left: 6px; bottom: 24px; width: 30px; height: 92px;
-  border: 2px solid #4f3620; border-radius: 2px; background: #6b4a2e;
-  background-image:
-    repeating-linear-gradient(0deg, transparent 0 20px, #4f3620 20px 23px),
-    repeating-linear-gradient(90deg, #d0553f 0 5px, #e0a83e 5px 10px, #4a90d9 10px 14px, #3fae8f 14px 19px, #b06ab3 19px 24px);
-}
-/* Objets de physique : planètes, atome, pendule, formules à la craie */
-.sp-fanion { z-index: 2; }
-.sp-astre { position: absolute; z-index: 0; opacity: 0.92; }
-.sp-saturne { top: 8px; left: 8px; width: 52px; height: 38px; }
-.sp-atome { top: 8px; right: 10px; width: 44px; height: 44px; }
-.sp-pendule { top: 0; left: 18%; width: 60px; height: 46px; }
-.sp-orbite { transform-origin: 30px 22px; animation: sp-orbit 6s linear infinite; }
-.sp-spin { transform-origin: 26px 26px; animation: sp-orbit 9s linear infinite; }
-.sp-swing { transform-origin: 40px 4px; animation: sp-swing 2.6s ease-in-out infinite; }
-@keyframes sp-orbit { to { transform: rotate(360deg); } }
-@keyframes sp-swing { 0%, 100% { transform: rotate(21deg); } 50% { transform: rotate(-21deg); } }
-.sp-f { position: absolute; z-index: 0; font: 700 12px/1 var(--round, sans-serif); color: #eaf2ff; opacity: 0.78; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.45); white-space: nowrap; }
-.sp-f.f1 { top: 104px; left: 46px; }
-.sp-f.f3 { top: 104px; right: 48px; }
-.sp-f.f2, .sp-f.f4, .sp-etoile { display: none; } /* on allège : la fenêtre porte le décor */
+.sp-swing { animation: sp-swing 2.8s ease-in-out infinite; }
+@keyframes sp-swing { 0%, 100% { transform: rotate(20deg); } 50% { transform: rotate(-20deg); } }
 .sp-rang {
   position: relative; z-index: 1;
   display: flex; align-items: flex-end; justify-content: space-around; gap: 2px;
-  padding: 124px 6px 0;
+  padding: 116px 6px 0;
 }
-@media (prefers-reduced-motion: reduce) { .sp-orbite, .sp-spin, .sp-swing { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .sp-swing { animation: none; } }
 .sp-prof {
   position: relative; flex: 1 1 0; min-width: 0;
   display: flex; flex-direction: column; align-items: center; gap: 4px;
