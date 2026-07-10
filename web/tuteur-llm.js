@@ -5,6 +5,19 @@
 
 const CLE_URL = 'lea.tuteur.url';
 const CLE_KEY = 'lea.tuteur.key';
+const CLE_ELEVE = 'lea.eleve.ref';
+
+const uid = () => (crypto?.randomUUID ? crypto.randomUUID() : 'x' + Date.now() + Math.round(Math.random() * 1e9));
+const SESSION_ID = uid(); // pseudonyme, régénéré à chaque chargement
+
+// Référence élève pseudonyme et stable (aucune donnée personnelle).
+function eleveRef() {
+  try {
+    let r = localStorage.getItem(CLE_ELEVE);
+    if (!r) { r = uid(); localStorage.setItem(CLE_ELEVE, r); }
+    return r;
+  } catch { return SESSION_ID; }
+}
 
 function lireConfig() {
   const meta = (n) => document.querySelector(`meta[name="${n}"]`)?.content?.trim() || '';
@@ -75,7 +88,10 @@ export async function poserQuestion(question, contexte = {}) {
     const r = await fetch(url, {
       method: 'POST',
       headers,
-      body: JSON.stringify({ question: q, contexte }),
+      body: JSON.stringify({
+        question: q,
+        contexte: { ...contexte, session_id: SESSION_ID, eleve_ref: eleveRef() },
+      }),
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);
     const data = await r.json();

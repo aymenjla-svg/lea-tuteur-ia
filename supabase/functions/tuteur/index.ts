@@ -30,6 +30,8 @@ interface Contexte {
   enonce?: string;        // énoncé de l'exercice en cours (mode exercice)
   points_vus?: string[];  // points clés déjà vus (ancrage)
   en_exercice?: boolean;  // anti-spoiler : ne pas donner la réponse d'un exo
+  session_id?: string;    // identité pseudonyme (journal safety_alerts)
+  eleve_ref?: string;     // idem
 }
 
 interface Requete {
@@ -154,6 +156,43 @@ async function ragExtraits(question: string): Promise<string[]> {
   } catch {
     return [];
   }
+}
+
+// --- Journal (events / safety_alerts, télémétrie J1) — best-effort ------------
+// events : ne dépend que du tenant → fiable. safety_alerts : FK vers eleves /
+// sessions → seulement si des identités réelles existent (LOG_SAFETY_FK=1).
+function pgHeaders(srv: string) {
+  return { 'content-type': 'application/json', apikey: srv, authorization: `Bearer ${srv}`, Prefer: 'return=minimal' };
+}
+async function journalEvent(type: string, payload: Record<string, unknown>): Promise<void> {
+  if (Deno.env.get('LOG_ENABLED') !== '1') return;
+  const url = Deno.env.get('SUPABASE_URL');
+  const srv = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const tenant = Deno.env.get('TENANT_ID');
+  if (!url || !srv || !tenant) return;
+  try {
+    await fetch(`${url}/rest/v1/events`, { method: 'POST', headers: pgHeaders(srv), body: JSON.stringify({ tenant_id: tenant, type, payload }) });
+  } catch { /* télémétrie non bloquante */ }
+}
+async function journalSafety(cat: string, sev: string, extrait: string, ctx: Contexte): Promise<void> {
+  // Toujours tracer l'alerte dans events (minimisé §9).
+  await journalEvent('safety_alert', { categorie: cat, severite: sev, extrait });
+  // Table dédiée uniquement si les identités réelles sont câblées.
+  if (Deno.env.get('LOG_SAFETY_FK') !== '1') return;
+  const url = Deno.env.get('SUPABASE_URL');
+  const srv = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const tenant = Deno.env.get('TENANT_ID');
+  if (!url || !srv || !tenant || !ctx.session_id || !ctx.eleve_ref) return;
+  try {
+    await fetch(`${url}/rest/v1/safety_alerts`, {
+      method: 'POST',
+      headers: pgHeaders(srv),
+      body: JSON.stringify({
+        tenant_id: tenant, eleve_id: ctx.eleve_ref, session_id: ctx.session_id,
+        categorie: cat, severite: sev, extrait, escalade_requise: true,
+      }),
+    });
+  } catch { /* FK absente : l'alerte reste dans events */ }
 }
 
 // --- Système (prompt) ---------------------------------------------------------
@@ -301,7 +340,7 @@ Deno.serve(async (req) => {
   // 1) Filet de sécurité en entrée (détresse → pas d'appel LLM, escalade).
   const risque = filtrerEntree(question);
   if (risque) {
-    // Point d'extension : journaliser une SafetyAlert (table safety_alerts, §5).
+    await journalSafety(risque.categorie, risque.severite, question.slice(0, 120), ctx);
     return json({
       reponse: risque.message,
       dans_programme: true,
@@ -337,6 +376,13 @@ Deno.serve(async (req) => {
   }
   const reponse = filtrerSortie(String(data.reponse ?? '').slice(0, 1200)) ||
     'Bonne question ! Reprenons ce point du cours ensemble.';
+  // Télémétrie minimisée : métadonnées uniquement (pas le texte de l'élève).
+  await journalEvent('tuteur_qr', {
+    moduleId: ctx.moduleId ?? null,
+    en_exercice: !!ctx.en_exercice,
+    dans_programme: data.dans_programme !== false,
+    q_len: question.length,
+  });
   return json({
     reponse,
     tableau: nettoyerTableau(data.tableau),

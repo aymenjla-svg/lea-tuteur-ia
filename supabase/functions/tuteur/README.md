@@ -84,7 +84,27 @@ Les embeddings utilisent OpenAI `text-embedding-3-small` en **768 dimensions**
 (pour matcher `vector(768)`), indépendamment du provider de chat. Si le RAG
 n'est pas activé, la fonction retombe sur l'ancrage `points_vus` du client.
 
-## Points d'extension restants
+## Journal & sécurité (optionnel)
 
-- Journaliser `events` / `safety_alerts` (tables §5) via le service-role
-  (voir la fonction `journaliser` ci-dessous une fois branchée).
+Télémétrie J1 (§13) : chaque Q&R et chaque alerte de détresse peut être tracée.
+
+```bash
+supabase secrets set LOG_ENABLED=1
+supabase secrets set SUPABASE_URL=https://<projet>.supabase.co
+supabase secrets set SUPABASE_SERVICE_ROLE_KEY=...
+supabase secrets set TENANT_ID=<tenant>
+# Écrire AUSSI dans la table dédiée safety_alerts (nécessite des identités
+# réelles : lignes eleves + sessions existantes, FK). Sinon l'alerte reste
+# dans events, ce qui suffit à la télémétrie.
+supabase secrets set LOG_SAFETY_FK=1
+```
+
+- `events` (fiable, tenant seul) : `tuteur_qr` (métadonnées SANS le texte de
+  l'élève : module, en_exercice, dans_programme, longueur) et `safety_alert`
+  (catégorie, sévérité, extrait minimisé ≤120 car., §9).
+- `safety_alerts` (table dédiée) : écrite seulement si `LOG_SAFETY_FK=1` et si
+  le client fournit `session_id` + `eleve_ref` correspondant à des lignes
+  existantes. Le front envoie déjà une identité **pseudonyme** (aucune donnée
+  personnelle) ; le câblage aux vrais comptes viendra avec l'authentification.
+
+Sans ces secrets, aucune écriture : le tuteur fonctionne à l'identique.
