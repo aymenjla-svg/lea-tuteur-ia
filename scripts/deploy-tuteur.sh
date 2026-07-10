@@ -9,6 +9,13 @@
 # --- Version simple (juste le LLM) -------------------------------------------
 #   LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... ./scripts/deploy-tuteur.sh
 #
+# --- Fournisseur GRATUIT compatible OpenAI (ex. Groq) ------------------------
+#   LLM_PROVIDER=openai \
+#   LLM_BASE_URL=https://api.groq.com/openai/v1 \
+#   LLM_API_KEY=gsk_... \
+#   LLM_MODEL=llama-3.3-70b-versatile \
+#   ./scripts/deploy-tuteur.sh
+#
 # --- Version complète (--full : + RAG + journal) -----------------------------
 #   Nécessite en plus l'accès base + une clé OpenAI pour les embeddings :
 #   LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... \
@@ -36,8 +43,11 @@ echo "→ Provider LLM : $PROVIDER   (mode complet : $([ $FULL = 1 ] && echo oui
 # --- Secrets du provider de chat ---------------------------------------------
 supabase secrets set "LLM_PROVIDER=$PROVIDER" >/dev/null
 if [ "$PROVIDER" = "openai" ]; then
-  : "${OPENAI_API_KEY:?Définis OPENAI_API_KEY}"
-  supabase secrets set "OPENAI_API_KEY=$OPENAI_API_KEY" >/dev/null
+  # Compatible OpenAI : OpenAI par défaut, ou Groq/Mistral/… via LLM_BASE_URL.
+  KEY="${LLM_API_KEY:-${OPENAI_API_KEY:-}}"
+  [ -n "$KEY" ] || { echo "❌ Définis LLM_API_KEY (ou OPENAI_API_KEY)"; exit 1; }
+  supabase secrets set "LLM_API_KEY=$KEY" >/dev/null
+  [ -n "${LLM_BASE_URL:-}" ] && supabase secrets set "LLM_BASE_URL=$LLM_BASE_URL" >/dev/null || true
 else
   : "${ANTHROPIC_API_KEY:?Définis ANTHROPIC_API_KEY}"
   supabase secrets set "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >/dev/null

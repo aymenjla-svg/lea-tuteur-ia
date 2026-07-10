@@ -236,10 +236,13 @@ Réponds UNIQUEMENT par un objet JSON valide, sans texte autour, de la forme :
 async function appelLLM(sys: string, user: string): Promise<string> {
   const provider = (Deno.env.get('LLM_PROVIDER') ?? 'anthropic').toLowerCase();
   if (provider === 'openai') {
-    const key = Deno.env.get('OPENAI_API_KEY');
-    if (!key) throw new Error('OPENAI_API_KEY manquant');
+    // Branche « compatible OpenAI » : OpenAI, mais aussi Groq, Mistral,
+    // Together, OpenRouter… via LLM_BASE_URL + LLM_API_KEY (défaut OpenAI).
+    const base = (Deno.env.get('LLM_BASE_URL') ?? 'https://api.openai.com/v1').replace(/\/$/, '');
+    const key = Deno.env.get('LLM_API_KEY') ?? Deno.env.get('OPENAI_API_KEY');
+    if (!key) throw new Error('LLM_API_KEY / OPENAI_API_KEY manquant');
     const model = Deno.env.get('LLM_MODEL') ?? 'gpt-4o-mini';
-    const r = await fetch('https://api.openai.com/v1/chat/completions', {
+    const r = await fetch(`${base}/chat/completions`, {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
       body: JSON.stringify({
@@ -250,7 +253,7 @@ async function appelLLM(sys: string, user: string): Promise<string> {
         messages: [{ role: 'system', content: sys }, { role: 'user', content: user }],
       }),
     });
-    if (!r.ok) throw new Error(`OpenAI ${r.status}: ${await r.text()}`);
+    if (!r.ok) throw new Error(`LLM ${r.status}: ${await r.text()}`);
     const j = await r.json();
     return j.choices?.[0]?.message?.content ?? '';
   }
