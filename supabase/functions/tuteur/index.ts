@@ -254,11 +254,14 @@ Règles :
 
 Tu PEUX dessiner au tableau pour illustrer, en renvoyant des commandes de dessin. Le tableau est un repère SVG de 320 (largeur) × 200 (hauteur), origine en haut à gauche. Primitives autorisées :
 - {"type":"fleche","d":"M x1 y1 L x2 y2","len":<longueur approx>}
-- {"type":"trait","d":"M x1 y1 L x2 y2","len":<longueur>}
+- {"type":"trait","d":"M x1 y1 L x2 y2 L x3 y3","len":<longueur>}  (un trait peut enchaîner plusieurs segments M…L…M…L)
 - {"type":"cercle","x":<cx>,"y":<cy>,"r":<rayon>}
 - {"type":"ellipse","x":<cx>,"y":<cy>,"rx":<rx>,"ry":<ry>}
 - {"type":"texte","x":<x>,"y":<y>,"t":"<texte court>","ancre":"middle"}
-Maximum 4 commandes, sobres, seulement si ça aide vraiment. Sinon, "tableau": [].
+Maximum 12 commandes. Si l'élève te demande de DESSINER quelque chose (un athlète, un coureur, une voiture, un objet…), fais-le volontiers avec un schéma simple, façon « bonhomme bâton » : un cercle pour la tête, des traits pour le corps, les bras et les jambes. N'oublie pas le sol si utile, et une flèche pour montrer le mouvement/la vitesse.
+Exemple — un coureur qui illustre la vitesse :
+[{"type":"cercle","x":70,"y":40,"r":10},{"type":"trait","d":"M 70 50 L 66 92","len":45},{"type":"trait","d":"M 66 62 L 44 54 M 66 62 L 90 68","len":90},{"type":"trait","d":"M 66 92 L 46 128 M 66 92 L 88 124","len":95},{"type":"trait","d":"M 20 140 L 300 140","len":280},{"type":"fleche","d":"M 110 70 L 200 70","len":90},{"type":"texte","x":230,"y":74,"t":"v","ancre":"middle"}]
+Sinon (pas de demande de dessin, ou ça n'aide pas), "tableau": [].
 
 Réponds UNIQUEMENT par un objet JSON valide, sans texte autour, de la forme :
 {"reponse":"<ta réponse à l'élève>","tableau":[...],"dans_programme":true}`;
@@ -337,13 +340,15 @@ function nombre(v: unknown, min: number, max: number, def: number): number {
 function nettoyerTableau(cmds: unknown): CommandeTableau[] {
   if (!Array.isArray(cmds)) return [];
   const out: CommandeTableau[] = [];
-  for (const c of cmds.slice(0, 4)) {
+  for (const c of cmds.slice(0, 12)) {
     if (!c || typeof c !== 'object') continue;
     const t = (c as any).type;
     if (t === 'fleche' || t === 'trait') {
       const d = String((c as any).d ?? '');
-      if (/^[MLmlhvHV0-9 .,-]+$/.test(d) && d.length < 120) {
-        out.push({ type: t, d, len: nombre((c as any).len, 1, 600, 200) });
+      // Un chemin peut enchaîner plusieurs segments (M…L…M…L) pour dessiner
+      // un bonhomme : on autorise donc un tracé plus long.
+      if (/^[MLmlhvHV0-9 .,-]+$/.test(d) && d.length < 400) {
+        out.push({ type: t, d, len: nombre((c as any).len, 1, 2000, 200) });
       }
     } else if (t === 'cercle') {
       out.push({ type: 'cercle', x: nombre((c as any).x, 0, 320, 160), y: nombre((c as any).y, 0, 200, 100), r: nombre((c as any).r, 2, 90, 12) });

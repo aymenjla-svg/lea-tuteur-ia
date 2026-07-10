@@ -688,6 +688,11 @@ function dessinerCroquis(prims) {
       el.style.setProperty('--len', String(p.len ?? 300));
     }
     c.appendChild(el);
+    // Longueur réelle du tracé (une fois dans le DOM) : évite les traits en
+    // pointillés quand le schéma a plusieurs segments (ex. un bonhomme).
+    if (el.tagName === 'path') {
+      try { const L = el.getTotalLength(); if (L) el.style.setProperty('--len', String(L)); } catch { /* pas mesurable */ }
+    }
   }
 }
 
