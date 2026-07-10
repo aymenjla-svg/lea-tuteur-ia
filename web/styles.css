@@ -166,15 +166,29 @@ body::after {
   background: linear-gradient(180deg, #ffcf5a, #e0a83e);
   padding: 5px 14px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
 }
-.sp-cadre { position: absolute; width: 26px; height: 20px; top: 40px; border: 2.5px solid rgba(255, 255, 255, 0.32); border-radius: 3px; background: rgba(255, 255, 255, 0.06); }
-.sp-cadre.sc1 { left: 16px; } .sp-cadre.sc2 { right: 16px; }
-.sp-fenetre { position: absolute; top: 34px; left: 50%; transform: translateX(-50%); width: 62px; height: 40px; border: 2.5px solid rgba(180, 214, 246, 0.4); border-radius: 4px; background: linear-gradient(160deg, rgba(120, 180, 240, 0.28), rgba(120, 180, 240, 0.05)); }
-.sp-horloge { position: absolute; top: 40px; right: 50px; font-size: 15px; opacity: 0.85; }
+/* Décor « salle de physique » : planètes, atome, pendule, formules à la craie */
+.sp-astre { position: absolute; z-index: 0; opacity: 0.92; }
+.sp-saturne { top: 6px; left: 10px; width: 56px; height: 40px; }
+.sp-atome { top: 6px; right: 12px; width: 46px; height: 46px; }
+.sp-pendule { top: 26px; left: 50%; margin-left: -35px; width: 70px; height: 52px; }
+.sp-orbite { transform-origin: 30px 22px; animation: sp-orbit 6s linear infinite; }
+.sp-spin { transform-origin: 26px 26px; animation: sp-orbit 9s linear infinite; }
+.sp-swing { transform-origin: 40px 4px; animation: sp-swing 2.6s ease-in-out infinite; }
+@keyframes sp-orbit { to { transform: rotate(360deg); } }
+@keyframes sp-swing { 0%, 100% { transform: rotate(21deg); } 50% { transform: rotate(-21deg); } }
+.sp-f { position: absolute; z-index: 0; font: 700 13px/1 var(--round, sans-serif); color: #eaf2ff; opacity: 0.8; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4); white-space: nowrap; }
+.sp-f.f1 { top: 50px; left: 76px; }
+.sp-f.f3 { top: 50px; right: 74px; }
+.sp-f.f2 { top: 78px; left: 16px; }
+.sp-f.f4 { top: 78px; right: 16px; }
+.sp-etoile { position: absolute; z-index: 0; color: #ffe27a; opacity: 0.8; font-size: 10px; }
+.sp-etoile.e1 { top: 40px; left: 40%; } .sp-etoile.e2 { top: 84px; left: 38%; } .sp-etoile.e3 { top: 44px; right: 40%; }
 .sp-rang {
   position: relative; z-index: 1;
   display: flex; align-items: flex-end; justify-content: space-around; gap: 2px;
-  padding: 30px 6px 0;
+  padding: 100px 6px 0;
 }
+@media (prefers-reduced-motion: reduce) { .sp-orbite, .sp-spin, .sp-swing { animation: none; } }
 .sp-prof {
   position: relative; flex: 1 1 0; min-width: 0;
   display: flex; flex-direction: column; align-items: center; gap: 4px;

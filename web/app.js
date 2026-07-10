@@ -168,6 +168,45 @@ function construireNiveauSeg() {
 
 /* --- Hero (hologramme) + choix du prof ----------------------------------- */
 
+// Décor « salle de physique » sur le mur au-dessus des profs : planètes en
+// orbite, atome, pendule qui oscille, formules du programme à la craie.
+function salleDeco() {
+  return (
+    // Saturne + sa lune (haut gauche)
+    '<svg class="sp-astre sp-saturne" viewBox="0 0 60 44" aria-hidden="true">' +
+      '<defs><radialGradient id="spSat" cx="40%" cy="34%" r="72%"><stop offset="0" stop-color="#ffe0a0"/><stop offset="1" stop-color="#c47b2c"/></radialGradient></defs>' +
+      '<ellipse cx="30" cy="22" rx="27" ry="8.5" fill="none" stroke="#ffe6b0" stroke-width="3" transform="rotate(-20 30 22)"/>' +
+      '<circle cx="30" cy="22" r="12" fill="url(#spSat)"/>' +
+      '<path d="M8 27 A27 8.5 -20 0 0 52 17" fill="none" stroke="#ffe6b0" stroke-width="3" transform="rotate(-20 30 22)"/>' +
+      '<g class="sp-orbite"><circle cx="30" cy="2" r="2.6" fill="#cfe6ff"/></g>' +
+    '</svg>' +
+    // Atome (haut droite)
+    '<svg class="sp-astre sp-atome" viewBox="0 0 52 52" aria-hidden="true">' +
+      '<g class="sp-spin" fill="none" stroke="#8fb8ff" stroke-width="2">' +
+        '<ellipse cx="26" cy="26" rx="24" ry="9"/>' +
+        '<ellipse cx="26" cy="26" rx="24" ry="9" transform="rotate(60 26 26)"/>' +
+        '<ellipse cx="26" cy="26" rx="24" ry="9" transform="rotate(120 26 26)"/>' +
+      '</g>' +
+      '<circle cx="26" cy="26" r="4.5" fill="#ffd54a"/>' +
+    '</svg>' +
+    // Pendule qui oscille (haut, à droite de la bannière)
+    '<svg class="sp-astre sp-pendule" viewBox="0 0 80 60" aria-hidden="true">' +
+      '<line x1="10" y1="4" x2="70" y2="4" stroke="#8a939f" stroke-width="3" stroke-linecap="round"/>' +
+      '<g class="sp-swing">' +
+        '<line x1="40" y1="4" x2="40" y2="46" stroke="#c9d2e0" stroke-width="2"/>' +
+        '<circle cx="40" cy="50" r="7" fill="#b7c2d6" stroke="#7d8798" stroke-width="1.5"/>' +
+      '</g>' +
+    '</svg>' +
+    // Formules du programme, à la craie
+    '<span class="sp-f f1">v = d ⁄ t</span>' +
+    '<span class="sp-f f2">P = m·g</span>' +
+    '<span class="sp-f f3">U = R·I</span>' +
+    '<span class="sp-f f4">ρ = m ⁄ V</span>' +
+    // Étoiles
+    '<span class="sp-etoile e1">✦</span><span class="sp-etoile e2">✧</span><span class="sp-etoile e3">✦</span>'
+  );
+}
+
 // Salle commune : TOUS les profs sont présents pour accueillir l'élève. Le prof
 // choisi s'avance (mis en avant) ; cliquer sur un prof le sélectionne.
 function construireHero() {
@@ -176,8 +215,7 @@ function construireHero() {
   box.innerHTML =
     '<div class="sp-mur" aria-hidden="true">' +
       '<span class="sp-fanion">L’École de Léa</span>' +
-      '<span class="sp-cadre sc1"></span><span class="sp-cadre sc2"></span>' +
-      '<span class="sp-fenetre"></span><span class="sp-horloge">🕐</span>' +
+      salleDeco() +
     '</div>' +
     '<div class="sp-rang">' +
     PERSONAS.map((p) =>
