@@ -222,31 +222,41 @@ const DECOR_SALLE = {
   energie: ['🔥', '💡', '🔌'],
   signaux: ['🔊', '🌈', '📡'],
 };
-// Étagère de verrerie de labo (dessinée) : béchers, erlenmeyer, ballon sur
-// support avec réfrigérant, éprouvette graduée, portoir de tubes.
-function verrerieSVG() {
-  return `<svg class="verrerie" viewBox="0 0 320 48" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
-    <rect x="2" y="40" width="316" height="5" rx="2" fill="#7a5433"/><rect x="2" y="45" width="316" height="2" rx="1" fill="#573a20"/>
+// Paillasse de labo (dessinée) : meuble + comptoir + verrerie colorée dessus
+// (béchers, erlenmeyer, ballon sur support avec réfrigérant, éprouvette,
+// portoir de tubes) — placée SOUS le tableau, comme dans une vraie salle.
+function paillasseSVG() {
+  return `<svg class="paillasse" viewBox="0 0 320 96" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+    <!-- meuble (caissons + tiroirs) -->
+    <rect x="6" y="56" width="308" height="40" rx="3" fill="#e9eef6"/>
+    <g stroke="#c3ccda" stroke-width="1.6" fill="none">
+      <rect x="14" y="62" width="86" height="13" rx="2"/><rect x="14" y="79" width="86" height="12" rx="2"/>
+      <rect x="112" y="62" width="96" height="30" rx="2"/>
+      <rect x="220" y="62" width="86" height="13" rx="2"/><rect x="220" y="79" width="86" height="12" rx="2"/>
+    </g>
+    <g fill="#aeb8c8"><rect x="50" y="67" width="14" height="3" rx="1.5"/><rect x="50" y="83" width="14" height="3" rx="1.5"/><rect x="253" y="67" width="14" height="3" rx="1.5"/><rect x="253" y="83" width="14" height="3" rx="1.5"/></g>
+    <!-- comptoir -->
+    <rect x="0" y="48" width="320" height="9" rx="2" fill="#5b7fa6"/><rect x="0" y="55" width="320" height="2" fill="#3f5f82"/>
+    <!-- verrerie posée sur le comptoir (bas ≈ y50) -->
     <g stroke="#bcd4e6" stroke-width="1">
-      <path d="M40 18 L54 18 L56 40 L38 40 Z" fill="#dfeef7" fill-opacity=".5"/><path d="M39 29 L55 29 L56 39 L38 39 Z" fill="#58d38b" stroke="none"/>
-      <path d="M80 18 L86 18 L86 24 L96 40 L70 40 L80 24 Z" fill="#dfeef7" fill-opacity=".5"/><path d="M81 32 L85 32 L92 39 L74 39 Z" fill="#ff6fae" stroke="none"/>
-      <line x1="122" y1="10" x2="122" y2="40" stroke="#8a939f" stroke-width="2"/><rect x="114" y="39" width="34" height="3" fill="#6b7280" stroke="none"/>
-      <rect x="132" y="8" width="5" height="12" fill="#dfeef7" fill-opacity=".55"/><circle cx="134.5" cy="30" r="10" fill="#dfeef7" fill-opacity=".5"/>
-      <path d="M126 32 a10 10 0 0 0 17 0 z" fill="#a06cff" stroke="none"/><path d="M122 15 q15 -7 15 9" fill="none" stroke="#8a939f" stroke-width="1.6"/>
-      <rect x="182" y="14" width="9" height="26" rx="2" fill="#dfeef7" fill-opacity=".5"/><rect x="182.6" y="26" width="7.8" height="13.5" rx="1" fill="#ffd24a" stroke="none"/>
-      <rect x="232" y="32" width="54" height="8" rx="2" fill="#8a5a34" stroke="none"/>
-      <rect x="238" y="18" width="6" height="20" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="238.6" y="26" width="5" height="11" fill="#4ab8ff" stroke="none"/>
-      <rect x="254" y="18" width="6" height="20" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="254.6" y="24" width="5" height="13" fill="#ff8f5a" stroke="none"/>
-      <rect x="270" y="18" width="6" height="20" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="270.6" y="28" width="5" height="9" fill="#58d38b" stroke="none"/>
+      <path d="M34 26 L48 26 L50 50 L32 50 Z" fill="#dfeef7" fill-opacity=".5"/><path d="M33 38 L49 38 L50 49 L32 49 Z" fill="#58d38b" stroke="none"/>
+      <path d="M74 26 L80 26 L80 32 L91 50 L63 50 L74 32 Z" fill="#dfeef7" fill-opacity=".5"/><path d="M75 40 L79 40 L87 49 L67 49 Z" fill="#ff6fae" stroke="none"/>
+      <line x1="120" y1="14" x2="120" y2="50" stroke="#8a939f" stroke-width="2"/><rect x="110" y="49" width="36" height="3" fill="#6b7280" stroke="none"/>
+      <rect x="130" y="12" width="5" height="13" fill="#dfeef7" fill-opacity=".55"/><circle cx="132.5" cy="38" r="11" fill="#dfeef7" fill-opacity=".5"/>
+      <path d="M123 40 a11 11 0 0 0 19 0 z" fill="#a06cff" stroke="none"/><path d="M120 19 q16 -7 16 9" fill="none" stroke="#8a939f" stroke-width="1.6"/>
+      <rect x="182" y="22" width="10" height="28" rx="2" fill="#dfeef7" fill-opacity=".5"/><rect x="182.7" y="35" width="8.6" height="14.5" rx="1" fill="#ffd24a" stroke="none"/>
+      <rect x="232" y="42" width="56" height="8" rx="2" fill="#8a5a34" stroke="none"/>
+      <rect x="238" y="26" width="6" height="22" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="238.6" y="35" width="5" height="12" fill="#4ab8ff" stroke="none"/>
+      <rect x="255" y="26" width="6" height="22" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="255.6" y="32" width="5" height="15" fill="#ff8f5a" stroke="none"/>
+      <rect x="272" y="26" width="6" height="22" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="272.6" y="37" width="5" height="10" fill="#58d38b" stroke="none"/>
     </g>
   </svg>`;
 }
 function decorSalle(id) {
-  const e = DECOR_SALLE[id] ?? [];
-  return `<span class="fanion"></span>${verrerieSVG()}` +
+  return `<span class="fanion"></span>` +
+    `<span class="cadre c1"></span><span class="cadre c2"></span>` +
     `<span class="obj horloge">🕐</span>` +
-    `<span class="obj plante">🪴</span>` +
-    (e[0] ? `<span class="obj mat">${e[0]}</span>` : '');
+    paillasseSVG();
 }
 
 function construireModules() {
