@@ -347,6 +347,13 @@ function dessinerCroquis(prims) {
       el.setAttribute('cx', p.x); el.setAttribute('cy', p.y); el.setAttribute('r', p.r ?? 10);
       el.setAttribute('class', 'trace');
       el.style.setProperty('--len', String(2 * Math.PI * (p.r ?? 10)));
+    } else if (p.type === 'ellipse') {
+      el = document.createElementNS(ns, 'ellipse');
+      el.setAttribute('cx', p.x); el.setAttribute('cy', p.y);
+      el.setAttribute('rx', p.rx ?? 10); el.setAttribute('ry', p.ry ?? 10);
+      el.setAttribute('class', 'trace');
+      const rx = p.rx ?? 10, ry = p.ry ?? 10;
+      el.style.setProperty('--len', String(Math.PI * (3 * (rx + ry) - Math.sqrt((3 * rx + ry) * (rx + 3 * ry)))));
     } else { // 'trait' ou 'fleche' → un path
       el = document.createElementNS(ns, 'path');
       el.setAttribute('d', p.d);
@@ -360,6 +367,22 @@ function dessinerCroquis(prims) {
 // API du tableau : surface de dessin exposée pour la phase LLM (le prof répond
 // à une question imprévisible en dessinant) et pour les tests.
 window.LeaTableau = { dessiner: dessinerCroquis, effacer: effacerCroquis, croquis: coucheCroquis };
+
+// Réaction déterministe : sur une mauvaise réponse, le « prof » entoure au
+// tableau la relation à utiliser (même geste que le LLM pilotera plus tard).
+function entourerRelation(mot = 'utilise cette relation') {
+  const svg = $('#figureHost')?.querySelector('svg');
+  const loi = svg?.querySelector('.loi.revele') ?? svg?.querySelector('.loi');
+  if (!loi) return;
+  let b;
+  try { b = loi.getBBox(); } catch { return; }
+  const cx = b.x + b.width / 2, cy = b.y + b.height / 2;
+  effacerCroquis();
+  dessinerCroquis([
+    { type: 'ellipse', x: cx, y: cy, rx: b.width / 2 + 12, ry: b.height / 2 + 9 },
+    { type: 'texte', x: cx, y: b.y + b.height + 20, t: mot, ancre: 'middle' },
+  ]);
+}
 
 function rendreScene() {
   const sc = coursScenes[sceneIdx];
@@ -423,11 +446,13 @@ function repondreQcm(idx) {
     celebreJusqua = performance.now() + 1800;
     for (const b of document.querySelectorAll('#qcmZone .qcm-opt')) b.disabled = true;
     btn?.classList.add('juste');
+    effacerCroquis();
     majNavCours();
     parler(`Exact ! ${opt.retour ?? ''}`);
   } else {
     expression = 'encouraging';
     btn?.classList.add('faux');
+    entourerRelation('regarde le schéma');
     parler(opt.retour ?? 'Pas tout à fait, réessaie.');
   }
 }
@@ -443,9 +468,11 @@ function repondreCheckpoint(texte) {
     expression = 'celebrate';
     celebreJusqua = performance.now() + 1800;
     revelerUnite();
+    effacerCroquis();
     majNavCours();
   } else {
     expression = 'encouraging';
+    entourerRelation();
   }
   parler(r.message);
 }
