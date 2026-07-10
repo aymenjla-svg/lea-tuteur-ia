@@ -102,8 +102,35 @@ export async function poserQuestion(question, contexte = {}) {
       ...(data.alerte ? { alerte: data.alerte } : {}),
       source: 'llm',
     };
-  } catch {
-    // Réseau/serveur KO → on ne laisse jamais l'élève sans réponse.
-    return { ...reponseHorsLigne(q, contexte), source: 'erreur' };
+  } catch (e) {
+    // Réseau/serveur KO → on ne laisse jamais l'élève sans réponse, mais on
+    // remonte l'erreur pour le diagnostic.
+    return { ...reponseHorsLigne(q, contexte), source: 'erreur', erreur: String(e?.message ?? e) };
+  }
+}
+
+/** Teste la connexion au tuteur et renvoie un diagnostic clair. */
+export async function testerTuteur() {
+  const { url, key } = lireConfig();
+  if (!url) return { ok: false, detail: 'Aucune URL enregistrée. Colle l’URL de la fonction puis « Connecter ».' };
+  try {
+    const headers = { 'content-type': 'application/json' };
+    if (key) { headers.apikey = key; headers.authorization = `Bearer ${key}`; }
+    const r = await fetch(url, { method: 'POST', headers, body: JSON.stringify({ question: 'test', contexte: {} }) });
+    if (!r.ok) {
+      let t = '';
+      try { t = (await r.text()).slice(0, 160); } catch { /* corps illisible */ }
+      const aides = {
+        401: 'Non autorisé → désactive « Verify JWT » sur la fonction, OU colle la clé anon.',
+        403: 'Interdit → vérifie la clé anon / les réglages de la fonction.',
+        404: 'Introuvable → l’URL est fausse (souvent il manque /functions/v1/tuteur).',
+        500: 'La fonction plante → vérifie les secrets (clé Groq, LLM_MODEL) côté Supabase.',
+      };
+      return { ok: false, status: r.status, detail: `Erreur ${r.status}. ${aides[r.status] ?? ''} ${t}`.trim() };
+    }
+    const d = await r.json().catch(() => null);
+    return { ok: true, status: r.status, detail: d?.reponse ? `OK ✅ Léa a répondu : « ${String(d.reponse).slice(0, 90)}… »` : 'Réponse reçue (format inattendu).' };
+  } catch (e) {
+    return { ok: false, detail: 'Injoignable (réseau ou CORS bloqué) : ' + String(e?.message ?? e) };
   }
 }

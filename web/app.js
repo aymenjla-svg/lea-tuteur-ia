@@ -16,7 +16,7 @@ import {
   NIVEAUX, niveauCourant, definirNiveau, appliquerVibe,
   xp, ajouterXp, niveauJeu, progNiveauJeu, majSerie, serie, etoiles,
 } from './jeu.js';
-import { poserQuestion, tuteurConfigure } from './tuteur-llm.js';
+import { poserQuestion, tuteurConfigure, testerTuteur } from './tuteur-llm.js';
 
 const $ = (s) => document.querySelector(s);
 const reduireMouvement = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -986,6 +986,14 @@ $('#tuteurSave').addEventListener('click', () => {
     if (k) localStorage.setItem('lea.tuteur.key', k); else localStorage.removeItem('lea.tuteur.key');
   } catch { /* indispo */ }
   majTuteurUI();
+});
+// « Tester » : appelle vraiment la fonction et affiche le diagnostic exact.
+$('#tuteurTest').addEventListener('click', async () => {
+  // On enregistre d'abord ce qui est saisi, puis on teste.
+  $('#tuteurSave').click();
+  $('#tuteurEtat').textContent = '⏳ Test en cours…';
+  const r = await testerTuteur();
+  $('#tuteurEtat').textContent = r.ok ? r.detail : '❌ ' + r.detail;
 });
 
 $('#a11yBtn').addEventListener('click', () => { majA11yUI(); majTuteurUI(); $('#a11yModale').hidden = false; });
