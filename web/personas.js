@@ -41,6 +41,34 @@ export const PERSONAS = [
     tenue: '#3f6f8f', tenue2: '#2f556e', iris: '#4a5568', accent: '#2e8b74',
     coiffe: 'carre', lunettes: true, sexe: 'h', voix: { pitch: 0.8, rate: 0.92 }, voixN: { lecture: 0.85, openai: 'onyx' },
   },
+  {
+    id: 'persona-adam', nom: 'Adam', style: 'Sportif & motivant', emoji: '🏅',
+    tagline: 'Te donne de l’élan : chaque notion devient un défi à relever.',
+    peau: '#c68642', cheveux: '#241b15', cheveux2: '#150f0b',
+    tenue: '#2e8b74', tenue2: '#22685a', iris: '#5a4634', accent: '#f2994a',
+    coiffe: 'rase', barbe: true, sexe: 'h', voix: { pitch: 0.9, rate: 1.08 }, voixN: { lecture: 0.9, openai: 'ash' },
+  },
+  {
+    id: 'persona-theo', nom: 'Théo', style: 'Malin & taquin', emoji: '😄',
+    tagline: 'Glisse une pointe d’humour pour que ça reste en tête.',
+    peau: '#f0c49a', cheveux: '#4a2f1e', cheveux2: '#33200f',
+    tenue: '#e06d5a', tenue2: '#c4543f', iris: '#6a4a2a', accent: '#e06d5a',
+    coiffe: 'boucles', sexe: 'h', voix: { pitch: 0.94, rate: 1.05 }, voixN: { lecture: 0.94, openai: 'ballad' },
+  },
+  {
+    id: 'persona-sami', nom: 'Sami', style: 'Complice & rassurant', emoji: '🤝',
+    tagline: 'Comme un grand frère : jamais tu ne restes bloqué·e seul·e.',
+    peau: '#e0a878', cheveux: '#161619', cheveux2: '#0b0b0d',
+    tenue: '#4a90d9', tenue2: '#3a72ad', iris: '#3a3f4c', accent: '#4a90d9',
+    coiffe: 'ondules', sexe: 'h', voix: { pitch: 0.84, rate: 0.99 }, voixN: { lecture: 0.9, openai: 'verse' },
+  },
+  {
+    id: 'persona-victor', nom: 'Victor', style: 'Passionné & inspirant', emoji: '🎇',
+    tagline: 'Raconte la physique comme une grande aventure.',
+    peau: '#f3c9a0', cheveux: '#6b6f78', cheveux2: '#4a4e56',
+    tenue: '#7a5cc0', tenue2: '#634aa0', iris: '#4a5568', accent: '#7a5cc0',
+    coiffe: 'ondules', barbe: true, sexe: 'h', voix: { pitch: 0.78, rate: 0.94 }, voixN: { lecture: 0.83, openai: 'fable' },
+  },
 ];
 
 /** Renvoie un persona par id (défaut : le premier). */
@@ -68,6 +96,21 @@ function cheveuxArriere(p, s) {
     case 'courts':
       return `<path d="M46 96 Q40 138 60 168 L66 146 Q54 120 58 104 Z" fill="url(#hair${s})"/>
               <path d="M154 96 Q160 138 140 168 L134 146 Q146 120 142 104 Z" fill="url(#hair${s})"/>`;
+    case 'rase':
+      // coupe très courte : rien derrière (le crâne est net), nuque discrète
+      return `<path d="M52 104 Q50 122 60 138 L66 128 Q58 114 60 104 Z" fill="${p.cheveux2}" opacity=".8"/>
+              <path d="M148 104 Q150 122 140 138 L134 128 Q142 114 140 104 Z" fill="${p.cheveux2}" opacity=".8"/>`;
+    case 'boucles':
+      // masse bouclée qui déborde en petits arcs autour des tempes/nuque
+      return `<path d="M44 96 Q34 140 56 172 Q46 150 52 128 Q48 110 56 100 Z" fill="url(#hair${s})"/>
+              <path d="M156 96 Q166 140 144 172 Q154 150 148 128 Q152 110 144 100 Z" fill="url(#hair${s})"/>
+              <g fill="${p.cheveux2}" opacity=".5"><circle cx="50" cy="150" r="7"/><circle cx="60" cy="164" r="6"/><circle cx="150" cy="150" r="7"/><circle cx="140" cy="164" r="6"/></g>`;
+    case 'ondules':
+      // coupe homme mi-courte, un peu ondulée : masse ramassée sur la nuque
+      // (ne descend pas le long des joues → lecture masculine)
+      return `<path d="M48 98 Q40 128 58 150 L66 136 Q56 116 60 102 Z" fill="url(#hair${s})"/>
+              <path d="M152 98 Q160 128 142 150 L134 136 Q144 116 140 102 Z" fill="url(#hair${s})"/>
+              <path d="M52 104 Q46 128 58 146 Q56 128 62 112 Z" fill="${p.cheveux2}" opacity=".4"/>`;
     case 'carre':
     default:
       // carré net (bob) jusqu'à la mâchoire
@@ -81,34 +124,63 @@ function cheveuxArriere(p, s) {
 function cheveuxAvant(p, s) {
   // Mèches longues qui encadrent le visage (devant les oreilles) selon la coupe.
   const meches =
-    p.coiffe === 'courts'
+    p.coiffe === 'courts' || p.coiffe === 'rase' || p.coiffe === 'boucles' || p.coiffe === 'ondules'
       ? ''
       : p.coiffe === 'carre'
         ? `<path d="M46 96 Q44 140 62 168 Q56 132 60 100 Z" fill="url(#hair${s})"/>
            <path d="M154 96 Q156 140 138 168 Q144 132 140 100 Z" fill="url(#hair${s})"/>`
         : `<path d="M46 94 Q38 140 50 176 Q46 196 58 196 Q52 172 58 148 Q64 122 60 100 Z" fill="url(#hair${s})"/>
            <path d="M154 94 Q162 140 150 176 Q154 196 142 196 Q148 172 142 148 Q136 122 140 100 Z" fill="url(#hair${s})"/>`;
+
+  // Coupe très courte (buzz) : calotte qui épouse le crâne, ligne de cheveux nette.
+  if (p.coiffe === 'rase') {
+    return `
+      <path d="M44 102 C42 60 68 42 100 42 C132 42 158 60 156 102
+               C150 88 140 80 128 79 Q100 73 72 79 C60 80 50 88 44 102 Z" fill="url(#hair${s})"/>
+      <path d="M44 102 C46 66 66 48 92 44 C74 56 62 80 60 100 C54 90 48 94 44 102 Z" fill="${p.cheveux2}" opacity="0.4"/>
+      <g fill="#ffffff" opacity="0.10"><circle cx="82" cy="60" r="1.4"/><circle cx="100" cy="55" r="1.4"/><circle cx="118" cy="60" r="1.4"/><circle cx="70" cy="72" r="1.2"/><circle cx="130" cy="72" r="1.2"/></g>
+      <path d="M60 84 Q100 72 140 84 Q118 78 100 78 Q82 78 60 84 Z" fill="#ffffff" opacity="0.14"/>`;
+  }
+
+  // Boucles : couronne en festons (bords en arcs), volume rond au-dessus du front.
+  if (p.coiffe === 'boucles') {
+    return `
+      <path d="M40 108 C36 52 66 32 100 32 C134 32 164 52 160 108
+               Q156 96 148 96 Q150 84 138 84 Q140 74 128 76 Q130 66 116 70
+               Q118 60 104 66 Q100 58 92 68 Q86 62 80 72 Q72 68 68 80
+               Q58 78 56 90 Q46 90 44 100 Q42 104 40 108 Z" fill="url(#hair${s})"/>
+      <g fill="${p.cheveux2}" opacity="0.4"><circle cx="72" cy="74" r="8"/><circle cx="94" cy="64" r="9"/><circle cx="118" cy="66" r="8"/><circle cx="136" cy="80" r="7"/></g>
+      <g fill="#ffffff" opacity="0.16"><circle cx="86" cy="58" r="4"/><circle cx="108" cy="56" r="4"/><circle cx="128" cy="64" r="3.5"/></g>`;
+  }
+
+  // Ondulé : couronne balayée avec vaguelettes sur le bord haut.
+  const couronne = p.coiffe === 'ondules'
+    ? `<path d="M42 106
+              C38 54 66 34 100 34 C136 34 164 54 158 106
+              Q152 92 146 96 Q142 82 134 88 Q130 76 120 84 Q116 72 106 80
+              Q100 70 94 80 Q88 74 80 84 Q72 78 66 88 Q58 84 54 94 Q48 92 42 106 Z" fill="url(#hair${s})"/>
+       <path d="M42 106 C45 62 64 44 92 40 C72 54 60 78 60 100 C54 88 46 94 42 106 Z" fill="${p.cheveux2}" opacity="0.42"/>
+       <path d="M58 66 Q100 48 142 66 Q118 58 100 58 Q80 58 58 66 Z" fill="#ffffff" opacity="0.20"/>`
+    : `<path d="M42 104
+              C38 52 66 34 100 34
+              C136 34 164 52 158 104
+              C157 86 150 74 140 72
+              C143 82 138 88 128 88
+              C132 74 122 68 110 70
+              C113 82 106 86 96 86
+              C100 72 88 66 76 70
+              C80 82 72 86 62 86
+              C67 74 57 74 50 80
+              C46 86 43 96 42 104 Z" fill="url(#hair${s})"/>
+       <path d="M42 104 C45 62 64 44 92 40 C72 52 60 76 60 98 C54 86 46 92 42 104 Z" fill="${p.cheveux2}" opacity="0.45"/>
+       <path d="M58 62 Q100 42 142 62 Q118 52 100 52 Q80 52 58 62 Z" fill="#ffffff" opacity="0.22"/>
+       <path d="M74 50 Q94 42 114 47 Q98 46 86 52 Q79 50 74 50 Z" fill="#ffffff" opacity="0.28"/>`;
+
   return `
     ${meches}
     <!-- ombre portée de la frange sur le front -->
     <path d="M56 78 Q100 94 144 78 Q138 66 100 68 Q62 66 56 78 Z" fill="#00000014"/>
-    <!-- couronne + frange balayée (mèches nettes, front dégagé) -->
-    <path d="M42 104
-             C38 52 66 34 100 34
-             C136 34 164 52 158 104
-             C157 86 150 74 140 72
-             C143 82 138 88 128 88
-             C132 74 122 68 110 70
-             C113 82 106 86 96 86
-             C100 72 88 66 76 70
-             C80 82 72 86 62 86
-             C67 74 57 74 50 80
-             C46 86 43 96 42 104 Z" fill="url(#hair${s})"/>
-    <!-- mèche foncée (profondeur, côté gauche) -->
-    <path d="M42 104 C45 62 64 44 92 40 C72 52 60 76 60 98 C54 86 46 92 42 104 Z" fill="${p.cheveux2}" opacity="0.45"/>
-    <!-- reflet en bandeau (brillance) -->
-    <path d="M58 62 Q100 42 142 62 Q118 52 100 52 Q80 52 58 62 Z" fill="#ffffff" opacity="0.22"/>
-    <path d="M74 50 Q94 42 114 47 Q98 46 86 52 Q79 50 74 50 Z" fill="#ffffff" opacity="0.28"/>`;
+    ${couronne}`;
 }
 
 /**
@@ -123,7 +195,9 @@ function cheveuxAvant(p, s) {
 export function avatarSVG(p, uid = '', opts = {}) {
   const s = uid ? `-${uid}` : '';
   const entier = !!opts.entier; // corps complet (debout, avec les pieds)
+  const masc = p.sexe === 'h'; // rendu masculin : mâchoire carrée, pas de cils/blush/lèvres
   // Un œil manga complet, paramétré par le centre x (miroir pour l'autre œil).
+  // Version masculine : œil plus sobre (pas de longs cils, paupière plus fine).
   const oeil = (cx, dir) => {
     const o = -dir; // sens « vers l'extérieur » : gauche→-1, droite→+1
     const G = dir > 0 ? 'G' : 'D';
@@ -144,12 +218,12 @@ export function avatarSVG(p, uid = '', opts = {}) {
           <circle cx="${cx + 5}" cy="120" r="2.1" fill="#fff" opacity="0.9"/>
         </g>
       </g>
-      <!-- paupière haute épaisse : arc doux et haut (regard ouvert) -->
-      <path d="M${cx - 15} 111 Q${cx - 13} 104 ${cx} 104 Q${cx + 13} 104 ${cx + 15} 110" fill="none" stroke="#241812" stroke-width="3.8" stroke-linecap="round"/>
-      <!-- cils : 3 mèches douces au coin externe -->
+      <!-- paupière haute : plus fine chez l'homme, sans cils recourbés -->
+      <path d="M${cx - 15} 111 Q${cx - 13} 104 ${cx} 104 Q${cx + 13} 104 ${cx + 15} 110" fill="none" stroke="#241812" stroke-width="${masc ? 3 : 3.8}" stroke-linecap="round"/>
+      ${masc ? '' : `<!-- cils : 3 mèches douces au coin externe -->
       <path d="M${cx + o * 14} 108 q${o * 5} -1 ${o * 9} -5" fill="none" stroke="#241812" stroke-width="2.3" stroke-linecap="round"/>
       <path d="M${cx + o * 15} 111 q${o * 5} 1 ${o * 9} -2" fill="none" stroke="#241812" stroke-width="1.9" stroke-linecap="round"/>
-      <path d="M${cx + o * 15} 114 q${o * 5} 1 ${o * 8} 1" fill="none" stroke="#241812" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M${cx + o * 15} 114 q${o * 5} 1 ${o * 8} 1" fill="none" stroke="#241812" stroke-width="1.5" stroke-linecap="round"/>`}
       <!-- trait de paupière basse (discret) -->
       <path d="M${cx - 8} 123 Q${cx} 125 ${cx + 8} 123" fill="none" stroke="#8a6656" stroke-width="1.2" opacity="0.45" stroke-linecap="round"/>`;
   };
@@ -158,6 +232,17 @@ export function avatarSVG(p, uid = '', opts = {}) {
          <rect x="52" y="100" width="40" height="30" rx="12"/>
          <rect x="108" y="100" width="40" height="30" rx="12"/>
          <path d="M92 114 h16" fill="none"/><path d="M52 110 l-10 -3" fill="none"/><path d="M148 110 l10 -3" fill="none"/>
+       </g>`
+    : '';
+  // Barbe courte : bandeau qui suit la mâchoire (des pattes au menton) + moustache,
+  // en laissant la bouche dégagée. Se relie aux cheveux au niveau des tempes.
+  const barbe = p.barbe
+    ? `<g>
+         <path d="M56 118 Q56 152 78 172 Q90 182 100 184 Q110 182 122 172 Q144 152 144 118
+                  Q138 142 122 150 Q116 158 100 160 Q84 158 78 150 Q62 142 56 118 Z" fill="url(#hair${s})"/>
+         <path d="M56 118 Q60 144 74 154 Q66 140 62 120 Z" fill="${p.cheveux2}" opacity="0.5"/>
+         <path d="M82 139 Q100 133 118 139 Q108 145 100 145 Q92 145 82 139 Z" fill="url(#hair${s})"/>
+         <path d="M92 156 Q100 160 108 156 Q100 166 92 156 Z" fill="${p.cheveux2}" opacity="0.6"/>
        </g>`
     : '';
   // Bas du corps (uniquement en mode « entier ») : debout, blouse + pantalon +
@@ -229,35 +314,45 @@ export function avatarSVG(p, uid = '', opts = {}) {
     <path d="M156 108 Q164 110 162 122 Q160 132 150 130 Z" fill="${p.peau}"/>
     <path d="M46 114 Q42 116 44 124" fill="none" stroke="#00000022" stroke-width="1.4"/>
     <path d="M154 114 Q158 116 156 124" fill="none" stroke="#00000022" stroke-width="1.4"/>
-    <!-- visage (ovale allongé, menton fin façon anime) -->
-    <path d="M50 104 C50 64 72 50 100 50 C128 50 150 64 150 104 C150 134 138 158 118 172 C110 179 104 183 100 184 C96 183 90 179 82 172 C62 158 50 134 50 104 Z" fill="${p.peau}"/>
-    <path d="M50 104 C50 64 72 50 100 50 C128 50 150 64 150 104 C150 134 138 158 118 172 C110 179 104 183 100 184 C96 183 90 179 82 172 C62 158 50 134 50 104 Z" fill="url(#skin${s})"/>
+    <!-- visage : ovale fin (femme) ou mâchoire large et carrée (homme) -->
+    ${(() => {
+      const vd = masc
+        ? 'M48 102 C48 60 70 46 100 46 C130 46 152 60 152 102 C152 128 148 148 134 164 C124 176 112 184 100 184 C88 184 76 176 66 164 C52 148 48 128 48 102 Z'
+        : 'M50 104 C50 64 72 50 100 50 C128 50 150 64 150 104 C150 134 138 158 118 172 C110 179 104 183 100 184 C96 183 90 179 82 172 C62 158 50 134 50 104 Z';
+      return `<path d="${vd}" fill="${p.peau}"/><path d="${vd}" fill="url(#skin${s})"/>`;
+    })()}
     <!-- ombres de mâchoire / pommettes -->
-    <path d="M78 166 Q100 178 122 166 Q112 176 100 178 Q88 176 78 166 Z" fill="#00000010"/>
-    <path d="M54 108 Q52 130 66 146 Q58 126 60 108 Z" fill="#00000008"/>
+    ${masc
+      ? `<path d="M70 162 Q100 176 130 162 Q116 174 100 176 Q84 174 70 162 Z" fill="#00000014"/>
+         <path d="M62 138 Q66 156 78 166 Q68 150 66 132 Z" fill="#00000010"/>
+         <path d="M138 138 Q134 156 122 166 Q132 150 134 132 Z" fill="#00000010"/>`
+      : `<path d="M78 166 Q100 178 122 166 Q112 176 100 178 Q88 176 78 166 Z" fill="#00000010"/>
+         <path d="M54 108 Q52 130 66 146 Q58 126 60 108 Z" fill="#00000008"/>`}
 
-    <!-- blush doux permanent (rendu « soft anime ») -->
+    ${masc ? '' : `<!-- blush doux permanent (rendu « soft anime ») -->
     <ellipse cx="71" cy="131" rx="9" ry="5" fill="#ff9ba8" opacity="0.18"/>
-    <ellipse cx="129" cy="131" rx="9" ry="5" fill="#ff9ba8" opacity="0.18"/>
+    <ellipse cx="129" cy="131" rx="9" ry="5" fill="#ff9ba8" opacity="0.18"/>`}
     <circle id="joueG${s}" cx="70" cy="132" r="11" fill="url(#joueGrad${s})" opacity="0"/>
     <circle id="joueD${s}" cx="130" cy="132" r="11" fill="url(#joueGrad${s})" opacity="0"/>
 
     <g id="oeilG${s}">${oeil(74, 1)}</g>
     <g id="oeilD${s}">${oeil(126, -1)}</g>
 
-    <path id="sourcilG${s}" d="M59 84 Q74 77 90 82" stroke="${p.cheveux}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity="0.9"/>
-    <path id="sourcilD${s}" d="M110 82 Q126 77 141 84" stroke="${p.cheveux}" stroke-width="2.4" fill="none" stroke-linecap="round" opacity="0.9"/>
+    <!-- sourcils : épais et droits (homme) / arqués et fins (femme) -->
+    <path id="sourcilG${s}" d="${masc ? 'M57 86 Q74 81 91 85' : 'M59 84 Q74 77 90 82'}" stroke="${p.cheveux}" stroke-width="${masc ? 4 : 2.4}" fill="none" stroke-linecap="round" opacity="0.92"/>
+    <path id="sourcilD${s}" d="${masc ? 'M109 85 Q126 81 143 86' : 'M110 82 Q126 77 141 84'}" stroke="${p.cheveux}" stroke-width="${masc ? 4 : 2.4}" fill="none" stroke-linecap="round" opacity="0.92"/>
 
     <!-- nez (arête + narine, discret) -->
     <path d="M102 118 Q106 130 99 134" fill="none" stroke="#00000024" stroke-width="1.5" stroke-linecap="round"/>
     <path d="M99 134 q-3 1 -4 -1" fill="none" stroke="#00000018" stroke-width="1.2" stroke-linecap="round"/>
 
-    <!-- bouche (lèvres fines) -->
-    <path id="sourire${s}" d="M84 144 Q100 156 116 144" stroke="#c06a5e" stroke-width="2.6" fill="none" stroke-linecap="round" opacity="0"/>
-    <ellipse id="bouche${s}" cx="100" cy="146" rx="7.5" ry="2.6" fill="#c06a5e"/>
+    <!-- bouche : trait sobre (homme) / lèvres fines colorées (femme) -->
+    <path id="sourire${s}" d="M84 144 Q100 156 116 144" stroke="${masc ? '#8a5347' : '#c06a5e'}" stroke-width="2.6" fill="none" stroke-linecap="round" opacity="0"/>
+    <ellipse id="bouche${s}" cx="100" cy="146" rx="${masc ? 7 : 7.5}" ry="2.6" fill="${masc ? '#8a5347' : '#c06a5e'}"/>
     <path d="M91 145 q9 4 18 0" stroke="#00000016" stroke-width="1.1" fill="none"/>
-    <path d="M93 150 q7 3 14 0" stroke="#ffffff" stroke-width="1" opacity="0.25" fill="none"/>
+    ${masc ? '' : `<path d="M93 150 q7 3 14 0" stroke="#ffffff" stroke-width="1" opacity="0.25" fill="none"/>`}
 
+    ${barbe}
     ${cheveuxAvant(p, s)}
     ${lunettes}
 
