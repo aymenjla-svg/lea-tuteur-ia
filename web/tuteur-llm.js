@@ -71,10 +71,11 @@ function reponseHorsLigne(question, contexte) {
 /**
  * Pose une question au tuteur.
  * @param {string} question
- * @param {object} contexte { module, moduleId, notion, relation, points_vus, en_exercice }
+ * @param {object} contexte { module, moduleId, notion, relation, points_vus, en_exercice, prenom, sexe, prof }
+ * @param {{role:'eleve'|'lea', texte:string}[]} historique tours précédents (mémoire courte)
  * @returns {Promise<{reponse, tableau, dans_programme, alerte?, source}>}
  */
-export async function poserQuestion(question, contexte = {}) {
+export async function poserQuestion(question, contexte = {}, historique = []) {
   const q = String(question ?? '').trim();
   if (!q) return { reponse: 'Pose-moi ta question 🙂', tableau: [], dans_programme: true, source: 'vide' };
   if (MOTS_DETRESSE.test(q)) return reponseDetresse();
@@ -85,12 +86,18 @@ export async function poserQuestion(question, contexte = {}) {
   try {
     const headers = { 'content-type': 'application/json' };
     if (key) { headers.apikey = key; headers.authorization = `Bearer ${key}`; }
+    // On ne renvoie que les derniers tours (mémoire courte, données minimisées).
+    const hist = (Array.isArray(historique) ? historique : [])
+      .filter((m) => m && (m.role === 'eleve' || m.role === 'lea') && m.texte)
+      .slice(-8)
+      .map((m) => ({ role: m.role, texte: String(m.texte).slice(0, 800) }));
     const r = await fetch(url, {
       method: 'POST',
       headers,
       body: JSON.stringify({
         question: q,
         contexte: { ...contexte, session_id: SESSION_ID, eleve_ref: eleveRef() },
+        historique: hist,
       }),
     });
     if (!r.ok) throw new Error(`HTTP ${r.status}`);

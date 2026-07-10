@@ -22,6 +22,13 @@
 
 // --- Contrat d'échange --------------------------------------------------------
 
+interface Prof {
+  nom?: string;           // prof choisi par l'élève (ex. « Théo »)
+  style?: string;         // ex. « Malin & taquin »
+  tagline?: string;       // ex. « Glisse une pointe d'humour… »
+  sexe?: string;          // 'h' | 'f' (accord des auto-descriptions du prof)
+}
+
 interface Contexte {
   module?: string;        // ex. « Électricité — loi d'Ohm »
   moduleId?: string;
@@ -30,6 +37,9 @@ interface Contexte {
   enonce?: string;        // énoncé de l'exercice en cours (mode exercice)
   points_vus?: string[];  // points clés déjà vus (ancrage)
   en_exercice?: boolean;  // anti-spoiler : ne pas donner la réponse d'un exo
+  prenom?: string;        // prénom de l'élève (adresse personnalisée)
+  sexe?: string;          // 'h' | 'f' (accord des phrases adressées à l'élève)
+  prof?: Prof;            // persona du prof (fait varier le ton du LLM)
   session_id?: string;    // identité pseudonyme (journal safety_alerts)
   eleve_ref?: string;     // idem
 }
@@ -197,6 +207,28 @@ async function journalSafety(cat: string, sev: string, extrait: string, ctx: Con
 
 // --- Système (prompt) ---------------------------------------------------------
 
+// Identité du prof (persona) : nom + ton, pour que la réponse change selon le
+// prof choisi par l'élève. Défaut : Léa (douce & patiente).
+function identiteProf(prof?: Prof): string {
+  const nom = (prof?.nom ?? 'Léa').trim() || 'Léa';
+  const profF = prof?.sexe !== 'h'; // Léa/Mila = f par défaut
+  const roleMot = profF ? 'une professeure' : 'un professeur';
+  const accord = profF ? 'chaleureuse, positive et claire' : 'chaleureux, positif et clair';
+  const ton = prof?.style
+    ? `\nTa personnalité : ${prof.style}${prof.tagline ? ` — ${prof.tagline}` : ''}. Fais transparaître ce ton dans CHAQUE réponse (choix des mots, exemples, petites touches), tout en restant bienveillant·e et adapté à un·e collégien·ne. Reste toi-même « ${nom} » d'un bout à l'autre.`
+    : '';
+  return `Tu es ${nom}, ${roleMot} de physique ${accord} pour un·e élève de collège (cycle 4, 12–15 ans). Tu parles français, tu tutoies. Tes phrases sont courtes et concrètes, avec des exemples de la vie quotidienne.${ton}`;
+}
+
+// Comment s'adresser à l'élève : prénom + accord en genre (masculin/féminin).
+function adresseEleve(ctx: Contexte): string {
+  const bits: string[] = [];
+  if (ctx.prenom) bits.push(`L'élève s'appelle ${ctx.prenom} — appelle-le par son prénom de temps en temps, naturellement (pas à chaque phrase).`);
+  if (ctx.sexe === 'f') bits.push("L'élève est une fille : accorde au FÉMININ les mots qui la décrivent (« tu es prête », « attentive », « sûre de toi »).");
+  else if (ctx.sexe === 'h') bits.push("L'élève est un garçon : accorde au MASCULIN les mots qui le décrivent (« tu es prêt », « attentif », « sûr de toi »).");
+  return bits.length ? `\n\n${bits.join(' ')}` : '';
+}
+
 function systeme(ctx: Contexte, extraits: string[] = []): string {
   const rag = extraits.length
     ? `\n\nExtraits du cours (source de vérité — appuie-toi dessus en priorité) :\n"""\n${extraits.join('\n---\n')}\n"""`
@@ -208,11 +240,12 @@ function systeme(ctx: Contexte, extraits: string[] = []): string {
   const spoiler = ctx.en_exercice
     ? `\n\nL’élève est EN EXERCICE${ctx.enonce ? ` sur l’énoncé : « ${ctx.enonce} »` : ''}. Ne donne JAMAIS le résultat numérique final ni la valeur de l’inconnue. Explique la méthode, la notion, l’étape qui bloque (quelle relation, quelle conversion), et invite l’élève à finir le calcul lui-même.`
     : '';
-  return `Tu es Léa, une tutrice de physique bienveillante pour un·e élève de collège (cycle 4, 12–15 ans). Tu parles français, tu tutoies, tu es chaleureuse, positive et claire. Tes phrases sont courtes et concrètes, avec des exemples de la vie quotidienne.
+  return `${identiteProf(ctx.prof)}${adresseEleve(ctx)}
 
 ${PROGRAMME}
 
 Règles :
+- Souviens-toi de ce qui vient d'être dit dans la conversation (les messages précédents) : si l'élève renvoie à « la réponse d'avant » ou « ce que tu viens de dire », reprends-le fidèlement.
 - Tu peux aller loin : approfondir, relier les notions entre elles, donner des analogies et des exemples réels — MAIS uniquement dans le programme ci-dessus. Si la question sort du programme, dis-le gentiment et ramène au cours (mets alors "dans_programme": false).
 - Ne jamais valider une idée fausse ; corrige avec douceur.
 - Ne jamais humilier ni juger. Encourage toujours.
@@ -233,7 +266,18 @@ Réponds UNIQUEMENT par un objet JSON valide, sans texte autour, de la forme :
 
 // --- Appel provider (configurable) -------------------------------------------
 
-async function appelLLM(sys: string, user: string): Promise<string> {
+type Tour = { role: 'eleve' | 'lea'; texte: string };
+
+// Convertit l'historique « élève/prof » en messages user/assistant (mémoire).
+function messagesHistorique(hist: Tour[] = []): { role: 'user' | 'assistant'; content: string }[] {
+  return (Array.isArray(hist) ? hist : [])
+    .filter((m) => m && (m.role === 'eleve' || m.role === 'lea') && m.texte)
+    .slice(-8)
+    .map((m) => ({ role: m.role === 'lea' ? 'assistant' as const : 'user' as const, content: String(m.texte).slice(0, 800) }));
+}
+
+async function appelLLM(sys: string, user: string, hist: Tour[] = []): Promise<string> {
+  const passe = messagesHistorique(hist);
   const provider = (Deno.env.get('LLM_PROVIDER') ?? 'anthropic').toLowerCase();
   if (provider === 'openai') {
     // Branche « compatible OpenAI » : OpenAI, mais aussi Groq, Mistral,
@@ -250,7 +294,7 @@ async function appelLLM(sys: string, user: string): Promise<string> {
         temperature: 0.4,
         max_tokens: 900,
         response_format: { type: 'json_object' },
-        messages: [{ role: 'system', content: sys }, { role: 'user', content: user }],
+        messages: [{ role: 'system', content: sys }, ...passe, { role: 'user', content: user }],
       }),
     });
     if (!r.ok) throw new Error(`LLM ${r.status}: ${await r.text()}`);
@@ -273,8 +317,8 @@ async function appelLLM(sys: string, user: string): Promise<string> {
       max_tokens: 900,
       temperature: 0.4,
       system: sys,
-      // Préfixe '{' pour forcer une sortie JSON.
-      messages: [{ role: 'user', content: user }, { role: 'assistant', content: '{' }],
+      // Historique puis question ; préfixe '{' pour forcer une sortie JSON.
+      messages: [...passe, { role: 'user', content: user }, { role: 'assistant', content: '{' }],
     }),
   });
   if (!r.ok) throw new Error(`Anthropic ${r.status}: ${await r.text()}`);
@@ -355,7 +399,7 @@ Deno.serve(async (req) => {
   let brut: string;
   try {
     const extraits = await ragExtraits(question);
-    brut = await appelLLM(systeme(ctx, extraits), question);
+    brut = await appelLLM(systeme(ctx, extraits), question, body.historique as Tour[]);
   } catch (e) {
     return json(
       {

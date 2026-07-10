@@ -18,12 +18,13 @@ function ecrire(p) {
 }
 
 /** Crée le profil à la fin de l'accueil interactif. */
-export function creerProfil({ prenom, classe, interets }) {
+export function creerProfil({ prenom, classe, interets, sexe }) {
   const now = Date.now();
   return ecrire({
     prenom: String(prenom || '').trim().slice(0, 24) || 'toi',
     classe: classe || '4e',
     interets: (interets || []).slice(0, 6),
+    sexe: sexe === 'f' || sexe === 'h' ? sexe : '', // '' = non précisé (langage neutre)
     visites: 1,
     premierAcces: now,
     dernierAcces: now,

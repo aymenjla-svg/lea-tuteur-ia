@@ -21,7 +21,7 @@ import {
   lireProfil, profilExiste, creerProfil, enregistrerVisite, memoriserModule, joursDepuis,
 } from './profil.js';
 import {
-  salutRetour, reprise, introCours, clotureCours, felicite, courage, auRevoir,
+  salutRetour, reprise, introCours, clotureCours, felicite, courage, auRevoir, genrer,
 } from './humain.js';
 
 const $ = (s) => document.querySelector(s);
@@ -402,7 +402,7 @@ function afficherAccueilPerso() {
   }
   const heure = new Date().getHours();
   const bonjour = heure < 6 ? 'Bonne nuit' : heure < 18 ? 'Bonjour' : 'Bonsoir';
-  if (h) h.innerHTML = `${bonjour} ${p.prenom}, prêt·e à continuer&nbsp;?`;
+  if (h) h.innerHTML = genrer(`${bonjour} ${p.prenom}, prêt·e à continuer&nbsp;?`, p.sexe);
   const s = serie?.() ?? 0;
   const flamme = s >= 2 ? ` · 🔥 ${s} jours de suite` : '';
   if (salut) {
@@ -416,26 +416,30 @@ function direSalutRetour() {
   if (salutDit || !profilExiste() || !voix.tts || !salutSession) return;
   salutDit = true;
   voixActive = true; majVoixUI();
-  voix.parler(`${salutSession} ${repriseSession}`, { params: paramsVoix() });
+  voix.parler(genrer(`${salutSession} ${repriseSession}`, lireProfil()?.sexe), { params: paramsVoix() });
 }
 window.addEventListener('pointerdown', direSalutRetour, { once: true });
 
 /* --- Accueil interactif « l'École de Léa » (tout premier passage) --------- */
 
 const INTERETS = ['⚽ Sport', '🎮 Jeux vidéo', '🎵 Musique', '🚀 Espace', '🐾 Animaux', '🎨 Dessin', '🔬 Sciences', '🎬 Ciné'];
-const onb = { prenom: '', classe: '', interets: [] };
+const onb = { prenom: '', classe: '', interets: [], sexe: '' };
 let onbStep = 0;
 
 function onbDire(texte) {
-  $('#onbMsg').textContent = texte;
-  if (voix.tts) { voixActive = true; voix.parler(texte, { params: paramsVoix() }); }
+  const t = genrer(texte, onb.sexe);
+  $('#onbMsg').textContent = t;
+  if (voix.tts) { voixActive = true; voix.parler(t, { params: paramsVoix() }); }
 }
 
 function onbEtapes() {
+  const prof = persona?.nom || 'Léa';
+  const profF = persona?.sexe !== 'h';
   return [
-    { msg: 'Bienvenue dans l’École de Léa ! Moi c’est Léa, ta prof de physique. On va faire une super équipe. Prêt·e à faire connaissance ?', next: 'Commencer →', zone: () => '' },
+    { msg: `Bienvenue dans l’École de Léa ! Moi c’est ${prof}, ${profF ? 'ta prof' : 'ton prof'} de physique. On va faire une super équipe. Prêt·e à faire connaissance ?`, next: 'Commencer →', zone: () => '' },
     { msg: 'Pour commencer… comment tu t’appelles ?', next: 'Suivant', zone: () => `<input id="onbPrenom" class="onb-input" type="text" maxlength="24" placeholder="Ton prénom" aria-label="Ton prénom" value="${onb.prenom}">`, valide: () => (onb.prenom = ($('#onbPrenom')?.value || '').trim()).length > 0 },
-    { msg: `Enchantée, ${onb.prenom || ''} ! Tu es en quelle classe ?`, next: 'Suivant', zone: () => `<div class="onb-chips" id="onbClasses">${NIVEAUX.map((n) => `<button type="button" class="onb-chip${onb.classe === n.id ? ' on' : ''}" data-c="${n.id}" style="--cn:${n.couleur}">${n.label}</button>`).join('')}</div>`, valide: () => !!onb.classe },
+    { msg: `Enchanté${profF ? 'e' : ''}, ${onb.prenom || ''} ! Dis-moi, tu es plutôt… ?`, next: 'Suivant', zone: () => `<div class="onb-chips" id="onbSexe">${[['h', 'Un garçon'], ['f', 'Une fille'], ['', 'Je préfère ne pas dire']].map(([v, l]) => `<button type="button" class="onb-chip${onb.sexe === v ? ' on' : ''}" data-s="${v}">${l}</button>`).join('')}</div>`, valide: () => true, sexe: true },
+    { msg: `Et tu es en quelle classe, ${onb.prenom || ''} ?`, next: 'Suivant', zone: () => `<div class="onb-chips" id="onbClasses">${NIVEAUX.map((n) => `<button type="button" class="onb-chip${onb.classe === n.id ? ' on' : ''}" data-c="${n.id}" style="--cn:${n.couleur}">${n.label}</button>`).join('')}</div>`, valide: () => !!onb.classe },
     { msg: 'Génial ! Et quand tu n’es pas en cours, qu’est-ce que tu aimes ? (choisis-en autant que tu veux)', next: 'Suivant', zone: () => `<div class="onb-chips" id="onbInterets">${INTERETS.map((it) => `<button type="button" class="onb-chip${onb.interets.includes(it) ? ' on' : ''}" data-i="${it}">${it}</button>`).join('')}</div>`, valide: () => true },
     { msg: `Parfait, ${onb.prenom || ''} ! Une dernière chose : ici, on a le DROIT de se tromper, autant de fois qu’on veut — c’est comme ça qu’on apprend. Allez… bienvenue dans ton école ! 🚀`, next: 'Entrer dans l’école ✨', zone: () => '', fin: true },
   ];
@@ -453,6 +457,13 @@ function onbRender() {
     const b = ev.target.closest('[data-c]'); if (!b) return;
     onb.classe = b.dataset.c;
     cl.querySelectorAll('.onb-chip').forEach((x) => x.classList.remove('on'));
+    b.classList.add('on');
+  });
+  const sx = $('#onbSexe');
+  if (sx) sx.addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-s]'); if (!b) return;
+    onb.sexe = b.dataset.s;
+    sx.querySelectorAll('.onb-chip').forEach((x) => x.classList.remove('on'));
     b.classList.add('on');
   });
   const it = $('#onbInterets');
@@ -487,7 +498,7 @@ function demarrerOnboarding() {
 
 function finirOnboarding() {
   voix.interrompre();
-  creerProfil({ prenom: onb.prenom, classe: onb.classe, interets: onb.interets });
+  creerProfil({ prenom: onb.prenom, classe: onb.classe, interets: onb.interets, sexe: onb.sexe });
   if (onb.classe) definirNiveau(onb.classe);
   $('#onboarding').hidden = true;
   construireAccueil();
@@ -1034,6 +1045,8 @@ function paramsVoix() {
 }
 
 function parler(texte) {
+  // La voix du prof s'accorde au genre de l'élève (prêt·e → prêt / prête).
+  texte = genrer(String(texte ?? ''), lireProfil()?.sexe);
   const duree = Math.min(4000, 400 + texte.length * 32);
   parleJusqua = performance.now() + duree;
 
@@ -1360,6 +1373,18 @@ for (const id of ['a11yModale', 'avisModale', 'mainModale']) {
 
 // Contexte transmis au tuteur : le module, la notion courante, la relation et
 // les points déjà vus (ancrage au programme). en_exercice pilote l'anti-spoiler.
+// Identité partagée envoyée au tuteur : qui est l'élève (prénom + genre, pour
+// un accord et une adresse justes) et QUEL prof répond (nom + personnalité, pour
+// que le ton du LLM change selon le prof choisi).
+function identiteTuteur() {
+  const p = lireProfil();
+  return {
+    prenom: p?.prenom && p.prenom !== 'toi' ? p.prenom : '',
+    sexe: p?.sexe || '',
+    prof: persona ? { nom: persona.nom, style: persona.style, tagline: persona.tagline, sexe: persona.sexe } : undefined,
+  };
+}
+
 function contexteTuteur() {
   // En EXERCICE : on ancre sur tout le cours du module + l'énoncé courant.
   // en_exercice=true → le tuteur explique la méthode SANS donner le résultat.
@@ -1377,6 +1402,7 @@ function contexteTuteur() {
       enonce: etatExo?.question_courante?.enonce,
       points_vus: vus.slice(0, 10),
       en_exercice: true,
+      ...identiteTuteur(),
     };
   }
   const sc = coursScenes[sceneIdx];
@@ -1391,6 +1417,7 @@ function contexteTuteur() {
     relation: FORMULES[moduleActuel?.objectifPrincipal],
     points_vus: vus.slice(-8),
     en_exercice: false,
+    ...identiteTuteur(),
   };
 }
 
@@ -1419,6 +1446,9 @@ $('#leverMain').addEventListener('click', () => {
 });
 
 let mainOccupe = false;
+// Mémoire courte de la conversation « lever la main » : les derniers échanges
+// sont renvoyés au tuteur pour qu'il se souvienne (« et la réponse d'avant ? »).
+let histTuteur = [];
 // L'IA répond par le MÊME canal que le cours : la voix de Léa + les sous-titres
 // + son visage + le tableau. Aucune « bulle de chatbot » : on ne doit pas
 // sentir la frontière script / IA. Le fil ne sert qu'aux alertes de sécurité.
@@ -1434,13 +1464,15 @@ async function envoyerQuestion(q) {
   $('#soustitre').textContent = 'Hmm, bonne question… laisse-moi réfléchir.';
   let rep;
   try {
-    rep = await poserQuestion(q, contexteTuteur());
+    rep = await poserQuestion(q, contexteTuteur(), histTuteur);
   } catch {
     rep = { reponse: 'Je n’ai pas pu répondre là. On reprend le cours ensemble ?', tableau: [], dans_programme: true };
   } finally {
     mainOccupe = false;
     $('#mainEnvoyer').disabled = false;
   }
+  // On garde une fenêtre glissante des derniers tours (l'élève puis le prof).
+  histTuteur = [...histTuteur, { role: 'eleve', texte: q }, { role: 'lea', texte: String(rep.reponse ?? '') }].slice(-8);
   // Le tableau réagit en direct : Léa dessine et POINTE la notion dont elle parle.
   if (mode === 'cours') {
     if (Array.isArray(rep.tableau) && rep.tableau.length) {
