@@ -194,35 +194,57 @@ function choisirProf(id) {
   construireProfChips();
 }
 
-/* --- Missions (modules) + « continuer » ---------------------------------- */
+/* --- La cour : chaque cours = une porte de classe (décor selon la matière) - */
+
+// Motif discret propre à chaque matière, dessiné dans le vitrail de la porte.
+function decorMatiere(id) {
+  const svg = (p) => `<svg class="porte-motif" viewBox="0 0 100 100" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+  switch (id) {
+    case 'mouvement': return svg('<path d="M14 66 h58"/><path d="M22 46 h34 M22 54 h48 M22 62 h22" opacity=".65"/><circle cx="60" cy="74" r="7"/><path d="M53 74 h-6"/>');
+    case 'poids': return svg('<path d="M50 22 V42"/><path d="M28 42 H72"/><path d="M28 42 l-9 15 h18 z"/><path d="M72 42 l-9 15 h18 z"/><path d="M40 80 h20"/><path d="M50 80 V60"/>');
+    case 'electricite': return svg('<path d="M56 18 L34 54 H48 L44 84 L70 44 H54 Z"/>');
+    case 'matiere': return svg('<path d="M42 22 V44 L27 74 a7 7 0 0 0 6 10 H67 a7 7 0 0 0 6 -10 L58 44 V22"/><path d="M38 22 h24"/><circle cx="45" cy="68" r="3"/><circle cx="57" cy="62" r="2.4"/>');
+    case 'energie': return svg('<rect x="24" y="34" width="42" height="34" rx="5"/><path d="M66 44 h7 v14 h-7"/><path d="M47 40 l-9 15 h10 l-5 13 14 -18 h-10 z"/>');
+    case 'signaux': return svg('<circle cx="30" cy="60" r="6"/><path d="M44 46 a20 20 0 0 1 0 28"/><path d="M53 39 a30 30 0 0 1 0 42"/><path d="M62 32 a40 40 0 0 1 0 56" opacity=".7"/>');
+    default: return '';
+  }
+}
 
 function construireModules() {
   const grille = $('#modulesGrille');
   const prog = chargerProgress();
   grille.replaceChildren();
   const actifs = MODULES.filter((m) => !m.verrouille).length;
-  $('#modCount').textContent = `${actifs} débloquées · ${MODULES.length - actifs} à venir`;
+  $('#modCount').textContent = `${actifs} portes ouvertes · ${MODULES.length - actifs} à venir`;
 
   MODULES.forEach((m, i) => {
     const pct = progressModule(m, prog);
     const num = String(i + 1).padStart(2, '0');
     const carte = document.createElement('button');
     carte.type = 'button';
-    carte.className = 'mission' + (m.verrouille ? ' verrouille' : '');
+    carte.className = 'porte' + (m.verrouille ? ' verrouille' : '') + (pct > 0 ? ' allumee' : '');
     carte.style.setProperty('--c', m.couleur);
     carte.disabled = !!m.verrouille;
+    carte.setAttribute('aria-label', `${m.titre}${m.verrouille ? ' (à venir)' : ` — ${pct}% fait`}`);
+    const battant = m.verrouille
+      ? `<div class="porte-battant"><span class="porte-lock">🔒</span></div>`
+      : `<div class="porte-battant">
+           <span class="porte-rai"></span>
+           <div class="porte-vitre">${decorMatiere(m.id)}<span class="porte-ico">${m.icone}</span></div>
+           <span class="porte-poignee"></span>
+         </div>`;
     carte.innerHTML =
-      `<span class="reticle tl"></span><span class="reticle tr"></span>` +
-      `<span class="reticle bl"></span><span class="reticle br"></span>` +
-      `<div class="mission-top"><span class="mission-ico">${m.icone}</span><span class="mission-num">${num}</span></div>` +
-      `<div class="mission-titre">${m.titre}</div>` +
-      `<div class="mission-sub">${m.resume}</div>` +
-      (m.verrouille ? '' : `<div class="mission-bar"><span style="width:${pct}%"></span></div>`) +
-      `<div class="mission-pied">` +
+      `<div class="porte-cadre">
+         <span class="torche g"></span><span class="torche d"></span>
+         <span class="porte-num">${num}</span>
+         ${battant}
+       </div>
+       <div class="porte-plaque">
+         <div class="porte-nom">${m.titre}</div>` +
       (m.verrouille
-        ? `<span class="mission-verr">🔒 Verrouillée</span>`
-        : `<span class="mission-pct">${pct}% ${etoilesMission(pct)}</span>` +
-          `<span class="mission-go">${pct >= 100 ? 'REJOUER' : pct > 0 ? 'REPRENDRE' : 'LANCER'} →</span>`) +
+        ? `<div class="porte-etat">Bientôt</div>`
+        : `<div class="porte-bar"><span style="width:${pct}%"></span></div>
+           <div class="porte-pied"><span class="porte-pct">${pct}% ${etoilesMission(pct)}</span><span class="porte-go">${pct >= 100 ? 'Revoir' : pct > 0 ? 'Reprendre' : 'Entrer'} →</span></div>`) +
       `</div>`;
     if (!m.verrouille) carte.addEventListener('click', () => ouvrirModule(m));
     grille.append(carte);
