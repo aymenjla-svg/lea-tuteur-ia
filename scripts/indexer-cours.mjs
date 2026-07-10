@@ -61,6 +61,21 @@ async function encoder(textes) {
   return j.data.map((d) => d.embedding);
 }
 
+// 0) S'assurer qu'un tenant existe (embeddings.tenant_id → FK tenants).
+async function seedTenant() {
+  const r = await fetch(`${SUPABASE_URL}/rest/v1/tenants?on_conflict=tenant_id`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      apikey: SUPABASE_SERVICE_ROLE_KEY,
+      authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+      Prefer: 'resolution=merge-duplicates,return=minimal',
+    },
+    body: JSON.stringify({ tenant_id: TENANT_ID, mode_ia: 'inclus', region: 'eu-west', libelle: 'Léa (test)' }),
+  });
+  if (!r.ok) throw new Error(`Supabase seed tenant ${r.status}: ${await r.text()}`);
+}
+
 // 3) Upsert dans Supabase via PostgREST (résolution merge sur la clé primaire).
 async function upsert(lignes) {
   const r = await fetch(`${SUPABASE_URL}/rest/v1/embeddings?on_conflict=tenant_id,id`, {
@@ -78,6 +93,7 @@ async function upsert(lignes) {
 
 const chunks = passages();
 console.log(`${chunks.length} passages à indexer (dim ${DIM})…`);
+await seedTenant();
 const vecteurs = await encoder(chunks.map((c) => c.texte));
 const lignes = chunks.map((c, i) => ({
   tenant_id: TENANT_ID,

@@ -56,6 +56,22 @@ Réponse :
 Les commandes `tableau` utilisent le repère du schéma (320×200) et les
 primitives de la couche croquis (`fleche`/`trait`/`cercle`/`ellipse`/`texte`).
 
+## Tout activer en une commande
+
+Le plus simple (LLM + RAG + journal) :
+
+```bash
+supabase login && supabase link --project-ref <ref>
+LLM_PROVIDER=anthropic ANTHROPIC_API_KEY=sk-ant-... \
+OPENAI_API_KEY=sk-... \
+SUPABASE_URL=https://<ref>.supabase.co \
+SUPABASE_SERVICE_ROLE_KEY=... \
+./scripts/deploy-tuteur.sh --full
+```
+
+Puis colle l'URL affichée dans l'appli (♿ → « Tuteur IA » → Connecter). Le
+détail manuel de chaque brique est ci-dessous.
+
 ## Ancrage RAG (optionnel, pgvector)
 
 Pour ancrer les réponses sur le texte exact du cours (au-delà des `points_vus`
