@@ -9,6 +9,7 @@ import { PERSONAS, MATIERE, personaParId, avatarSVG } from './personas.js';
 import { voix } from './voix.js';
 import { MODULES, chargerProgress, majProgress, progressModule } from './modules.js';
 import { COURS, verifierCheckpoint } from './cours.js';
+import { exosDuModule } from './exos.js';
 import { figure } from './figures.js';
 import { enregistrerReponse, ERREUR_LIB } from './suivi.js';
 import { lireA11y, appliquerA11y, definirA11y } from './accessibilite.js';
@@ -548,7 +549,7 @@ function ouvrirModule(m) {
   if (voix.tts) { voixActive = true; majVoixUI(); }
   // Chaque module commence par son COURS animé (s'il existe), puis la série.
   if (COURS[m.id]) { cpFaits.clear(); ouvrirCours(m); }
-  else { mode = 'exos'; appliquerMode(); demarrer(m.objectifPrincipal); }
+  else { lancerExosVaries(m); }
 }
 
 function retourAccueil() {
@@ -611,6 +612,7 @@ function appliquerMode() {
   // (et masqué tant que le panneau de saisie est ouvert, pour ne pas se chevaucher).
   syncParleLea();
   $('#revoirCours').hidden = cours || !COURS[moduleActuel?.id];
+  $('#pave').style.display = ''; // réaffiche le pavé (masqué par les exos ouverts/QCM)
   if (cours) $('#rejouer').hidden = true;
   else { $('#form').hidden = false; $('#qcmZone').hidden = true; }
 }
@@ -855,9 +857,150 @@ function majDots() {
 }
 
 function passerAuxExos() {
+  lancerExosVaries(moduleActuel);
+}
+
+/* --- Exercices VARIÉS (QCM conceptuels, comparaisons, « trouve l'erreur »,
+   questions ouvertes analysées par le LLM). Remplacent la série purement
+   numérique quand le module a une banque (web/exos.js). ---------------------- */
+let xv = null; // { m, items, i, reussis, total, repondu, done }
+
+function lancerExosVaries(m) {
+  const items = m && exosDuModule(m.id);
+  if (!items) { // pas de banque → repli sur la série numérique du moteur
+    xv = null; mode = 'exos'; appliquerMode(); demarrer(m.objectifPrincipal); return;
+  }
+  xv = { m, items, i: 0, reussis: 0, total: items.length, repondu: false, done: false };
   mode = 'exos';
+  $('#bilan').hidden = true;
+  $('#rejouer').hidden = true;
   appliquerMode();
-  demarrer(moduleActuel.objectifPrincipal);
+  rendreExoVarie();
+}
+
+function rendreExoVarie() {
+  if (!xv) return;
+  const it = xv.items[xv.i];
+  if (!it) { finExosVaries(); return; }
+  xv.repondu = false;
+  etatExo = null; // le contexte « lever la main » passera par xv
+  expression = 'happy';
+  const pct = Math.round((xv.i / xv.total) * 100);
+  $('#barre').style.width = pct + '%';
+  $('#pct').innerHTML = pct + '&nbsp;%';
+  $('#figLabel').textContent = `◦ Exercices · ${xv.i + 1}/${xv.total}`;
+  $('#tableauTexte').textContent = it.enonce;
+  $('#tableauFormule').textContent = FORMULES[xv.m.objectifPrincipal] ?? '';
+  $('#reponse').disabled = false; $('#envoyer').disabled = false; $('#reponse').value = '';
+  $('#qcmZone').hidden = it.t !== 'qcm';
+  $('#form').hidden = it.t === 'qcm';
+  $('#pave').style.display = it.t === 'num' ? '' : 'none';
+  if (it.t === 'qcm') {
+    construireUnites(null);
+    $('#qcmZone').innerHTML = it.options
+      .map((o, i) => `<button type="button" class="qcm-opt" data-idx="${i}">${o.txt}</button>`).join('');
+  } else if (it.t === 'num') {
+    $('#reponse').placeholder = 'Ta réponse…';
+    $('#reponse').setAttribute('inputmode', 'decimal');
+    construireUnites(it.choixUnite ? { bonne: it.unite, choix: it.choixUnite } : null);
+    uniteObjectifId = null;
+  } else { // ouvert
+    $('#reponse').placeholder = 'Réponds avec tes mots…';
+    $('#reponse').setAttribute('inputmode', 'text');
+    construireUnites(null);
+  }
+  parler(it.enonce);
+  attente = true;
+}
+
+function repondreExoVarieQcm(idx) {
+  if (!xv || xv.repondu) return;
+  const it = xv.items[xv.i];
+  if (it?.t !== 'qcm') return;
+  const opt = it.options[idx];
+  if (!opt) return;
+  voix.interrompre();
+  const n = lireProfil()?.prenom;
+  const btn = $(`#qcmZone .qcm-opt[data-idx="${idx}"]`);
+  if (opt.ok) {
+    xv.repondu = true; xv.reussis += 1;
+    expression = 'celebrate'; celebreJusqua = performance.now() + 1800;
+    for (const b of document.querySelectorAll('#qcmZone .qcm-opt')) b.disabled = true;
+    btn?.classList.add('juste');
+    parler(`${felicite(n)} ${opt.retour ?? ''}`);
+    setTimeout(avancerExoVarie, 1600);
+  } else {
+    expression = 'encouraging';
+    if (btn) { btn.classList.add('faux'); btn.disabled = true; }
+    parler(`${courage(n)} ${opt.retour ?? ''}`);
+  }
+}
+
+async function repondreExoVarieSaisie(texte) {
+  if (!xv || xv.repondu) return;
+  const it = xv.items[xv.i];
+  texte = String(texte ?? '').trim();
+  if (!texte) return;
+  voix.interrompre();
+  const n = lireProfil()?.prenom;
+  if (it.t === 'num') {
+    const val = parseFloat(texte.replace(',', '.').replace(/\s/g, ''));
+    const okUnite = !it.choixUnite || !it.unite || uniteChoisie === it.unite;
+    const okVal = Number.isFinite(val) && Math.abs(val - it.valeur) <= (it.tol ?? 0);
+    if (okVal && okUnite) {
+      xv.repondu = true; xv.reussis += 1;
+      expression = 'celebrate'; celebreJusqua = performance.now() + 1800; revelerUnite();
+      parler(felicite(n));
+      setTimeout(avancerExoVarie, 1400);
+    } else {
+      expression = 'encouraging';
+      parler(`${courage(n)} ${!okVal ? (it.aide ?? 'Refais le calcul, doucement.') : 'Le nombre est bon — vérifie l’unité choisie.'}`);
+    }
+    return;
+  }
+  // Question ouverte : le LLM analyse la réponse (formatif → on avance après).
+  xv.repondu = true;
+  $('#reponse').disabled = true; $('#envoyer').disabled = true;
+  $('#soustitre').textContent = 'Laisse-moi lire ta réponse…';
+  let retour = '';
+  try {
+    if (tuteurConfigure()) {
+      const prompt = `Exercice : « ${it.enonce} » Réponse de l'élève : « ${texte} ». Dis-lui en 2 phrases maximum si c'est juste, corrige gentiment si besoin, et rappelle l'idée clé. N'attribue aucune note.`;
+      const rep = await poserQuestion(prompt, { ...identiteTuteur(), module: xv.m.titre, moduleId: xv.m.id, notion: 'Exercice ouvert', en_exercice: false });
+      retour = rep?.reponse || '';
+    }
+  } catch { /* on retombe sur le corrigé type */ }
+  if (!retour) retour = `Bonne réflexion ${n || ''} ! L'essentiel : ${it.attendu}`;
+  xv.reussis += 1; // question ouverte = participation (formative)
+  expression = 'happy';
+  parler(retour);
+  setTimeout(avancerExoVarie, 2400);
+}
+
+function avancerExoVarie() {
+  if (!xv) return;
+  xv.i += 1;
+  rendreExoVarie();
+}
+
+function finExosVaries() {
+  if (!xv) return;
+  const pct = xv.total ? Math.round((xv.reussis / xv.total) * 100) : 0;
+  $('#barre').style.width = '100%'; $('#pct').innerHTML = '100&nbsp;%';
+  $('#qcmZone').hidden = true; $('#form').hidden = true; $('#unites').hidden = true;
+  $('#pave').style.display = '';
+  $('#tableauTexte').textContent = '★ Exercices terminés !';
+  $('#tableauFormule').textContent = '';
+  if (xv.m) { const gain = majProgress(xv.m.objectifPrincipal, pct); if (gain > 0) ajouterXp(gain); }
+  const n = lireProfil()?.prenom;
+  $('#bilan').innerHTML =
+    `<div class="bilan-score">${xv.reussis} / ${xv.total} réussis</div>` +
+    `<div class="bilan-note">${pct >= 80 ? 'Excellent travail 🎉' : pct >= 50 ? 'Bien joué, on progresse 👍' : 'On révise un point et on y revient 💪'}</div>`;
+  $('#bilan').hidden = false;
+  confettis();
+  $('#rejouer').hidden = false;
+  attente = false; xv.done = true;
+  parler(`${felicite(n)} ${auRevoir(n)}`);
 }
 
 /* --- Boucle de leçon ------------------------------------------------------ */
@@ -1307,6 +1450,7 @@ $('#form').addEventListener('submit', (e) => {
   const v = $('#reponse').value;
   $('#reponse').value = '';
   if (mode === 'cours') repondreCheckpoint(v);
+  else if (xv && !xv.done) repondreExoVarieSaisie(v);
   else repondre(v);
 });
 $('#coursSuivant').addEventListener('click', () => {
@@ -1322,7 +1466,9 @@ $('#coursPrec').addEventListener('click', () => {
 $('#revoirCours').addEventListener('click', () => { if (moduleActuel) ouvrirCours(moduleActuel); });
 $('#qcmZone').addEventListener('click', (e) => {
   const b = e.target.closest('.qcm-opt');
-  if (b && !b.disabled) repondreQcm(Number(b.dataset.idx));
+  if (!b || b.disabled) return;
+  if (xv && mode === 'exos' && !xv.done) repondreExoVarieQcm(Number(b.dataset.idx));
+  else repondreQcm(Number(b.dataset.idx));
 });
 // Pavé numérique tactile (alimente #reponse ; le clavier physique marche aussi).
 $('#pave').addEventListener('click', (e) => {
@@ -1342,8 +1488,14 @@ $('#pave').addEventListener('click', (e) => {
   }
   inp.focus();
 });
-$('#perdu').addEventListener('click', () => repondre('je suis perdu'));
-$('#rejouer').addEventListener('click', () => demarrer(moduleActuel?.objectifPrincipal));
+$('#perdu').addEventListener('click', () => {
+  if (xv && !xv.done) { const it = xv.items[xv.i]; parler(`${courage(lireProfil()?.prenom)} ${it?.aide ?? 'Relis bien l’énoncé, et repère la grandeur cherchée.'}`); }
+  else repondre('je suis perdu');
+});
+$('#rejouer').addEventListener('click', () => {
+  if (moduleActuel && exosDuModule(moduleActuel.id)) lancerExosVaries(moduleActuel);
+  else demarrer(moduleActuel?.objectifPrincipal);
+});
 $('#retour').addEventListener('click', retourAccueil);
 $('#ouvrirProfs').addEventListener('click', () => {
   const pp = $('#profPicker');
@@ -1485,7 +1637,18 @@ function identiteTuteur() {
 }
 
 function contexteTuteur() {
-  // En EXERCICE : on ancre sur tout le cours du module + l'énoncé courant.
+  // Exercices VARIÉS : on ancre sur l'énoncé courant. Anti-spoiler pour les QCM
+  // et les calculs ; une question ouverte peut être discutée librement.
+  if (xv && !xv.done && mode === 'exos') {
+    const it = xv.items[xv.i] ?? {};
+    return {
+      module: xv.m.titre, moduleId: xv.m.id, notion: 'Exercices',
+      relation: FORMULES[xv.m.objectifPrincipal], enonce: it.enonce,
+      points_vus: [], en_exercice: it.t !== 'ouvert',
+      ...identiteTuteur(),
+    };
+  }
+  // En EXERCICE (série moteur) : on ancre sur tout le cours du module + l'énoncé.
   // en_exercice=true → le tuteur explique la méthode SANS donner le résultat.
   if (mode === 'exos') {
     const c = COURS[moduleActuel?.id];
