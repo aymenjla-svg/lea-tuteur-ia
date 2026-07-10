@@ -11,6 +11,7 @@ export function figure(id, focus = '') {
     case 'poids': return figPoids(focus);
     case 'ohm': return figOhm(focus);
     case 'matiere': return figMatiere(focus);
+    case 'etats': return figEtats(focus);
     case 'energie': return figEnergie(focus);
     case 'signaux': return figSignaux(focus);
     default: return '';
@@ -129,6 +130,37 @@ function figMatiere(focus) {
     <text class="lab lab-v" x="60" y="83" fill="#43c463">V</text>
   </g>
   <text class="loi" x="248" y="104" text-anchor="middle">ρ = m / V</text>
+</svg>`;
+}
+
+// --- Matière : les 3 états et les changements d'état -------------------------
+function figEtats(focus) {
+  // Particules : ordonnées (solide), tassées en bas (liquide), dispersées (gaz).
+  const grille = (cx, cy) =>
+    [0, 1, 2].flatMap((r) => [0, 1, 2].map((c) =>
+      `<circle cx="${cx - 10 + c * 10}" cy="${cy - 10 + r * 10}" r="3.4" fill="#7fd3f2"/>`)).join('');
+  const tas = (cx, cy) =>
+    [[-9, 8], [0, 10], [9, 8], [-5, 0], [5, 1], [-10, -1], [10, -2], [0, -1], [-2, 6]]
+      .map(([dx, dy]) => `<circle cx="${cx + dx}" cy="${cy + dy}" r="3.4" fill="#7fd3f2"/>`).join('');
+  const gaz = (cx, cy) =>
+    [[-12, -12], [8, -14], [-6, 2], [12, 4], [-14, 12], [2, 14], [14, -2], [0, -4]]
+      .map(([dx, dy], i) => `<circle class="gp" style="animation-delay:${(-i * 0.3).toFixed(2)}s" cx="${cx + dx}" cy="${cy + dy}" r="3.2" fill="#7fd3f2"/>`).join('');
+  const bac = (cx) => `<path d="M${cx - 20} 44 V80 Q${cx - 20} 88 ${cx - 13} 88 H${cx + 13} Q${cx + 20} 88 ${cx + 20} 80 V44" fill="none" stroke="#8fa6c4" stroke-width="3"/>`;
+  return `
+<svg class="figure fig-etats" data-foc="${focus}" viewBox="0 0 300 200" role="img" aria-label="Les états de la matière">
+  ${bac(48)}${grille(48, 66)}<text class="astre-nom" x="48" y="112" text-anchor="middle">solide</text>
+  ${bac(132)}${tas(132, 74)}<text class="astre-nom" x="132" y="112" text-anchor="middle">liquide</text>
+  ${bac(216)}${gaz(216, 64)}<text class="astre-nom" x="216" y="112" text-anchor="middle">gaz</text>
+  <g class="part part-changements">
+    <path d="M70 60 h40 m0 0 l-7 -4 m7 4 l-7 4" fill="none" stroke="#ffb703" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="cap" x="90" y="52" text-anchor="middle" fill="#ffb703">fusion</text>
+    <path d="M154 60 h40 m0 0 l-7 -4 m7 4 l-7 4" fill="none" stroke="#ffb703" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="cap" x="174" y="52" text-anchor="middle" fill="#ffb703">vaporisation</text>
+    <path d="M110 132 h-40 m0 0 l7 -4 m-7 4 l7 4" fill="none" stroke="#7fd3f2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="cap" x="90" y="146" text-anchor="middle" fill="#7fa8c8">solidification</text>
+    <path d="M194 132 h-40 m0 0 l7 -4 m-7 4 l7 4" fill="none" stroke="#7fd3f2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+    <text class="cap" x="174" y="146" text-anchor="middle" fill="#7fa8c8">liquéfaction</text>
+  </g>
 </svg>`;
 }
 

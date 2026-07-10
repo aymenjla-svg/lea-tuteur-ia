@@ -334,6 +334,61 @@ export const COURS = {
     figure: 'matiere',
     scenes: [
       {
+        titre: 'Les trois états de la matière',
+        figure: 'etats',
+        focus: 'etats',
+        points: ['Solide : forme propre.', 'Liquide : prend la forme du récipient.', 'Gaz : occupe tout l’espace.'],
+        narration:
+          'La matière existe sous trois états. Le solide a une forme bien à lui, comme un ' +
+          'glaçon. Le liquide, comme l’eau, prend la forme de son récipient. Le gaz, comme la ' +
+          'vapeur, se répand et occupe tout l’espace disponible.',
+      },
+      {
+        titre: 'Les changements d’état',
+        figure: 'etats',
+        focus: 'changements',
+        points: ['Solide → liquide : fusion.', 'Liquide → gaz : vaporisation.', 'Et les changements inverses.'],
+        narration:
+          'On passe d’un état à l’autre par un changement d’état. Un solide qui devient liquide, ' +
+          'c’est la fusion ; un liquide qui devient gaz, la vaporisation. Dans l’autre sens, on ' +
+          'parle de solidification et de liquéfaction.',
+      },
+      {
+        titre: 'La masse se conserve',
+        figure: 'etats',
+        focus: 'changements',
+        points: ['La masse ne change pas lors d’un changement d’état.', 'Mais le volume, lui, peut changer.'],
+        narration:
+          'Point important : quand un glaçon fond, il devient de l’eau liquide, mais sa masse ' +
+          'reste exactement la même — la matière ne disparaît pas. En revanche, son volume peut ' +
+          'varier : l’eau se dilate en gelant.',
+      },
+      {
+        titre: 'La température de changement d’état',
+        figure: 'etats',
+        focus: 'changements',
+        points: ['L’eau pure fond à 0 °C et bout à 100 °C.', 'Ces températures identifient un corps pur.'],
+        narration:
+          'Chaque corps pur change d’état à une température bien précise. L’eau pure fond à 0 ' +
+          'degré et bout à 100 degrés. Mesurer cette température permet donc de reconnaître un ' +
+          'corps pur.',
+      },
+      {
+        titre: 'Vérifie que tu as compris',
+        figure: 'etats',
+        focus: 'changements',
+        points: ['Une question rapide.'],
+        narration: 'Une petite question sur les changements d’état.',
+        qcm: {
+          question: 'Quand un glaçon fond entièrement, sa masse…',
+          options: [
+            { txt: 'reste la même', ok: true },
+            { txt: 'diminue', retour: 'La matière ne disparaît pas : la masse se conserve.' },
+            { txt: 'augmente', retour: 'Rien ne s’ajoute : la masse reste identique.' },
+          ],
+        },
+      },
+      {
         titre: 'Pourquoi la masse volumique ?',
         focus: 'relation',
         points: ['Reconnaître un matériau sans le voir.', 'Comprendre pourquoi ça flotte ou coule.'],

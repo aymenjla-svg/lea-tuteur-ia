@@ -279,7 +279,7 @@ function rendreScene() {
   const q = sc.qcm;
   checkpointOk = (!cp && !q) || cpFaits.has(sceneIdx);
 
-  $('#figureHost').innerHTML = figure(coursFigureId, sc.focus);
+  $('#figureHost').innerHTML = figure(sc.figure ?? coursFigureId, sc.focus);
   $('#coursTitre').textContent = sc.titre;
   const pts = [...sc.points];
   if (cp) pts.push(`<b class="cp-q">${cp.enonce}</b>`);
