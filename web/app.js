@@ -168,10 +168,40 @@ function construireNiveauSeg() {
 
 /* --- Hero (hologramme) + choix du prof ----------------------------------- */
 
+// Fenêtre de classe avec vue sur la cour (ciel selon l'heure, arbres, l'école
+// avec son drapeau) → « vraie école » en arrière-plan.
+function fenetreEcole() {
+  const h = new Date().getHours();
+  const nuit = h < 6 || h >= 21, soir = !nuit && h >= 18;
+  const ciel = nuit ? ['#0d1a3a', '#26356a'] : soir ? ['#f4a15a', '#8a6aa0'] : ['#7ec6f5', '#d6efff'];
+  const herbe = nuit ? '#1c3320' : '#57bd68';
+  const astre = nuit
+    ? '<circle cx="99" cy="16" r="8" fill="#eef2ff"/><circle cx="96" cy="13" r="6.5" fill="url(#spCiel)"/>'
+    : `<circle cx="99" cy="16" r="9" fill="${soir ? '#ffd98a' : '#fff3b0'}"/>`;
+  const cielHaut = nuit
+    ? '<g fill="#fff" opacity=".85"><circle cx="26" cy="12" r="1"/><circle cx="50" cy="9" r="1.2"/><circle cx="70" cy="20" r="1"/><circle cx="40" cy="24" r=".9"/></g>'
+    : '<g fill="#fff" opacity=".92"><ellipse cx="34" cy="18" rx="12" ry="5"/><ellipse cx="45" cy="16" rx="8" ry="4"/><ellipse cx="70" cy="26" rx="9" ry="4"/></g>';
+  const ecole = `<rect x="6" y="30" width="30" height="18" fill="${nuit ? '#3a3550' : '#e5d9bd'}"/>` +
+    `<polygon points="4,30 21,19 38,30" fill="${nuit ? '#2a2740' : '#b0503c'}"/>` +
+    `<rect x="19" y="14" width="4" height="6" fill="${nuit ? '#2a2740' : '#b0503c'}"/><polygon points="23,14 33,17 23,20" fill="#e0533a"/>` + // drapeau
+    `<g fill="${nuit ? '#c9b45a' : '#7fa8d8'}"><rect x="11" y="35" width="5" height="6"/><rect x="19" y="35" width="5" height="6"/><rect x="27" y="35" width="5" height="6"/></g>`;
+  const arbres = `<g fill="${nuit ? '#183018' : '#2f8f45'}"><circle cx="70" cy="40" r="8"/><circle cx="84" cy="42" r="6"/></g>` +
+    `<rect x="68.5" y="44" width="3" height="6" fill="#5a3a22"/><rect x="82.5" y="46" width="2.5" height="4" fill="#5a3a22"/>`;
+  return '<div class="sp-fenetre-ecole">' +
+    `<svg viewBox="0 0 120 70" preserveAspectRatio="none" aria-hidden="true">` +
+    `<defs><linearGradient id="spCiel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${ciel[0]}"/><stop offset="1" stop-color="${ciel[1]}"/></linearGradient></defs>` +
+    `<rect x="0" y="0" width="120" height="70" fill="url(#spCiel)"/>${cielHaut}${astre}` +
+    `<rect x="0" y="47" width="120" height="23" fill="${herbe}"/>${ecole}${arbres}` +
+    `<g stroke="#e6ecf6" stroke-width="3.2" fill="none"><line x1="60" y1="0" x2="60" y2="70"/><line x1="0" y1="35" x2="120" y2="35"/></g>` +
+    '</svg></div>' +
+    '<span class="sp-porte" aria-hidden="true"></span>' +
+    '<span class="sp-etagere" aria-hidden="true"></span>';
+}
+
 // Décor « salle de physique » sur le mur au-dessus des profs : planètes en
 // orbite, atome, pendule qui oscille, formules du programme à la craie.
 function salleDeco() {
-  return (
+  return fenetreEcole() + (
     // Saturne + sa lune (haut gauche)
     '<svg class="sp-astre sp-saturne" viewBox="0 0 60 44" aria-hidden="true">' +
       '<defs><radialGradient id="spSat" cx="40%" cy="34%" r="72%"><stop offset="0" stop-color="#ffe0a0"/><stop offset="1" stop-color="#c47b2c"/></radialGradient></defs>' +
