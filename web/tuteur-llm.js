@@ -42,19 +42,17 @@ function reponseDetresse() {
   };
 }
 
-// Aide hors-ligne : on s'appuie sur ce que l'élève vient de voir.
+// Aide hors-ligne : on s'appuie sur ce que l'élève vient de voir. En exercice,
+// on n'donne pas la réponse — on rappelle la méthode et la relation.
 function reponseHorsLigne(question, contexte) {
   const pts = contexte?.points_vus ?? [];
   const rappel = pts.length ? ` Rappelle-toi : ${pts.slice(0, 2).join(' ; ')}.` : '';
   const rel = contexte?.relation ? ` La relation en jeu : ${contexte.relation}.` : '';
-  return {
-    reponse:
-      `Bonne question ! Pour l’instant je réponds à partir du cours.${rappel}${rel} ` +
-      'Reprends l’exemple résolu de la leçon, puis réessaie — et tu peux cliquer « Revoir le cours ».',
-    tableau: [],
-    dans_programme: true,
-    source: 'hors-ligne',
-  };
+  const reponse = contexte?.en_exercice
+    ? `Je ne te donne pas la réponse, mais voici la méthode : écris la relation, remplace par les valeurs de l’énoncé, puis calcule.${rel}${rappel} Vérifie aussi tes unités.`
+    : `Bonne question ! Pour l’instant je réponds à partir du cours.${rappel}${rel} ` +
+      'Reprends l’exemple résolu de la leçon, puis réessaie — et tu peux cliquer « Revoir le cours ».';
+  return { reponse, tableau: [], dans_programme: true, source: 'hors-ligne' };
 }
 
 /**

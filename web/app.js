@@ -55,6 +55,7 @@ let coursFigureId = '';
 let sceneIdx = 0;
 let checkpointOk = true;
 const cpFaits = new Set();
+let etatExo = null;      // dernier état moteur (pour « lever la main » en exercice)
 // Tableau progressif : le schéma persiste et se CONSTRUIT au fil des scènes.
 let figureRendue = '';   // figure actuellement dessinée dans #figureHost
 let etapeMax = 0;        // plus haute étape déjà révélée (le tableau n'efface pas)
@@ -284,7 +285,7 @@ function appliquerMode() {
   $('#tableauFormule').hidden = cours;
   $('#coursNav').hidden = !cours;
   $('#perdu').hidden = cours;
-  $('#leverMain').hidden = !cours; // « lever la main » pendant le cours
+  $('#leverMain').hidden = false; // « lever la main » : cours ET exercices
   $('#revoirCours').hidden = cours || !COURS[moduleActuel?.id];
   if (cours) $('#rejouer').hidden = true;
   else { $('#form').hidden = false; $('#qcmZone').hidden = true; }
@@ -628,6 +629,7 @@ function afficherBilan() {
 }
 
 function rendre(etat) {
+  etatExo = etat; // mémorisé pour le contexte du tuteur (« lever la main »)
   const enonce = etat.question_courante?.enonce ?? '';
   const fini = !!etat.termine;
 
@@ -993,6 +995,24 @@ for (const id of ['a11yModale', 'avisModale', 'mainModale']) {
 // Contexte transmis au tuteur : le module, la notion courante, la relation et
 // les points déjà vus (ancrage au programme). en_exercice pilote l'anti-spoiler.
 function contexteTuteur() {
+  // En EXERCICE : on ancre sur tout le cours du module + l'énoncé courant.
+  // en_exercice=true → le tuteur explique la méthode SANS donner le résultat.
+  if (mode === 'exos') {
+    const c = COURS[moduleActuel?.id];
+    const vus = [];
+    for (const sc of c?.scenes ?? []) {
+      for (const p of sc.points ?? []) vus.push(String(p).replace(/<[^>]+>/g, ''));
+    }
+    return {
+      module: moduleActuel?.titre,
+      moduleId: moduleActuel?.id,
+      notion: 'Exercices',
+      relation: FORMULES[etatExo?.objectif_courant] ?? FORMULES[moduleActuel?.objectifPrincipal],
+      enonce: etatExo?.question_courante?.enonce,
+      points_vus: vus.slice(0, 10),
+      en_exercice: true,
+    };
+  }
   const sc = coursScenes[sceneIdx];
   const vus = [];
   for (let i = 0; i <= sceneIdx && i < coursScenes.length; i++) {
@@ -1004,7 +1024,7 @@ function contexteTuteur() {
     notion: sc?.titre,
     relation: FORMULES[moduleActuel?.objectifPrincipal],
     points_vus: vus.slice(-8),
-    en_exercice: mode === 'exos',
+    en_exercice: false,
   };
 }
 
@@ -1021,9 +1041,12 @@ function ajouterFil(role, texte, opts = {}) {
 
 $('#leverMain').addEventListener('click', () => {
   voix.interrompre();
-  $('#mainInfo').textContent = tuteurConfigure()
-    ? 'Sur le cours en physique. Léa peut aussi dessiner au tableau.'
-    : 'Mode hors-ligne : je te renvoie au cours. (Connecte le tuteur pour les questions libres.)';
+  const enExo = mode === 'exos';
+  $('#mainInfo').textContent = !tuteurConfigure()
+    ? 'Mode hors-ligne : je te renvoie au cours. (Connecte le tuteur pour les questions libres.)'
+    : enExo
+      ? 'Sur cet exercice : je t’explique la méthode, sans te donner la réponse.'
+      : 'Sur le cours en physique. Léa peut aussi dessiner au tableau.';
   $('#mainModale').hidden = false;
   $('#mainQuestion').focus();
 });

@@ -27,6 +27,7 @@ interface Contexte {
   moduleId?: string;
   notion?: string;        // titre de la scène courante
   relation?: string;      // ex. « U = R × I »
+  enonce?: string;        // énoncé de l'exercice en cours (mode exercice)
   points_vus?: string[];  // points clés déjà vus (ancrage)
   en_exercice?: boolean;  // anti-spoiler : ne pas donner la réponse d'un exo
 }
@@ -124,7 +125,7 @@ function systeme(ctx: Contexte): string {
       (ctx.relation ? `\nRelation en jeu : ${ctx.relation}.` : '')
     : '';
   const spoiler = ctx.en_exercice
-    ? '\n\nL’élève est EN EXERCICE : n’donne JAMAIS le résultat numérique final. Explique la méthode, la notion, l’étape qui bloque, et propose de revenir au cours.'
+    ? `\n\nL’élève est EN EXERCICE${ctx.enonce ? ` sur l’énoncé : « ${ctx.enonce} »` : ''}. Ne donne JAMAIS le résultat numérique final ni la valeur de l’inconnue. Explique la méthode, la notion, l’étape qui bloque (quelle relation, quelle conversion), et invite l’élève à finir le calcul lui-même.`
     : '';
   return `Tu es Léa, une tutrice de physique bienveillante pour un·e élève de collège (cycle 4, 12–15 ans). Tu parles français, tu tutoies, tu es chaleureuse, positive et claire. Tes phrases sont courtes et concrètes, avec des exemples de la vie quotidienne.
 
