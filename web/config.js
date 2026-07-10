@@ -17,5 +17,5 @@ window.LEA_TUTEUR_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 
 // Voix NEURALE (fonction Edge « voix ») — déploie-la puis colle l'URL ici pour
 // remplacer la voix robotique du navigateur. Vide = voix du navigateur.
-window.LEA_TTS_URL = ''; // ex. 'https://wncsqdxtqfhwjkmeqpgt.supabase.co/functions/v1/voix'
+window.LEA_TTS_URL = 'https://wncsqdxtqfhwjkmeqpgt.supabase.co/functions/v1/voix';
 window.LEA_TTS_KEY = window.LEA_TUTEUR_KEY; // même clé anon (publique) si Verify JWT activé
