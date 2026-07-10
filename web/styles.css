@@ -145,6 +145,67 @@ body::after {
 @keyframes spin { to { transform: rotate(360deg); } }
 .hero-holo .visage { width: 84%; height: auto; position: relative; z-index: 1; }
 
+/* Salle commune : TOUS les profs présents pour accueillir l'élève ---------- */
+.hero { display: flex; flex-direction: column; align-items: stretch; } /* la salle prend toute la largeur, le texte dessous */
+.salle-profs {
+  position: relative; width: 100%;
+  border-radius: 16px; overflow: hidden; isolation: isolate;
+  background: linear-gradient(180deg, #26365c 0%, #1b2745 62%, #172038 100%);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.sp-mur { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
+.sp-mur::after { /* le sol */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 34%;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.18)),
+              repeating-linear-gradient(90deg, #2a2036 0 22px, #2f2540 22px 44px);
+  border-top: 2px solid rgba(255, 255, 255, 0.1);
+}
+.sp-fanion {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  font: 700 13px/1 var(--round, sans-serif); color: #3a2a06;
+  background: linear-gradient(180deg, #ffcf5a, #e0a83e);
+  padding: 5px 14px; border-radius: 0 0 10px 10px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+}
+.sp-cadre { position: absolute; width: 26px; height: 20px; top: 40px; border: 2.5px solid rgba(255, 255, 255, 0.32); border-radius: 3px; background: rgba(255, 255, 255, 0.06); }
+.sp-cadre.sc1 { left: 16px; } .sp-cadre.sc2 { right: 16px; }
+.sp-fenetre { position: absolute; top: 34px; left: 50%; transform: translateX(-50%); width: 62px; height: 40px; border: 2.5px solid rgba(180, 214, 246, 0.4); border-radius: 4px; background: linear-gradient(160deg, rgba(120, 180, 240, 0.28), rgba(120, 180, 240, 0.05)); }
+.sp-horloge { position: absolute; top: 40px; right: 50px; font-size: 15px; opacity: 0.85; }
+.sp-rang {
+  position: relative; z-index: 1;
+  display: flex; align-items: flex-end; justify-content: space-around; gap: 2px;
+  padding: 30px 6px 0;
+}
+.sp-prof {
+  position: relative; flex: 1 1 0; min-width: 0;
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  background: none; border: 0; cursor: pointer; padding: 0 2px 8px;
+  -webkit-tap-highlight-color: transparent; transition: transform 0.25s ease;
+}
+.sp-av { position: relative; display: block; width: 100%; }
+.sp-av svg { display: block; width: 100%; height: auto; max-height: clamp(120px, 30vw, 176px); }
+.sp-av::after { /* ombre portée au sol */
+  content: ""; position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%);
+  width: 56%; height: 9px; border-radius: 50%; background: rgba(0, 0, 0, 0.32); filter: blur(2px);
+}
+.sp-nom {
+  font: 700 12px/1 var(--round, sans-serif); color: #dfe7f5;
+  background: rgba(255, 255, 255, 0.1); padding: 3px 9px; border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12); white-space: nowrap;
+}
+.sp-prof:not(.actif) { opacity: 0.92; }
+.sp-prof:not(.actif) .sp-av svg { filter: saturate(0.82) brightness(0.86); }
+.sp-prof:hover { transform: translateY(-3px); }
+.sp-prof.actif { transform: translateY(-8px); }
+.sp-prof.actif .sp-av svg { max-height: clamp(132px, 33vw, 194px); }
+.sp-prof.actif::before {
+  content: ""; position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%);
+  width: 84%; height: 80%; border-radius: 50% 50% 46% 46%; z-index: -1; filter: blur(3px);
+  background: radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--accent) 55%, transparent), transparent 68%);
+}
+.sp-prof.actif .sp-nom { background: var(--accent); color: #fff; border-color: transparent; }
+@media (max-width: 380px) { .sp-nom { font-size: 11px; padding: 2px 7px; } }
+@media (prefers-reduced-motion: reduce) { .sp-prof { transition: none; } }
+
 .hero-txt { min-width: 0; }
 .hero-h { font-family: var(--round); margin: 8px 0 14px; font-size: clamp(1.6rem, 6.4vw, 2.3rem); font-weight: 700; line-height: 1.02; }
 .classe-seg { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }

@@ -168,9 +168,27 @@ function construireNiveauSeg() {
 
 /* --- Hero (hologramme) + choix du prof ----------------------------------- */
 
+// Salle commune : TOUS les profs sont présents pour accueillir l'élève. Le prof
+// choisi s'avance (mis en avant) ; cliquer sur un prof le sélectionne.
 function construireHero() {
-  $('#heroAvatar').innerHTML = avatarSVG(persona);
-  $('#ouvrirProfs').textContent = `Prof : ${persona.nom} ${persona.emoji} · changer`;
+  const box = $('#salleProfs');
+  if (!box) return;
+  box.innerHTML =
+    '<div class="sp-mur" aria-hidden="true">' +
+      '<span class="sp-fanion">L’École de Léa</span>' +
+      '<span class="sp-cadre sc1"></span><span class="sp-cadre sc2"></span>' +
+      '<span class="sp-fenetre"></span><span class="sp-horloge">🕐</span>' +
+    '</div>' +
+    '<div class="sp-rang">' +
+    PERSONAS.map((p) =>
+      `<button type="button" class="sp-prof${p.id === persona.id ? ' actif' : ''}" data-id="${p.id}" style="--accent:${p.accent}" aria-pressed="${p.id === persona.id}" title="${p.nom} — ${p.style}">` +
+        `<span class="sp-av">${avatarSVG(p, 'salle-' + p.id, { entier: true })}</span>` +
+        `<span class="sp-nom">${p.nom}</span>` +
+      '</button>').join('') +
+    '</div>';
+  for (const b of box.querySelectorAll('.sp-prof')) {
+    b.addEventListener('click', () => choisirProf(b.dataset.id));
+  }
 }
 
 function construireProfChips() {
