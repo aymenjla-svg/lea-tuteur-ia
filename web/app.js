@@ -972,10 +972,12 @@ function majA11yUI() {
 function majTuteurUI() {
   let url = '', key = '';
   try { url = localStorage.getItem('lea.tuteur.url') || ''; key = localStorage.getItem('lea.tuteur.key') || ''; } catch { /* indispo */ }
-  $('#tuteurUrl').value = url;
-  $('#tuteurKey').value = key;
+  // À défaut de réglage local, on montre la config PARTAGÉE (config.js).
+  const partage = !url && !!window.LEA_TUTEUR_URL;
+  $('#tuteurUrl').value = url || window.LEA_TUTEUR_URL || '';
+  $('#tuteurKey').value = key || window.LEA_TUTEUR_KEY || '';
   $('#tuteurEtat').textContent = tuteurConfigure()
-    ? '✅ Tuteur connecté — « lever la main » répond en direct.'
+    ? (partage ? '✅ Tuteur connecté pour tout le monde (config partagée).' : '✅ Tuteur connecté — « lever la main » répond en direct.')
     : 'Non connecté : « lever la main » fonctionne en mode hors-ligne.';
 }
 $('#tuteurSave').addEventListener('click', () => {
