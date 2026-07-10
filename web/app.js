@@ -217,9 +217,14 @@ function construireModules() {
   const actifs = MODULES.filter((m) => !m.verrouille).length;
   $('#modCount').textContent = `${actifs} portes ouvertes · ${MODULES.length - actifs} à venir`;
 
+  // Le prof attend devant la prochaine classe à faire (1er cours non fini).
+  const cibleId = (MODULES.find((m) => !m.verrouille && progressModule(m, prog) < 100) || {}).id;
+  const prenom = lireProfil()?.prenom;
+
   MODULES.forEach((m, i) => {
     const pct = progressModule(m, prog);
     const num = String(i + 1).padStart(2, '0');
+    const et = m.verrouille ? 0 : etoiles(pct);
     const carte = document.createElement('button');
     carte.type = 'button';
     carte.className = 'porte' + (m.verrouille ? ' verrouille' : '') + (pct > 0 ? ' allumee' : '');
@@ -233,20 +238,30 @@ function construireModules() {
            <div class="porte-vitre">${decorMatiere(m.id)}<span class="porte-ico">${m.icone}</span></div>
            <span class="porte-poignee"></span>
          </div>`;
+    // Flammes de maîtrise : une allumée par étoile gagnée (0 à 3).
+    const flammes = m.verrouille ? '' :
+      `<div class="porte-flammes">${[0, 1, 2].map((k) => `<span${k < et ? ' class="on"' : ''}>🔥</span>`).join('')}</div>`;
+    // Le guide qui t'accueille devant SA porte.
+    const profHtml = m.id === cibleId
+      ? `<div class="porte-prof"><span class="porte-bulle">${prenom ? `Par ici, ${prenom} !` : 'On y va ?'}</span><span class="porte-prof-av">${avatarSVG(persona, 'cour-' + m.id)}</span></div>`
+      : '';
     carte.innerHTML =
       `<div class="porte-cadre">
          <span class="torche g"></span><span class="torche d"></span>
          <span class="porte-num">${num}</span>
+         ${flammes}
          ${battant}
+         ${profHtml}
+         <span class="porte-base"></span>
        </div>
        <div class="porte-plaque">
          <div class="porte-nom">${m.titre}</div>` +
       (m.verrouille
         ? `<div class="porte-etat">Bientôt</div>`
         : `<div class="porte-bar"><span style="width:${pct}%"></span></div>
-           <div class="porte-pied"><span class="porte-pct">${pct}% ${etoilesMission(pct)}</span><span class="porte-go">${pct >= 100 ? 'Revoir' : pct > 0 ? 'Reprendre' : 'Entrer'} →</span></div>`) +
+           <div class="porte-pied"><span class="porte-pct">${pct}%</span><span class="porte-go">${pct >= 100 ? 'Revoir' : pct > 0 ? 'Reprendre' : 'Entrer'} →</span></div>`) +
       `</div>`;
-    if (!m.verrouille) carte.addEventListener('click', () => ouvrirModule(m));
+    if (!m.verrouille) carte.addEventListener('click', () => entrerParPorte(carte, m));
     grille.append(carte);
   });
   majContinuer(prog);
@@ -374,6 +389,20 @@ function finirOnboarding() {
 $('#onbNext').addEventListener('click', onbSuivant);
 
 /* --- Navigation accueil ↔ leçon ------------------------------------------ */
+
+// La porte s'ouvre en grand sur une lumière chaude, puis on entre dans le cours.
+function entrerParPorte(carte, m) {
+  if (reduireMouvement) { ouvrirModule(m); return; }
+  carte.classList.add('ouvre');
+  const flash = document.createElement('div');
+  flash.className = 'porte-flash';
+  flash.style.setProperty('--c', m.couleur);
+  document.body.append(flash);
+  requestAnimationFrame(() => flash.classList.add('on'));
+  setTimeout(() => ouvrirModule(m), 430);
+  setTimeout(() => flash.classList.remove('on'), 640);
+  setTimeout(() => { flash.remove(); carte.classList.remove('ouvre'); }, 1000);
+}
 
 function ouvrirModule(m) {
   moduleActuel = m;
