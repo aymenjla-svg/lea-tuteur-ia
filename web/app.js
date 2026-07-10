@@ -412,13 +412,19 @@ function afficherAccueilPerso() {
 }
 
 // La voix ne peut démarrer qu'après un geste : au 1er clic, Léa te salue.
-function direSalutRetour() {
-  if (salutDit || !profilExiste() || !voix.tts || !salutSession) return;
+// Mais si ce tout premier geste ouvre DÉJÀ un cours (porte, « continuer »…),
+// on renonce au salut : le cours parle tout seul, on évite les deux voix
+// superposées.
+function direSalutRetour(e) {
+  if (salutDit || !profilExiste()) return;
+  const ouvreCours = e?.target?.closest?.('#modulesGrille, #continuer');
+  if (ouvreCours) { salutDit = true; return; } // pas de salut → pas de double voix
+  if (!voix.tts || !salutSession) return;
   salutDit = true;
   voixActive = true; majVoixUI();
   voix.parler(pourLaVoix(genrer(`${salutSession} ${repriseSession}`, lireProfil()?.sexe)), { params: paramsVoix() });
 }
-window.addEventListener('pointerdown', direSalutRetour, { once: true });
+window.addEventListener('pointerdown', direSalutRetour);
 
 /* --- Accueil interactif « l'École de Léa » (tout premier passage) --------- */
 
@@ -525,6 +531,8 @@ function entrerParPorte(carte, m) {
 
 function ouvrirModule(m) {
   moduleActuel = m;
+  salutDit = true;        // on entre en cours : plus de salut d'accueil
+  voix.interrompre();     // coupe un éventuel salut en cours → pas de double voix
   memoriserModule(m.id, m.titre); // pour « tu es prêt à reprendre … ? »
   // La salle prend les couleurs et la déco de la matière du cours.
   $('#scene').style.setProperty('--c', m.couleur);
