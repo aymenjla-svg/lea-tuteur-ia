@@ -17,6 +17,9 @@ import {
   xp, ajouterXp, niveauJeu, progNiveauJeu, majSerie, serie, etoiles,
 } from './jeu.js';
 import { poserQuestion, tuteurConfigure, testerTuteur } from './tuteur-llm.js';
+import {
+  lireProfil, profilExiste, creerProfil, enregistrerVisite, memoriserModule, joursDepuis,
+} from './profil.js';
 
 const $ = (s) => document.querySelector(s);
 const reduireMouvement = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -245,12 +248,114 @@ function construireAccueil() {
   construireHero();
   construireProfChips();
   construireModules();
+  afficherAccueilPerso();
 }
+
+// Accueil personnalisé : Léa reconnaît l'élève et l'accueille chaleureusement.
+function afficherAccueilPerso() {
+  const p = lireProfil();
+  const salut = $('#accueilSalut');
+  const h = $('#heroH');
+  if (!p) { if (salut) salut.hidden = true; return; }
+  const heure = new Date().getHours();
+  const bonjour = heure < 6 ? 'Bonne nuit' : heure < 18 ? 'Bonjour' : 'Bonsoir';
+  if (h) h.innerHTML = `${bonjour} ${p.prenom}, prêt·e à continuer&nbsp;?`;
+  const j = joursDepuis(p);
+  let hi = `Rebonjour ${p.prenom} 👋`;
+  if ((p.visites || 1) <= 1) hi = `Bienvenue dans ton école, ${p.prenom} 🎉`;
+  else if (j === 0) hi = `Re ${p.prenom} ! Déjà de retour 💪`;
+  else if (j === 1) hi = `Rebonjour ${p.prenom} 👋 Contente de te revoir !`;
+  else if (j >= 2) hi = `Rebonjour ${p.prenom} 👋 Ça faisait un moment, super de te revoir !`;
+  const s = serie?.() ?? 0;
+  const flamme = s >= 2 ? ` · 🔥 ${s} jours de suite` : '';
+  const reprise = p.dernierModuleTitre ? `Tu es prêt·e à reprendre « ${p.dernierModuleTitre} » ?` : 'On continue l’aventure ?';
+  if (salut) {
+    salut.hidden = false;
+    salut.innerHTML = `<span class="salut-hi">${hi}${flamme}</span><span class="salut-suite">${reprise}</span>`;
+  }
+}
+
+/* --- Accueil interactif « l'École de Léa » (tout premier passage) --------- */
+
+const INTERETS = ['⚽ Sport', '🎮 Jeux vidéo', '🎵 Musique', '🚀 Espace', '🐾 Animaux', '🎨 Dessin', '🔬 Sciences', '🎬 Ciné'];
+const onb = { prenom: '', classe: '', interets: [] };
+let onbStep = 0;
+
+function onbDire(texte) {
+  $('#onbMsg').textContent = texte;
+  if (voix.tts) { voixActive = true; voix.parler(texte, { params: { ...persona?.voix, sexe: persona?.sexe } }); }
+}
+
+function onbEtapes() {
+  return [
+    { msg: 'Bienvenue dans l’École de Léa ! Moi c’est Léa, ta prof de physique. On va faire une super équipe. Prêt·e à faire connaissance ?', next: 'Commencer →', zone: () => '' },
+    { msg: 'Pour commencer… comment tu t’appelles ?', next: 'Suivant', zone: () => `<input id="onbPrenom" class="onb-input" type="text" maxlength="24" placeholder="Ton prénom" aria-label="Ton prénom" value="${onb.prenom}">`, valide: () => (onb.prenom = ($('#onbPrenom')?.value || '').trim()).length > 0 },
+    { msg: `Enchantée, ${onb.prenom || ''} ! Tu es en quelle classe ?`, next: 'Suivant', zone: () => `<div class="onb-chips" id="onbClasses">${NIVEAUX.map((n) => `<button type="button" class="onb-chip${onb.classe === n.id ? ' on' : ''}" data-c="${n.id}" style="--cn:${n.couleur}">${n.label}</button>`).join('')}</div>`, valide: () => !!onb.classe },
+    { msg: 'Génial ! Et quand tu n’es pas en cours, qu’est-ce que tu aimes ? (choisis-en autant que tu veux)', next: 'Suivant', zone: () => `<div class="onb-chips" id="onbInterets">${INTERETS.map((it) => `<button type="button" class="onb-chip${onb.interets.includes(it) ? ' on' : ''}" data-i="${it}">${it}</button>`).join('')}</div>`, valide: () => true },
+    { msg: `Parfait, ${onb.prenom || ''} ! Une dernière chose : ici, on a le DROIT de se tromper, autant de fois qu’on veut — c’est comme ça qu’on apprend. Allez… bienvenue dans ton école ! 🚀`, next: 'Entrer dans l’école ✨', zone: () => '', fin: true },
+  ];
+}
+
+function onbRender() {
+  const e = onbEtapes()[onbStep];
+  $('#onbAvatar').innerHTML = avatarSVG(persona);
+  onbDire(e.msg);
+  $('#onbZone').innerHTML = e.zone();
+  $('#onbNext').textContent = e.next;
+  $('#onbDots').innerHTML = onbEtapes().map((_, i) => `<span class="onb-dot${i === onbStep ? ' on' : ''}"></span>`).join('');
+  const cl = $('#onbClasses');
+  if (cl) cl.addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-c]'); if (!b) return;
+    onb.classe = b.dataset.c;
+    cl.querySelectorAll('.onb-chip').forEach((x) => x.classList.remove('on'));
+    b.classList.add('on');
+  });
+  const it = $('#onbInterets');
+  if (it) it.addEventListener('click', (ev) => {
+    const b = ev.target.closest('[data-i]'); if (!b) return;
+    const v = b.dataset.i;
+    onb.interets = onb.interets.includes(v) ? onb.interets.filter((x) => x !== v) : [...onb.interets, v];
+    b.classList.toggle('on');
+  });
+  const inp = $('#onbPrenom');
+  if (inp) { inp.focus(); inp.addEventListener('keydown', (ev) => { if (ev.key === 'Enter') $('#onbNext').click(); }); }
+}
+
+function onbSuivant() {
+  const e = onbEtapes()[onbStep];
+  if (e.valide && !e.valide()) {
+    $('#onbMsg').classList.add('onb-secoue');
+    setTimeout(() => $('#onbMsg').classList.remove('onb-secoue'), 400);
+    $('#onbPrenom')?.focus();
+    return;
+  }
+  if (e.fin) { finirOnboarding(); return; }
+  onbStep += 1;
+  onbRender();
+}
+
+function demarrerOnboarding() {
+  onbStep = 0;
+  $('#onboarding').hidden = false;
+  onbRender();
+}
+
+function finirOnboarding() {
+  voix.interrompre();
+  creerProfil({ prenom: onb.prenom, classe: onb.classe, interets: onb.interets });
+  if (onb.classe) definirNiveau(onb.classe);
+  $('#onboarding').hidden = true;
+  construireAccueil();
+  confettis();
+}
+
+$('#onbNext').addEventListener('click', onbSuivant);
 
 /* --- Navigation accueil ↔ leçon ------------------------------------------ */
 
 function ouvrirModule(m) {
   moduleActuel = m;
+  memoriserModule(m.id, m.titre); // pour « tu es prêt à reprendre … ? »
   theme(m.couleur);
   $('#avatarHost').innerHTML = avatarSVG(persona);
   $('#hudTitre').textContent = `${persona.nom} · ${m.titre}`;
@@ -1227,5 +1332,12 @@ if (voix.stt) $('#parleLea').addEventListener('click', ecouterParle);
 appliquerA11y();
 majSerie();
 appliquerVibe();
+// Profil élève : premier passage → accueil interactif ; sinon on le retrouve.
+if (profilExiste()) {
+  enregistrerVisite();
+  const pr = lireProfil();
+  if (pr?.classe) definirNiveau(pr.classe);
+}
 construireAccueil();
+if (!profilExiste()) demarrerOnboarding();
 requestAnimationFrame(animer);
