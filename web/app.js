@@ -237,6 +237,9 @@ function meubleSVG() {
       <linearGradient id="cab" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f8fc"/><stop offset="1" stop-color="#cdd6e4"/></linearGradient>
       <linearGradient id="drw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dde4ef"/></linearGradient>
       <linearGradient id="hdl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f5f9"/><stop offset=".5" stop-color="#9aa6b8"/><stop offset="1" stop-color="#69748a"/></linearGradient>
+      <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff" stop-opacity=".06"/><stop offset=".3" stop-color="#ffffff" stop-opacity=".55"/><stop offset=".55" stop-color="#ffffff" stop-opacity=".12"/><stop offset="1" stop-color="#bcd6ea" stop-opacity=".24"/></linearGradient>
+      <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eaeff5"/><stop offset=".5" stop-color="#aab4c2"/><stop offset="1" stop-color="#7d8798"/></linearGradient>
+      <radialGradient id="glow" cx="50%" cy="42%" r="60%"><stop offset="0" stop-color="#fff6c8"/><stop offset="55%" stop-color="#ffd54a"/><stop offset="100%" stop-color="#f0a800"/></radialGradient>
     </defs>
     <rect x="8" y="94" width="304" height="2" rx="1" fill="#00000026"/>
     <rect x="4" y="55" width="312" height="40" rx="4" fill="url(#cab)"/>
@@ -249,46 +252,50 @@ function meubleSVG() {
     <rect x="0" y="53" width="320" height="3" fill="#39567a"/>`;
 }
 // Matériel posé sur le comptoir, PROPRE À CHAQUE MATIÈRE (bas des objets ≈ y48).
+// Même finition que l'établi : verre brillant (url(#glass) + reflets), ampoules
+// qui rayonnent (url(#glow) + halo), métal chromé (url(#metal)), méniscus.
 function objetsMatiere(id) {
+  // Halo lumineux réutilisable derrière une source de lumière.
+  const halo = (cx, cy, r) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#glow)" opacity=".28"/>`;
   switch (id) {
     case 'electricite':
     case 'energie': return `
-      <rect x="26" y="30" width="46" height="18" rx="3" fill="#f2c14e" stroke="#b8912f" stroke-width="1.4"/><rect x="72" y="35" width="5" height="8" rx="1" fill="#b8912f"/>
+      <rect x="26" y="30" width="46" height="18" rx="3" fill="#f2c14e" stroke="#b8912f" stroke-width="1.4"/><rect x="28" y="31.5" width="42" height="3" rx="1.5" fill="#fff" opacity=".55"/><rect x="72" y="35" width="5" height="8" rx="1" fill="url(#metal)"/>
       <text x="33" y="43" font-size="12" fill="#7a5a12" font-weight="700">+</text><text x="56" y="43" font-size="12" fill="#7a5a12">−</text>
-      <circle cx="112" cy="30" r="10" fill="#ffe27a" stroke="#e6b800" stroke-width="1.4"/><path d="M107 30 h10 M108 25 l8 10" stroke="#e6b800" stroke-width="1" fill="none"/><rect x="107" y="39" width="10" height="8" rx="1" fill="#9aa3b2"/>
-      <g stroke="#ffe27a" stroke-width="1.4" opacity=".85"><path d="M112 13 v-4"/><path d="M127 19 l4 -3"/><path d="M97 19 l-4 -3"/></g>
+      ${halo(112, 30, 15)}<circle cx="112" cy="30" r="10" fill="url(#glow)" stroke="#e6b800" stroke-width="1.4"/><path d="M107 30 h10 M108 25 l8 10" stroke="#c98f00" stroke-width="1" fill="none"/><circle cx="109" cy="27" r="2.4" fill="#fff" opacity=".8"/><rect x="107" y="39" width="10" height="8" rx="1" fill="url(#metal)"/>
+      <g stroke="#ffe27a" stroke-width="1.4" opacity=".9"><path d="M112 12 v-4"/><path d="M128 18 l4 -3"/><path d="M96 18 l-4 -3"/></g>
       ${id === 'energie'
-        ? `<rect x="158" y="28" width="36" height="20" rx="2" fill="#ff6b3d" stroke="#c1491f" stroke-width="1.4"/><g stroke="#ffcbb0" stroke-width="1.6"><path d="M164 30v16M172 30v16M180 30v16M188 30v16"/></g>`
-        : `<g stroke="#8a939f" stroke-width="2"><circle cx="162" cy="46" r="2.5" fill="#8a939f"/><circle cx="188" cy="46" r="2.5" fill="#8a939f"/><line x1="162" y1="46" x2="184" y2="33"/></g>`}
-      <rect x="214" y="24" width="46" height="24" rx="3" fill="#2e8b74" stroke="#1c5a4a" stroke-width="1.4"/><rect x="219" y="28" width="36" height="9" rx="1" fill="#0e2b1f"/><text x="237" y="35" font-size="7" fill="#8effc0" text-anchor="middle">${id === 'energie' ? '36 W' : '0.3A'}</text><circle cx="237" cy="43" r="3.5" fill="#fff" stroke="#1c5a4a"/>
+        ? `<rect x="158" y="28" width="36" height="20" rx="2" fill="#ff6b3d" stroke="#c1491f" stroke-width="1.4"/><rect x="160" y="29.5" width="32" height="2.4" rx="1.2" fill="#fff" opacity=".4"/><g stroke="#ffcbb0" stroke-width="1.6"><path d="M164 30v16M172 30v16M180 30v16M188 30v16"/></g>`
+        : `<g stroke="url(#metal)" stroke-width="2.4"><circle cx="162" cy="46" r="2.5" fill="url(#metal)"/><circle cx="188" cy="46" r="2.5" fill="url(#metal)"/><line x1="162" y1="46" x2="184" y2="33"/></g>`}
+      <rect x="214" y="24" width="46" height="24" rx="3" fill="#2e8b74" stroke="#1c5a4a" stroke-width="1.4"/><rect x="216" y="25.5" width="42" height="2.6" rx="1.3" fill="#fff" opacity=".3"/><rect x="219" y="28" width="36" height="9" rx="1" fill="#0e2b1f"/><text x="237" y="35" font-size="7" fill="#8effc0" text-anchor="middle">${id === 'energie' ? '36 W' : '0.3A'}</text><circle cx="237" cy="43" r="3.5" fill="url(#metal)" stroke="#1c5a4a"/>
       <path d="M77 40 q18 7 30 0" fill="none" stroke="#e05050" stroke-width="1.6"/>`;
     case 'mouvement':
     case 'signaux': return id === 'mouvement' ? `
-      <path d="M28 48 L112 48 L28 24 Z" fill="#6b7280" fill-opacity=".5" stroke="#8a939f" stroke-width="1.4"/>
-      <circle cx="72" cy="34" r="7" fill="#f5b400" stroke="#c8902c" stroke-width="1.4"/>
-      <circle cx="154" cy="34" r="12" fill="#0d2740" stroke="#a855f7" stroke-width="2"/><rect x="150" y="18" width="8" height="4" rx="1" fill="#a855f7"/><line x1="154" y1="34" x2="154" y2="26" stroke="#a855f7" stroke-width="2"/><circle cx="154" cy="34" r="1.6" fill="#a855f7"/>
-      <rect x="196" y="40" width="100" height="8" rx="1" fill="#ffd24a" stroke="#c9a52f" stroke-width="1"/><g stroke="#c9a52f" stroke-width="1">${Array.from({ length: 10 }, (_, i) => `<line x1="${202 + i * 10}" y1="40" x2="${202 + i * 10}" y2="44"/>`).join('')}</g>` : `
-      <rect x="30" y="30" width="12" height="18" rx="2" fill="#c3ccd8"/><path d="M42 32 L54 25 V53 L42 46 Z" fill="#c3ccd8"/><g stroke="#ffd54a" stroke-width="1.4" fill="none"><path d="M60 34 q6 6 0 12"/><path d="M65 30 q10 10 0 20"/></g>
-      <path d="M110 48 V34 M110 34 q0 -14 -8 -14 M110 34 q0 -14 8 -14" fill="none" stroke="#8a939f" stroke-width="2.6"/>
-      <path d="M168 48 L182 24 L196 48 Z" fill="#dfeef7" fill-opacity=".5" stroke="#bcd4e6"/><path d="M150 40 l22 -5" stroke="#fff" stroke-width="1.4"/><g stroke-width="1.5" fill="none"><path d="M198 34 l16 -6" stroke="#ff5d7d"/><path d="M198 39 l18 0" stroke="#ffd24a"/><path d="M198 44 l16 6" stroke="#43c463"/></g>
-      <rect x="242" y="24" width="44" height="24" rx="3" fill="#0d2740" stroke="#37e0ff" stroke-width="1.4"/><path d="M247 37 q5 -7 10 0 t10 0 t10 0" fill="none" stroke="#37e0ff" stroke-width="1.4"/>`;
+      <path d="M28 48 L112 48 L28 24 Z" fill="url(#metal)" fill-opacity=".85" stroke="#7d8798" stroke-width="1.4"/><path d="M32 46 L104 46 L34 30 Z" fill="#fff" opacity=".12"/>
+      <circle cx="72" cy="34" r="7" fill="#f5b400" stroke="#c8902c" stroke-width="1.4"/><circle cx="69.5" cy="31.5" r="2.4" fill="#fff" opacity=".7"/>
+      <circle cx="154" cy="34" r="12" fill="#0d2740" stroke="url(#metal)" stroke-width="2"/><rect x="150" y="18" width="8" height="4" rx="1" fill="url(#metal)"/><line x1="154" y1="34" x2="154" y2="26" stroke="#a855f7" stroke-width="2"/><circle cx="154" cy="34" r="1.6" fill="#a855f7"/>
+      <rect x="196" y="40" width="100" height="8" rx="1" fill="#ffd24a" stroke="#c9a52f" stroke-width="1"/><rect x="196" y="40.6" width="100" height="1.6" fill="#fff" opacity=".5"/><g stroke="#c9a52f" stroke-width="1">${Array.from({ length: 10 }, (_, i) => `<line x1="${202 + i * 10}" y1="40" x2="${202 + i * 10}" y2="44"/>`).join('')}</g>` : `
+      <rect x="30" y="30" width="12" height="18" rx="2" fill="url(#metal)"/><path d="M42 32 L54 25 V53 L42 46 Z" fill="url(#metal)"/><path d="M31 31 v16" stroke="#fff" stroke-width="1.4" opacity=".5"/><g stroke="#ffd54a" stroke-width="1.4" fill="none" opacity=".9"><path d="M60 34 q6 6 0 12"/><path d="M65 30 q10 10 0 20"/></g>
+      <path d="M110 48 V34 M110 34 q0 -14 -8 -14 M110 34 q0 -14 8 -14" fill="none" stroke="url(#metal)" stroke-width="2.6"/>
+      <path d="M168 48 L182 24 L196 48 Z" fill="url(#glass)" stroke="#bcd4e6"/><path d="M172 46 L182 30 L184 44 Z" fill="#fff" opacity=".18"/><path d="M150 40 l22 -5" stroke="#fff" stroke-width="1.4" opacity=".7"/><g stroke-width="1.5" fill="none"><path d="M198 34 l16 -6" stroke="#ff5d7d"/><path d="M198 39 l18 0" stroke="#ffd24a"/><path d="M198 44 l16 6" stroke="#43c463"/></g>
+      <rect x="242" y="24" width="44" height="24" rx="3" fill="#0d2740" stroke="url(#metal)" stroke-width="1.4"/><path d="M247 37 q5 -7 10 0 t10 0 t10 0" fill="none" stroke="#37e0ff" stroke-width="1.4"/>`;
     case 'poids': return `
-      <line x1="72" y1="20" x2="72" y2="48" stroke="#8a939f" stroke-width="3"/><line x1="42" y1="22" x2="102" y2="22" stroke="#8a939f" stroke-width="2.4"/>
-      <path d="M42 22 l-9 13 h18 z" fill="none" stroke="#8a939f" stroke-width="1.6"/><path d="M102 22 l-9 13 h18 z" fill="none" stroke="#8a939f" stroke-width="1.6"/><rect x="60" y="46" width="24" height="4" rx="1" fill="#6b7280"/>
-      <path d="M150 34 h22 l3 14 h-28 z" fill="#8a939f" stroke="#5f6772" stroke-width="1.2"/><path d="M155 24 h12 l2 10 h-16 z" fill="#aeb8c8" stroke="#5f6772" stroke-width="1.2"/>
-      <rect x="212" y="18" width="13" height="30" rx="3" fill="#dfeef7" fill-opacity=".6" stroke="#bcd4e6" stroke-width="1"/><path d="M218 18 v-4 M218 48 v4" stroke="#8a939f" stroke-width="1.4"/><g stroke="#c9a52f" stroke-width="1"><path d="M215 26 h7"/><path d="M215 31 h7"/><path d="M215 36 h7"/></g>`;
+      <line x1="72" y1="20" x2="72" y2="48" stroke="url(#metal)" stroke-width="3.2"/><line x1="42" y1="22" x2="102" y2="22" stroke="url(#metal)" stroke-width="2.6"/>
+      <path d="M42 22 l-9 13 h18 z" fill="url(#glass)" stroke="#8a939f" stroke-width="1.4"/><path d="M102 22 l-9 13 h18 z" fill="url(#glass)" stroke="#8a939f" stroke-width="1.4"/><rect x="60" y="46" width="24" height="4" rx="1" fill="url(#metal)"/>
+      <path d="M150 34 h22 l3 14 h-28 z" fill="url(#metal)" stroke="#5f6772" stroke-width="1.2"/><path d="M155 24 h12 l2 10 h-16 z" fill="url(#metal)" stroke="#5f6772" stroke-width="1.2"/><path d="M152 35 h18" stroke="#fff" stroke-width="1" opacity=".5"/>
+      <rect x="212" y="18" width="13" height="30" rx="3" fill="url(#glass)" stroke="#bcd4e6" stroke-width="1"/><rect x="213.4" y="20" width="2.4" height="26" rx="1.2" fill="#fff" opacity=".55"/><path d="M212 44 h13" stroke="#7fb5df" stroke-width="1.2" opacity=".6"/><path d="M218 18 v-4 M218 48 v4" stroke="url(#metal)" stroke-width="1.4"/><g stroke="#c9a52f" stroke-width="1"><path d="M215 26 h7"/><path d="M215 31 h7"/><path d="M215 36 h7"/></g>`;
     default: return `
       <g stroke="#bcd4e6" stroke-width="1">
-        <path d="M34 26 L48 26 L50 50 L32 50 Z" fill="#dfeef7" fill-opacity=".5"/><path d="M33 38 L49 38 L50 49 L32 49 Z" fill="#58d38b" stroke="none"/>
-        <path d="M74 26 L80 26 L80 32 L91 50 L63 50 L74 32 Z" fill="#dfeef7" fill-opacity=".5"/><path d="M75 40 L79 40 L87 49 L67 49 Z" fill="#ff6fae" stroke="none"/>
-        <line x1="120" y1="14" x2="120" y2="50" stroke="#8a939f" stroke-width="2"/><rect x="110" y="49" width="36" height="3" fill="#6b7280" stroke="none"/>
-        <rect x="130" y="12" width="5" height="13" fill="#dfeef7" fill-opacity=".55"/><circle cx="132.5" cy="38" r="11" fill="#dfeef7" fill-opacity=".5"/>
-        <path d="M123 40 a11 11 0 0 0 19 0 z" fill="#a06cff" stroke="none"/><path d="M120 19 q16 -7 16 9" fill="none" stroke="#8a939f" stroke-width="1.6"/>
-        <rect x="182" y="22" width="10" height="28" rx="2" fill="#dfeef7" fill-opacity=".5"/><rect x="182.7" y="35" width="8.6" height="14.5" rx="1" fill="#ffd24a" stroke="none"/>
-        <rect x="232" y="42" width="56" height="8" rx="2" fill="#8a5a34" stroke="none"/>
-        <rect x="238" y="26" width="6" height="22" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="238.6" y="35" width="5" height="12" fill="#4ab8ff" stroke="none"/>
-        <rect x="255" y="26" width="6" height="22" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="255.6" y="32" width="5" height="15" fill="#ff8f5a" stroke="none"/>
-        <rect x="272" y="26" width="6" height="22" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="272.6" y="37" width="5" height="10" fill="#58d38b" stroke="none"/>
+        <path d="M34 26 L48 26 L50 50 L32 50 Z" fill="url(#glass)"/><path d="M33 38 L49 38 L50 49 L32 49 Z" fill="#58d38b" stroke="none"/><path d="M33.5 38 L48.5 38" stroke="#eafff2" stroke-width="1" opacity=".7"/><rect x="35" y="28" width="2.4" height="20" rx="1.2" fill="#fff" stroke="none" opacity=".5"/>
+        <path d="M74 26 L80 26 L80 32 L91 50 L63 50 L74 32 Z" fill="url(#glass)"/><path d="M75 40 L79 40 L87 49 L67 49 Z" fill="#ff6fae" stroke="none"/><path d="M67 49 L87 49" stroke="#ffdcec" stroke-width="1" opacity=".7"/><rect x="76" y="28" width="2" height="16" rx="1" fill="#fff" stroke="none" opacity=".5"/>
+        <line x1="120" y1="14" x2="120" y2="50" stroke="url(#metal)" stroke-width="2"/><rect x="110" y="49" width="36" height="3" fill="url(#metal)" stroke="none"/>
+        <rect x="130" y="12" width="5" height="13" fill="url(#glass)"/><circle cx="132.5" cy="38" r="11" fill="url(#glass)"/><circle cx="128.5" cy="34.5" r="2.6" fill="#fff" stroke="none" opacity=".65"/>
+        <path d="M123 40 a11 11 0 0 0 19 0 z" fill="#a06cff" stroke="none"/><path d="M122.5 40 L142 40" stroke="#e6d8ff" stroke-width="1" opacity=".7"/><path d="M120 19 q16 -7 16 9" fill="none" stroke="url(#metal)" stroke-width="1.6"/>
+        <rect x="182" y="22" width="10" height="28" rx="2" fill="url(#glass)"/><rect x="182.7" y="35" width="8.6" height="14.5" rx="1" fill="#ffd24a" stroke="none"/><rect x="183.6" y="24" width="1.8" height="24" rx="1" fill="#fff" stroke="none" opacity=".5"/>
+        <rect x="232" y="42" width="56" height="8" rx="2" fill="#8a5a34" stroke="none"/><rect x="232" y="42.6" width="56" height="1.6" fill="#c99368" stroke="none"/>
+        <rect x="238" y="26" width="6" height="22" rx="3" fill="url(#glass)"/><rect x="238.6" y="35" width="5" height="12" fill="#4ab8ff" stroke="none"/>
+        <rect x="255" y="26" width="6" height="22" rx="3" fill="url(#glass)"/><rect x="255.6" y="32" width="5" height="15" fill="#ff8f5a" stroke="none"/>
+        <rect x="272" y="26" width="6" height="22" rx="3" fill="url(#glass)"/><rect x="272.6" y="37" width="5" height="10" fill="#58d38b" stroke="none"/>
       </g>`;
   }
 }
