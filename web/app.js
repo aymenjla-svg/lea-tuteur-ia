@@ -1094,7 +1094,7 @@ async function envoyerQuestion(q) {
   ajouterFil('lea', rep.reponse, { alerte: !!rep.alerte, horsprog: rep.dans_programme === false });
   // Léa dessine au tableau (derrière la fenêtre) : on le signale et ça persiste.
   if (mode === 'cours' && Array.isArray(rep.tableau) && rep.tableau.length) {
-    try { dessinerCroquis(rep.tableau); ajouterFil('lea', '✏️ J’ai dessiné au tableau — ferme cette fenêtre pour voir.'); } catch { /* schéma absent */ }
+    try { dessinerCroquis(rep.tableau); ajouterFil('lea', '✏️ Regarde le tableau au-dessus, je te le dessine.'); } catch { /* schéma absent */ }
   }
   if (rep.alerte?.escalade_requise) {
     ajouterFil('lea', '⚠️ Parles-en à un adulte de confiance dès que possible.', { alerte: true });
