@@ -222,15 +222,31 @@ const DECOR_SALLE = {
   energie: ['🔥', '💡', '🔌'],
   signaux: ['🔊', '🌈', '📡'],
 };
+// Étagère de verrerie de labo (dessinée) : béchers, erlenmeyer, ballon sur
+// support avec réfrigérant, éprouvette graduée, portoir de tubes.
+function verrerieSVG() {
+  return `<svg class="verrerie" viewBox="0 0 320 48" preserveAspectRatio="xMidYMax meet" aria-hidden="true">
+    <rect x="2" y="40" width="316" height="5" rx="2" fill="#7a5433"/><rect x="2" y="45" width="316" height="2" rx="1" fill="#573a20"/>
+    <g stroke="#bcd4e6" stroke-width="1">
+      <path d="M40 18 L54 18 L56 40 L38 40 Z" fill="#dfeef7" fill-opacity=".5"/><path d="M39 29 L55 29 L56 39 L38 39 Z" fill="#58d38b" stroke="none"/>
+      <path d="M80 18 L86 18 L86 24 L96 40 L70 40 L80 24 Z" fill="#dfeef7" fill-opacity=".5"/><path d="M81 32 L85 32 L92 39 L74 39 Z" fill="#ff6fae" stroke="none"/>
+      <line x1="122" y1="10" x2="122" y2="40" stroke="#8a939f" stroke-width="2"/><rect x="114" y="39" width="34" height="3" fill="#6b7280" stroke="none"/>
+      <rect x="132" y="8" width="5" height="12" fill="#dfeef7" fill-opacity=".55"/><circle cx="134.5" cy="30" r="10" fill="#dfeef7" fill-opacity=".5"/>
+      <path d="M126 32 a10 10 0 0 0 17 0 z" fill="#a06cff" stroke="none"/><path d="M122 15 q15 -7 15 9" fill="none" stroke="#8a939f" stroke-width="1.6"/>
+      <rect x="182" y="14" width="9" height="26" rx="2" fill="#dfeef7" fill-opacity=".5"/><rect x="182.6" y="26" width="7.8" height="13.5" rx="1" fill="#ffd24a" stroke="none"/>
+      <rect x="232" y="32" width="54" height="8" rx="2" fill="#8a5a34" stroke="none"/>
+      <rect x="238" y="18" width="6" height="20" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="238.6" y="26" width="5" height="11" fill="#4ab8ff" stroke="none"/>
+      <rect x="254" y="18" width="6" height="20" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="254.6" y="24" width="5" height="13" fill="#ff8f5a" stroke="none"/>
+      <rect x="270" y="18" width="6" height="20" rx="3" fill="#dfeef7" fill-opacity=".5"/><rect x="270.6" y="28" width="5" height="9" fill="#58d38b" stroke="none"/>
+    </g>
+  </svg>`;
+}
 function decorSalle(id) {
   const e = DECOR_SALLE[id] ?? [];
-  const obj = (emo, cls) => (emo ? `<span class="obj ${cls}">${emo}</span>` : '');
-  return `<span class="fanion"></span>` +
-    `<span class="cadre c1"></span><span class="cadre c2"></span>` +
-    obj('🕐', 'horloge') +
-    obj(e[0], 'p1') + obj(e[1], 'p2') +
-    `<span class="etagere"><span class="mur-motif">${decorMatiere(id)}</span></span>` +
-    obj('🪴', 'plante') + obj(e[2], 'p3');
+  return `<span class="fanion"></span>${verrerieSVG()}` +
+    `<span class="obj horloge">🕐</span>` +
+    `<span class="obj plante">🪴</span>` +
+    (e[0] ? `<span class="obj mat">${e[0]}</span>` : '');
 }
 
 function construireModules() {

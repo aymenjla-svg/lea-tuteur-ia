@@ -355,15 +355,16 @@ body::after {
     linear-gradient(180deg, #1a2a46, #131f38);
   border: 2px solid var(--border);
   border-radius: var(--rad-lg);
-  padding: 52px 26px 34px;
+  padding: 60px 26px 36px;
   overflow: hidden;
   box-shadow: 0 14px 40px rgba(6, 20, 48, 0.35);
 }
-/* Sol de la salle : bande plus claire en bas où se tient le prof. */
+/* Sol carrelé de la salle (bas), où se tient le prof. */
 .scene::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 40px; z-index: 0;
-  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--c) 20%, #0a1526));
-  border-top: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 42px; z-index: 0;
+  background:
+    repeating-linear-gradient(45deg, color-mix(in srgb, var(--c) 9%, #0b1626) 0 11px, color-mix(in srgb, var(--c) 17%, #0b1626) 11px 22px);
+  border-top: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
 }
 .tableau {
   position: relative; z-index: 2; height: 100%; min-height: 206px;
@@ -374,23 +375,15 @@ body::after {
   padding: 14px 14px 10px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
 }
-/* Déco de salle : objets/posters thématiques dans les marges autour du tableau */
+/* Déco de salle : étagère de verrerie (haut), horloge, plante, matériel */
 .salle-deco { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
 .salle-deco .fanion { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--c), transparent); opacity: 0.6; }
-.salle-deco .obj { position: absolute; font-size: 1.2rem; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
-.salle-deco .p1 { top: 9px; right: 46px; }
-.salle-deco .p2 { top: 9px; right: 14px; }
-.salle-deco .horloge { top: 8px; left: 50%; transform: translateX(-50%); font-size: 1.35rem; }
-.salle-deco .plante { bottom: 3px; left: 8px; font-size: 1.5rem; }
-.salle-deco .p3 { bottom: 5px; left: 46px; font-size: 1.1rem; }
-.salle-deco .cadre { position: absolute; top: 12px; width: 26px; height: 20px; border: 2px solid color-mix(in srgb, var(--c) 55%, #caa46a);
-  background: color-mix(in srgb, var(--c) 22%, rgba(10, 26, 42, 0.5)); border-radius: 3px; }
-.salle-deco .c1 { left: 12px; transform: rotate(-4deg); }
-.salle-deco .c2 { left: 44px; transform: rotate(3deg); }
-.salle-deco .etagere { position: absolute; top: 7px; left: 50%; transform: translateX(-50%); width: 120px; height: 34px; }
-.salle-deco .mur-motif { width: 100%; height: 100%; color: #fff; opacity: 0.13; display: block; }
-.salle-deco .mur-motif svg { width: 100%; height: 100%; }
-@media (max-width: 480px) { .scene { padding: 48px 14px 32px; } .salle-deco .c2, .salle-deco .p3 { display: none; } }
+.salle-deco .verrerie { position: absolute; top: 8px; left: 14px; right: 60px; height: 48px; filter: drop-shadow(0 3px 5px rgba(0, 0, 0, 0.35)); }
+.salle-deco .obj { position: absolute; font-size: 1.25rem; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
+.salle-deco .horloge { top: 12px; right: 14px; font-size: 1.5rem; }
+.salle-deco .plante { bottom: 2px; left: 8px; font-size: 1.6rem; }
+.salle-deco .mat { bottom: 4px; left: 48px; font-size: 1.2rem; }
+@media (max-width: 480px) { .scene { padding: 56px 14px 34px; } .salle-deco .verrerie { right: 52px; } }
 .tableau-formule { align-self: flex-end; color: #a8f0da; font-family: var(--round); font-size: 1rem; }
 .tableau-formule:empty { display: none; }
 .tableau-texte {
