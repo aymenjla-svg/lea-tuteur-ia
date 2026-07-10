@@ -3,20 +3,30 @@
 Renvoie un MP3 à partir d'un texte. L'appli le joue à la place de la voix
 robotique du navigateur → intonations naturelles. Provider **configurable**.
 
-## Option gratuite recommandée : Google Cloud TTS (WaveNet)
+## Option GRATUITE recommandée : voix neurales Microsoft Edge (sans carte, sans clé)
 
-Palier gratuit ≈ **1 million de caractères/mois** en WaveNet (large pour un test).
+Ce sont les voix de « Lecture à voix haute » d'Edge — excellentes en français,
+**gratuites, aucune clé, aucune carte bancaire**. C'est le défaut.
 
-1. Crée un projet sur Google Cloud, active **Cloud Text-to-Speech API**, puis
-   crée une **clé API** (APIs & Services → Credentials → API key).
-2. Secrets + déploiement :
-   ```bash
-   supabase secrets set TTS_PROVIDER=google
-   supabase secrets set GOOGLE_TTS_KEY=AIza...
-   # (optionnel) voix : fr-FR-Wavenet-C/E (femme), -B/-D (homme), ou Neural2
-   supabase secrets set TTS_VOICE=fr-FR-Wavenet-C
-   supabase functions deploy voix --no-verify-jwt
-   ```
+```bash
+# Aucun secret requis ! (voix par défaut : fr-FR-DeniseNeural, féminine)
+supabase functions deploy voix --no-verify-jwt
+# (optionnel) changer de voix :
+supabase secrets set TTS_VOICE=fr-FR-VivienneMultilingualNeural   # ou -EloiseNeural, -HenriNeural…
+```
+
+Si Microsoft bloque (anti-abus) ou si le WebSocket est indispo, la fonction
+retombe **automatiquement** sur StreamElements (Amazon Polly, gratuit aussi).
+Pour forcer ce mode : `supabase secrets set TTS_PROVIDER=streamelements`
+(voix `Celine`, `Mathieu`, `Lea`…).
+
+## Option payante : Google Cloud TTS (WaveNet) — nécessite une carte
+
+Palier « gratuit » ≈ 1 M car./mois **mais facturation à activer (carte)**.
+```bash
+supabase secrets set TTS_PROVIDER=google GOOGLE_TTS_KEY=AIza... TTS_VOICE=fr-FR-Wavenet-C
+supabase functions deploy voix --no-verify-jwt
+```
 
 ## Option premium : OpenAI (très naturel, payant à l'usage)
 
