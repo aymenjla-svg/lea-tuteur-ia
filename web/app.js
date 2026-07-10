@@ -1073,11 +1073,17 @@ function paramsVoix() {
   // Débit réglable : multiplie le débit navigateur (rate) ET la vitesse de
   // lecture neurale (playbackRate). Borné pour rester intelligible.
   const v = Math.min(1.6, Math.max(0.8, Number(lireA11y().vitesseVoix) || 1));
+  let lecture = (persona?.voixN?.lecture ?? 1) * v;
+  // Sur la voix gratuite, le timbre (grave/aigu) vient de playbackRate. Pour un
+  // homme il DOIT rester < 1 : on plafonne pour que le réglage de vitesse ne
+  // remonte jamais la voix dans l'aigu (sinon un prof homme sonne « femme »).
+  if (persona?.sexe === 'h') lecture = Math.min(lecture, 0.9);
+  else if (persona?.sexe === 'f') lecture = Math.max(lecture, 1.02);
   return {
     ...base,
     rate: (base.rate ?? 1) * v,
     sexe: persona?.sexe,
-    lecture: (persona?.voixN?.lecture ?? 1) * v,
+    lecture,
     voixNeurale: persona?.voixN?.openai,
   };
 }

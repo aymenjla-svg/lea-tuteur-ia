@@ -32,14 +32,14 @@ export const PERSONAS = [
     tagline: 'Glisse une pointe d’humour pour que ça reste en tête.',
     peau: '#f0c49a', cheveux: '#4a2f1e', cheveux2: '#33200f',
     tenue: '#e06d5a', tenue2: '#c4543f', iris: '#6a4a2a', accent: '#e06d5a',
-    coiffe: 'boucles', sexe: 'h', voix: { pitch: 0.94, rate: 1.05 }, voixN: { lecture: 0.94, openai: 'ballad' },
+    coiffe: 'boucles', sexe: 'h', voix: { pitch: 0.82, rate: 1.05 }, voixN: { lecture: 0.8, openai: 'ballad' },
   },
   {
     id: 'persona-sami', nom: 'Sami', style: 'Complice & rassurant', emoji: '🤝',
     tagline: 'Comme un grand frère : jamais tu ne restes bloqué·e seul·e.',
     peau: '#e0a878', cheveux: '#161619', cheveux2: '#0b0b0d',
     tenue: '#4a90d9', tenue2: '#3a72ad', iris: '#3a3f4c', accent: '#4a90d9',
-    coiffe: 'ondules', sexe: 'h', voix: { pitch: 0.84, rate: 0.99 }, voixN: { lecture: 0.9, openai: 'verse' },
+    coiffe: 'ondules', sexe: 'h', voix: { pitch: 0.78, rate: 0.99 }, voixN: { lecture: 0.77, openai: 'verse' },
   },
 ];
 
