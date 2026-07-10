@@ -948,18 +948,20 @@ function majA11yUI() {
 // Config du tuteur IA (« lever la main ») : coller l'URL de la fonction Edge
 // sans passer par la console. Stocké sur l'appareil (localStorage).
 function majTuteurUI() {
-  let url = '';
-  try { url = localStorage.getItem('lea.tuteur.url') || ''; } catch { /* indispo */ }
+  let url = '', key = '';
+  try { url = localStorage.getItem('lea.tuteur.url') || ''; key = localStorage.getItem('lea.tuteur.key') || ''; } catch { /* indispo */ }
   $('#tuteurUrl').value = url;
+  $('#tuteurKey').value = key;
   $('#tuteurEtat').textContent = tuteurConfigure()
     ? '✅ Tuteur connecté — « lever la main » répond en direct.'
     : 'Non connecté : « lever la main » fonctionne en mode hors-ligne.';
 }
 $('#tuteurSave').addEventListener('click', () => {
   const u = $('#tuteurUrl').value.trim();
+  const k = $('#tuteurKey').value.trim();
   try {
-    if (u) localStorage.setItem('lea.tuteur.url', u);
-    else localStorage.removeItem('lea.tuteur.url');
+    if (u) localStorage.setItem('lea.tuteur.url', u); else localStorage.removeItem('lea.tuteur.url');
+    if (k) localStorage.setItem('lea.tuteur.key', k); else localStorage.removeItem('lea.tuteur.key');
   } catch { /* indispo */ }
   majTuteurUI();
 });
