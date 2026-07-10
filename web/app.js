@@ -170,61 +170,58 @@ function construireNiveauSeg() {
 
 // Grand HALL d'école (arrière-plan) : hautes fenêtres en arcade sur la cour,
 // colonnes, voûte au plafond, pendule de Foucault. Ciel selon l'heure.
+// Salle de sciences (cartoon chaleureux) : tableau vert, portraits, poster,
+// bibliothèque + microscope, pendule, aimant, plante, horloge. Palette crème/
+// bois/vert. Petite fenêtre à gauche pour la lumière du jour.
 function ecoleHallSVG() {
   const h = new Date().getHours();
-  const nuit = h < 6 || h >= 21, soir = !nuit && h >= 18;
-  const sky0 = nuit ? '#0e1c40' : soir ? '#f2a15a' : '#8fd0f6';
-  const sky1 = nuit ? '#243360' : soir ? '#8a6aa0' : '#dcf1ff';
-  const herbe = nuit ? '#1d3322' : '#5cbe6a';
-  const mur = nuit ? ['#3b3b54', '#2b2b40'] : ['#e8dec4', '#ccbf9d'];
-  const astre = nuit
-    ? '<circle cx="300" cy="98" r="9" fill="#eef2ff"/><circle cx="296" cy="95" r="7" fill="#243360"/>'
-    : `<circle cx="300" cy="98" r="10" fill="${soir ? '#ffd98a' : '#fff2ad'}"/>`;
-  const cielDeco = nuit
-    ? '<g fill="#fff" opacity=".85"><circle cx="60" cy="92" r="1.2"/><circle cx="120" cy="86" r="1.4"/><circle cx="250" cy="90" r="1.2"/><circle cx="340" cy="86" r="1"/></g>'
-    : '<g fill="#fff" opacity=".9"><ellipse cx="108" cy="96" rx="16" ry="6"/><ellipse cx="124" cy="92" rx="10" ry="5"/><ellipse cx="250" cy="102" rx="14" ry="6"/></g>';
-  // La cour : une seule scène derrière le mur, vue à travers les 3 arcades.
-  const cour =
-    `<rect x="0" y="72" width="400" height="104" fill="url(#spSky)"/>${cielDeco}${astre}` +
-    `<rect x="0" y="150" width="400" height="26" fill="${herbe}"/>` +
-    `<rect x="150" y="118" width="72" height="36" fill="${nuit ? '#3a3550' : '#e7dcbe'}"/>` +
-    `<polygon points="146,118 186,100 226,118" fill="${nuit ? '#2a2740' : '#b0503c'}"/>` +
-    `<rect x="183" y="90" width="4" height="10" fill="${nuit ? '#2a2740' : '#8a3f30'}"/><polygon points="187,90 201,94 187,98" fill="#e0533a"/>` +
-    `<g fill="${nuit ? '#c9b45a' : '#7fb0e0'}"><rect x="158" y="126" width="8" height="12"/><rect x="174" y="126" width="8" height="12"/><rect x="204" y="126" width="8" height="12"/></g>` +
-    `<g fill="${nuit ? '#183018' : '#2f8f45'}"><circle cx="66" cy="146" r="12"/><circle cx="300" cy="148" r="10"/></g>` +
-    `<rect x="63" y="150" width="5" height="10" fill="#5a3a22"/><rect x="298" y="152" width="4" height="8" fill="#5a3a22"/>`;
-  const arc = (cx) => `M ${cx - 33} 170 L ${cx - 33} 104 A 33 33 0 0 1 ${cx + 33} 104 L ${cx + 33} 170 Z`;
-  const cx1 = 80, cx2 = 200, cx3 = 320;
-  const murPerce = `<path fill-rule="evenodd" fill="url(#spMur)" d="M0 0 H400 V240 H0 Z ${arc(cx1)} ${arc(cx2)} ${arc(cx3)}"/>`;
-  const cadre = (cx) =>
-    `<path d="${arc(cx)}" fill="none" stroke="#caa96a" stroke-width="4"/>` +
-    `<line x1="${cx}" y1="73" x2="${cx}" y2="169" stroke="#caa96a" stroke-width="2.4"/>` +
-    `<line x1="${cx - 32}" y1="130" x2="${cx + 32}" y2="130" stroke="#caa96a" stroke-width="2.4"/>`;
-  const col = (x) =>
-    `<rect x="${x - 12}" y="40" width="24" height="10" rx="2" fill="#efe6cb"/>` +
-    `<rect x="${x - 10}" y="50" width="20" height="190" fill="url(#spCol)"/>` +
-    `<rect x="${x - 10}" y="50" width="5" height="190" fill="#ffffff" opacity=".18"/>` +
-    `<g stroke="#0000001c" stroke-width="1"><line x1="${x - 3.5}" y1="52" x2="${x - 3.5}" y2="236"/><line x1="${x + 3.5}" y1="52" x2="${x + 3.5}" y2="236"/></g>` +
-    `<rect x="${x - 13}" y="232" width="26" height="10" rx="2" fill="#d8caa6"/>`;
-  const plafond =
-    `<rect x="0" y="0" width="400" height="42" fill="url(#spPlaf)"/>` +
-    `<rect x="0" y="38" width="400" height="6" fill="#b7a377"/>` +
-    `<g fill="none" stroke="#b7a377" stroke-width="3" opacity=".85"><path d="M34 42 Q80 14 126 42"/><path d="M154 42 Q200 14 246 42"/><path d="M274 42 Q320 14 366 42"/></g>`;
-  const pendule =
-    `<line x1="182" y1="44" x2="218" y2="44" stroke="#9a8a6a" stroke-width="3" stroke-linecap="round"/>` +
-    `<g class="sp-swing" style="transform-origin:200px 44px"><line x1="200" y1="44" x2="200" y2="82" stroke="#c9d2e0" stroke-width="2"/><circle cx="200" cy="86" r="6.5" fill="#b7c2d6" stroke="#7d8798" stroke-width="1.4"/></g>`;
-  const formules =
-    `<g fill="${nuit ? '#dfe7f5' : '#5a4a2a'}" font-family="var(--round,sans-serif)" font-weight="700" opacity=".8">` +
-    '<text x="38" y="62" font-size="13">v = d ⁄ t</text><text x="300" y="62" font-size="13">U = R·I</text></g>';
+  const jour = h >= 6 && h < 19;
+  const ciel = jour ? '#bfe3f5' : '#26386a';
+  const dehors = jour
+    ? '<rect x="12" y="104" width="32" height="22" fill="#7cc481"/><circle cx="20" cy="86" r="5" fill="#fff3b0"/><circle cx="34" cy="110" r="6" fill="#4fa85f"/>'
+    : '<rect x="12" y="104" width="32" height="22" fill="#20402a"/><circle cx="38" cy="84" r="4" fill="#eef2ff"/>';
   return '<svg class="sp-hall" viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice" aria-hidden="true">' +
     '<defs>' +
-      `<linearGradient id="spSky" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${sky0}"/><stop offset="1" stop-color="${sky1}"/></linearGradient>` +
-      `<linearGradient id="spMur" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${mur[0]}"/><stop offset="1" stop-color="${mur[1]}"/></linearGradient>` +
-      '<linearGradient id="spCol" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#efe6cb"/><stop offset=".5" stop-color="#dccfab"/><stop offset="1" stop-color="#c1b289"/></linearGradient>' +
-      `<linearGradient id="spPlaf" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${nuit ? '#33334a' : '#d7c9a4'}"/><stop offset="1" stop-color="${nuit ? '#2b2b40' : '#c3b48d'}"/></linearGradient>` +
+      '<linearGradient id="spWall" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3e8d3"/><stop offset="1" stop-color="#e7d8bc"/></linearGradient>' +
+      '<linearGradient id="spBoard" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#487a5b"/><stop offset="1" stop-color="#39604a"/></linearGradient>' +
+      '<linearGradient id="spWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bd7743"/><stop offset="1" stop-color="#9c5c30"/></linearGradient>' +
     '</defs>' +
-    cour + murPerce + cadre(cx1) + cadre(cx2) + cadre(cx3) + plafond +
-    col(18) + col(140) + col(260) + col(382) + pendule + formules +
+    // mur, plafond (bandeau terracotta + néons), plinthe
+    '<rect x="0" y="0" width="400" height="300" fill="url(#spWall)"/>' +
+    '<rect x="0" y="0" width="400" height="24" fill="#cf7b62"/><rect x="0" y="22" width="400" height="4" fill="#af5f3e"/>' +
+    '<g fill="#f9f2e2" opacity=".9"><rect x="72" y="6" width="66" height="10" rx="2"/><rect x="252" y="6" width="66" height="10" rx="2"/></g>' +
+    '<rect x="0" y="196" width="400" height="6" fill="#d6c096"/>' +
+    // petite fenêtre (lumière du jour) à gauche
+    `<rect x="8" y="70" width="40" height="60" rx="2" fill="#a9663e"/><rect x="12" y="74" width="32" height="52" fill="${ciel}"/>${dehors}` +
+    '<g stroke="#ecdfc6" stroke-width="2" fill="none"><line x1="28" y1="74" x2="28" y2="126"/><line x1="12" y1="100" x2="44" y2="100"/></g>' +
+    // pendule suspendu (oscille) dans le coin gauche
+    '<line x1="40" y1="24" x2="66" y2="24" stroke="#9a8a6a" stroke-width="3" stroke-linecap="round"/>' +
+    '<g class="sp-swing" style="transform-origin:53px 24px"><line x1="53" y1="24" x2="53" y2="52" stroke="#7d8798" stroke-width="2"/><circle cx="53" cy="56" r="6" fill="#c0553f" stroke="#8a3a2a" stroke-width="1.2"/></g>' +
+    // portraits de savants
+    '<rect x="60" y="34" width="26" height="30" rx="2" fill="#caa25a"/><rect x="63" y="37" width="20" height="24" fill="#9fb0b8"/><circle cx="73" cy="46" r="5" fill="#e9d6bf"/><path d="M66 61 q7 -8 14 0 z" fill="#6a4a30"/>' +
+    '<rect x="92" y="34" width="26" height="30" rx="2" fill="#caa25a"/><rect x="95" y="37" width="20" height="24" fill="#9fb0b8"/><circle cx="105" cy="46" r="5" fill="#e9d6bf"/><path d="M98 61 q7 -8 14 0 z" fill="#8a6a4a"/>' +
+    // poster graphique (barres)
+    '<rect x="60" y="74" width="58" height="46" rx="2" fill="#f9f2e2" stroke="#caa25a" stroke-width="2"/>' +
+    '<g><rect x="66" y="100" width="7" height="14" fill="#e0a83e"/><rect x="76" y="92" width="7" height="22" fill="#4a90d9"/><rect x="86" y="104" width="7" height="10" fill="#d0553f"/><rect x="96" y="96" width="7" height="18" fill="#3fae8f"/><rect x="106" y="88" width="7" height="26" fill="#b06ab3"/></g>' +
+    // TABLEAU vert central + craies + molécule + schéma pendule + aimant
+    '<rect x="128" y="40" width="150" height="98" rx="4" fill="url(#spWood)"/>' +
+    '<rect x="134" y="46" width="138" height="86" rx="2" fill="url(#spBoard)"/>' +
+    '<rect x="134" y="46" width="138" height="18" fill="#ffffff" opacity=".05"/>' +
+    '<g fill="#eef5ec" font-family="var(--round,sans-serif)" font-weight="700" opacity=".95"><text x="146" y="70" font-size="12">v = d ⁄ t</text><text x="146" y="90" font-size="12">P = m·g</text><text x="146" y="110" font-size="12">U = R·I</text></g>' +
+    '<g stroke="#eef5ec" stroke-width="1.4" fill="none" opacity=".85"><circle cx="228" cy="72" r="5"/><circle cx="250" cy="66" r="5"/><circle cx="248" cy="92" r="5"/><line x1="233" y1="70" x2="245" y2="67"/><line x1="230" y1="77" x2="246" y2="88"/></g>' +
+    '<g stroke="#eef5ec" stroke-width="1.4" fill="#eef5ec" opacity=".85"><line x1="222" y1="104" x2="246" y2="104"/><line x1="234" y1="104" x2="228" y2="122"/><circle cx="227" cy="124" r="3"/></g>' +
+    '<rect x="132" y="132" width="142" height="5" rx="1" fill="#8a4e2a"/><rect x="150" y="133" width="12" height="3" rx="1.5" fill="#f4e9c9"/><rect x="166" y="133" width="10" height="3" rx="1.5" fill="#e6a0a0"/>' +
+    '<g transform="translate(196,120)"><path d="M0 16 V6 a8 8 0 0 1 16 0 V16 h-5 V6 a3 3 0 0 0 -6 0 V16 Z" fill="#d0553f"/><rect x="0" y="16" width="5" height="4" fill="#cfd3d8"/><rect x="11" y="16" width="5" height="4" fill="#cfd3d8"/></g>' +
+    // horloge
+    '<circle cx="356" cy="52" r="13" fill="#f9f2e2" stroke="#a9663e" stroke-width="2.5"/><circle cx="356" cy="52" r="1.6" fill="#3a4048"/><line x1="356" y1="52" x2="356" y2="44" stroke="#3a4048" stroke-width="1.6"/><line x1="356" y1="52" x2="362" y2="52" stroke="#3a4048" stroke-width="1.6"/>' +
+    // BIBLIOTHÈQUE (reliures + microscope + verrerie)
+    '<rect x="300" y="72" width="72" height="128" rx="2" fill="#8a4e2a"/><rect x="304" y="76" width="64" height="120" fill="url(#spWood)"/>' +
+    '<g fill="#8a4e2a"><rect x="304" y="108" width="64" height="4"/><rect x="304" y="146" width="64" height="4"/></g>' +
+    '<g><rect x="310" y="82" width="8" height="26" fill="#3fae8f"/><rect x="319" y="82" width="8" height="26" fill="#e0a83e"/><rect x="328" y="82" width="8" height="26" fill="#d0553f"/><rect x="337" y="82" width="8" height="26" fill="#4a90d9"/><rect x="347" y="86" width="16" height="22" fill="#b06ab3"/></g>' +
+    '<g fill="#3a4048"><rect x="316" y="138" width="18" height="4" rx="1"/><rect x="320" y="118" width="4" height="20"/><path d="M322 120 q12 -2 12 8 l-4 1 q0 -6 -8 -5 z"/><circle cx="333" cy="130" r="3.5" fill="#7d8798"/></g>' +
+    '<path d="M348 122 l-4 16 h12 l-4 -16 z" fill="#a7d8c8" opacity=".75" stroke="#7fb8a8"/><rect x="340" y="126" width="4" height="12" fill="#bcd8e8" opacity=".7"/>' +
+    // plante en pot (devant, à droite)
+    '<g><rect x="286" y="176" width="22" height="22" rx="2" fill="#c9723f"/><path d="M297 176 q-16 -22 -4 -38 M297 176 q16 -20 6 -38 M297 176 q-2 -26 3 -42" fill="none" stroke="#3f9e5a" stroke-width="5" stroke-linecap="round"/></g>' +
   '</svg>';
 }
 
