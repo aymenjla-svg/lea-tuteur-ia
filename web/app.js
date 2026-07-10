@@ -703,6 +703,36 @@ function entourerRelation(mot = 'utilise cette relation') {
   ]);
 }
 
+// « Ardoise propre » : le prof EFFACE la figure du cours (ex. la voiture) pour
+// ré-expliquer un principe sur un tableau vierge quand l'élève lève la main.
+// Même repère que les schémas du cours (viewBox 320×200) → les dessins du LLM
+// tombent au bon endroit. On repart au prochain changement de scène.
+const ARDOISE = '__ardoise__';
+function ardoisePropre() {
+  const host = $('#figureHost');
+  if (!host) return null;
+  const ns = 'http://www.w3.org/2000/svg';
+  host.innerHTML = '';
+  const svg = document.createElementNS(ns, 'svg');
+  svg.setAttribute('viewBox', '0 0 320 200');
+  svg.setAttribute('class', 'figure figure-ardoise');
+  svg.setAttribute('data-foc', '');
+  const g = document.createElementNS(ns, 'g');
+  g.setAttribute('class', 'croquis');
+  svg.appendChild(g);
+  host.appendChild(svg);
+  figureRendue = ARDOISE; // plus la figure du cours → sera reconstruite au besoin
+  etapeMax = 0;
+  return g;
+}
+// Remet la figure du cours (celle de la scène courante) après une explication
+// sur ardoise — sans re-narrer la scène.
+function restaurerFigureCours() {
+  if (mode !== 'cours' || figureRendue !== ARDOISE) return;
+  const sc = coursScenes[sceneIdx];
+  if (sc) majTableau(sc);
+}
+
 function rendreScene() {
   const sc = coursScenes[sceneIdx];
   if (!sc) return;
@@ -1363,10 +1393,15 @@ $('#avisCopier').addEventListener('click', async () => {
   setTimeout(() => { $('#avisCopier').textContent = 'Copier tout'; }, 1500);
 });
 for (const el of document.querySelectorAll('[data-fermer]')) {
-  el.addEventListener('click', () => { $('#' + el.dataset.fermer).hidden = true; });
+  el.addEventListener('click', () => {
+    $('#' + el.dataset.fermer).hidden = true;
+    if (el.dataset.fermer === 'mainModale') restaurerFigureCours();
+  });
 }
 for (const id of ['a11yModale', 'avisModale', 'mainModale']) {
-  $('#' + id).addEventListener('click', (e) => { if (e.target.id === id) $('#' + id).hidden = true; });
+  $('#' + id).addEventListener('click', (e) => {
+    if (e.target.id === id) { $('#' + id).hidden = true; if (id === 'mainModale') restaurerFigureCours(); }
+  });
 }
 
 /* --- « Lever la main » : question libre à Léa (phase LLM) ------------------ */
@@ -1473,12 +1508,14 @@ async function envoyerQuestion(q) {
   }
   // On garde une fenêtre glissante des derniers tours (l'élève puis le prof).
   histTuteur = [...histTuteur, { role: 'eleve', texte: q }, { role: 'lea', texte: String(rep.reponse ?? '') }].slice(-8);
-  // Le tableau réagit en direct : Léa dessine et POINTE la notion dont elle parle.
-  if (mode === 'cours') {
+  // Le tableau réagit en direct : le prof EFFACE la figure du cours (la voiture,
+  // le circuit…) et ré-explique sur une ardoise vierge. S'il a un schéma, il le
+  // trace dessus ; sinon l'ardoise reste nette pendant qu'il explique à la voix.
+  if (mode === 'cours' && !rep.alerte) {
+    ardoisePropre();
     if (Array.isArray(rep.tableau) && rep.tableau.length) {
       try { dessinerCroquis(rep.tableau); } catch { /* schéma absent */ }
     }
-    souligneConcept(figureRendue, rep.reponse);
   }
   // Sécurité : message persistant et visible (on ouvre le panneau au besoin).
   if (rep.alerte) {
