@@ -115,6 +115,7 @@
         </nav>
 
         <div class="actions-sec">
+          <button id="leverMain" type="button" class="secondaire" title="Poser une question à Léa" hidden>✋ Lever la main</button>
           <button id="perdu" type="button" class="secondaire" title="Demander de l'aide" hidden>Je suis perdu·e</button>
           <button id="revoirCours" type="button" class="secondaire" hidden>Revoir le cours</button>
           <button id="rejouer" type="button" class="rejouer" hidden>Recommencer</button>
@@ -166,6 +167,20 @@
           <button type="button" id="avisCopier">Copier tout</button>
         </div>
         <button type="button" class="modale-fermer" data-fermer="avisModale">Fermer</button>
+      </div>
+    </div>
+
+    <!-- Modale « lever la main » : question libre à Léa (ancrée au programme) -->
+    <div id="mainModale" class="modale" hidden>
+      <div class="modale-carte modale-main" role="dialog" aria-modal="true" aria-label="Poser une question à Léa">
+        <h2>✋ Pose ta question à Léa</h2>
+        <p id="mainInfo" class="fb-note">Sur le cours en physique. Léa peut aussi dessiner au tableau.</p>
+        <div id="mainFil" class="main-fil" aria-live="polite"></div>
+        <form id="mainForm" class="main-saisie" autocomplete="off">
+          <input id="mainQuestion" type="text" placeholder="Ta question…" aria-label="Ta question" />
+          <button type="submit" id="mainEnvoyer">Demander</button>
+        </form>
+        <button type="button" class="modale-fermer" data-fermer="mainModale">Fermer</button>
       </div>
     </div>
 

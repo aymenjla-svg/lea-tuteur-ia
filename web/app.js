@@ -16,6 +16,7 @@ import {
   NIVEAUX, niveauCourant, definirNiveau, appliquerVibe,
   xp, ajouterXp, niveauJeu, progNiveauJeu, majSerie, serie, etoiles,
 } from './jeu.js';
+import { poserQuestion, tuteurConfigure } from './tuteur-llm.js';
 
 const $ = (s) => document.querySelector(s);
 const reduireMouvement = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -283,6 +284,7 @@ function appliquerMode() {
   $('#tableauFormule').hidden = cours;
   $('#coursNav').hidden = !cours;
   $('#perdu').hidden = cours;
+  $('#leverMain').hidden = !cours; // « lever la main » pendant le cours
   $('#revoirCours').hidden = cours || !COURS[moduleActuel?.id];
   if (cours) $('#rejouer').hidden = true;
   else { $('#form').hidden = false; $('#qcmZone').hidden = true; }
@@ -982,9 +984,82 @@ $('#avisCopier').addEventListener('click', async () => {
 for (const el of document.querySelectorAll('[data-fermer]')) {
   el.addEventListener('click', () => { $('#' + el.dataset.fermer).hidden = true; });
 }
-for (const id of ['a11yModale', 'avisModale']) {
+for (const id of ['a11yModale', 'avisModale', 'mainModale']) {
   $('#' + id).addEventListener('click', (e) => { if (e.target.id === id) $('#' + id).hidden = true; });
 }
+
+/* --- « Lever la main » : question libre à Léa (phase LLM) ------------------ */
+
+// Contexte transmis au tuteur : le module, la notion courante, la relation et
+// les points déjà vus (ancrage au programme). en_exercice pilote l'anti-spoiler.
+function contexteTuteur() {
+  const sc = coursScenes[sceneIdx];
+  const vus = [];
+  for (let i = 0; i <= sceneIdx && i < coursScenes.length; i++) {
+    for (const p of coursScenes[i]?.points ?? []) vus.push(String(p).replace(/<[^>]+>/g, ''));
+  }
+  return {
+    module: moduleActuel?.titre,
+    moduleId: moduleActuel?.id,
+    notion: sc?.titre,
+    relation: FORMULES[moduleActuel?.objectifPrincipal],
+    points_vus: vus.slice(-8),
+    en_exercice: mode === 'exos',
+  };
+}
+
+function ajouterFil(role, texte, opts = {}) {
+  const div = document.createElement('div');
+  div.className = 'main-msg main-' + role +
+    (opts.alerte ? ' main-alerte' : '') + (opts.horsprog ? ' main-horsprog' : '');
+  div.textContent = texte;
+  const fil = $('#mainFil');
+  fil.append(div);
+  fil.scrollTop = fil.scrollHeight;
+  return div;
+}
+
+$('#leverMain').addEventListener('click', () => {
+  voix.interrompre();
+  $('#mainInfo').textContent = tuteurConfigure()
+    ? 'Sur le cours en physique. Léa peut aussi dessiner au tableau.'
+    : 'Mode hors-ligne : je te renvoie au cours. (Connecte le tuteur pour les questions libres.)';
+  $('#mainModale').hidden = false;
+  $('#mainQuestion').focus();
+});
+
+let mainOccupe = false;
+$('#mainForm').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (mainOccupe) return;
+  const q = $('#mainQuestion').value.trim();
+  if (!q) return;
+  $('#mainQuestion').value = '';
+  ajouterFil('eleve', q);
+  const attente = ajouterFil('lea', '…');
+  mainOccupe = true;
+  $('#mainEnvoyer').disabled = true;
+  let rep;
+  try {
+    rep = await poserQuestion(q, contexteTuteur());
+  } catch {
+    rep = { reponse: 'Je n’ai pas pu répondre. Reprenons le cours ensemble ?', tableau: [], dans_programme: true };
+  } finally {
+    mainOccupe = false;
+    $('#mainEnvoyer').disabled = false;
+  }
+  attente.remove();
+  ajouterFil('lea', rep.reponse, { alerte: !!rep.alerte, horsprog: rep.dans_programme === false });
+  // Léa dessine au tableau (derrière la fenêtre) : on le signale et ça persiste.
+  if (mode === 'cours' && Array.isArray(rep.tableau) && rep.tableau.length) {
+    try { dessinerCroquis(rep.tableau); ajouterFil('lea', '✏️ J’ai dessiné au tableau — ferme cette fenêtre pour voir.'); } catch { /* schéma absent */ }
+  }
+  if (rep.alerte?.escalade_requise) {
+    ajouterFil('lea', '⚠️ Parles-en à un adulte de confiance dès que possible.', { alerte: true });
+  }
+  expression = rep.alerte ? 'encouraging' : 'happy';
+  parler(rep.reponse);
+});
 
 // Démarrage : accessibilité + série du jour + interface adaptée à la classe.
 appliquerA11y();
