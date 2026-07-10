@@ -1020,7 +1020,17 @@ function majSousTitre(texte, n) {
 // Paramètres de voix du prof courant : sexe (voix navigateur) + timbre neural
 // (lecture = décalage de hauteur, voixNeurale = voix serveur si OpenAI).
 function paramsVoix() {
-  return { ...persona?.voix, sexe: persona?.sexe, lecture: persona?.voixN?.lecture, voixNeurale: persona?.voixN?.openai };
+  const base = persona?.voix ?? {};
+  // Débit réglable : multiplie le débit navigateur (rate) ET la vitesse de
+  // lecture neurale (playbackRate). Borné pour rester intelligible.
+  const v = Math.min(1.6, Math.max(0.8, Number(lireA11y().vitesseVoix) || 1));
+  return {
+    ...base,
+    rate: (base.rate ?? 1) * v,
+    sexe: persona?.sexe,
+    lecture: (persona?.voixN?.lecture ?? 1) * v,
+    voixNeurale: persona?.voixN?.openai,
+  };
 }
 
 function parler(texte) {
@@ -1251,6 +1261,10 @@ function majA11yUI() {
   for (const b of document.querySelectorAll('#segTaille button')) {
     b.classList.toggle('actif', b.dataset.taille === s.taille);
   }
+  const vv = Number(s.vitesseVoix) || 1;
+  for (const b of document.querySelectorAll('#segVitesse button')) {
+    b.classList.toggle('actif', Math.abs(Number(b.dataset.vitesse) - vv) < 0.001);
+  }
   for (const t of [['tgLecture', 'lecture'], ['tgContraste', 'contraste']]) {
     const el = $('#' + t[0]);
     const on = s[t[1]] === 'on';
@@ -1295,6 +1309,14 @@ $('#segTaille').addEventListener('click', (e) => {
   if (!b) return;
   definirA11y({ taille: b.dataset.taille });
   majA11yUI();
+});
+$('#segVitesse').addEventListener('click', (e) => {
+  const b = e.target.closest('button');
+  if (!b) return;
+  definirA11y({ vitesseVoix: Number(b.dataset.vitesse) });
+  majA11yUI();
+  // Aperçu audio immédiat : on entend tout de suite la nouvelle vitesse.
+  if (voix.tts) { voix.interrompre(); voix.parler('Voilà, je parle à cette vitesse.', { params: paramsVoix() }); }
 });
 for (const id of ['tgLecture', 'tgContraste']) {
   $('#' + id).addEventListener('click', () => {

@@ -6,7 +6,9 @@
 // La lecture à voix haute est déjà assurée par la synthèse vocale (voix.js).
 
 const CLE = 'lea.a11y.v1';
-const DEFAUT = { taille: 'normal', lecture: 'off', contraste: 'off' };
+// vitesseVoix : multiplicateur global de débit de la voix du prof (1 = normal).
+// Défaut légèrement relevé (1.15) — le prof parle un peu plus vite ; réglable.
+const DEFAUT = { taille: 'normal', lecture: 'off', contraste: 'off', vitesseVoix: 1.15 };
 
 export function lireA11y() {
   try {
