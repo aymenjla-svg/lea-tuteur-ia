@@ -1,15 +1,15 @@
 // =============================================================================
-// Léa — fonction Edge « voix » : synthèse vocale NEURALE (voix humaine).
+// Léa — fonction Edge « voix » : synthèse vocale plus humaine que le navigateur.
 //
 // Reçoit { texte, voix? } et renvoie un audio MP3. Provider CONFIGURABLE :
 //   TTS_PROVIDER =
-//     'edge' (DÉFAUT) : voix neurales Microsoft Edge — GRATUIT, sans carte,
-//                       sans clé. Repli auto sur StreamElements si indispo.
-//                       Voix : TTS_VOICE (défaut fr-FR-DeniseNeural).
-//     'streamelements': voix Amazon Polly via StreamElements — GRATUIT, sans
-//                       clé. Voix : TTS_VOICE (défaut Celine).
-//     'google'        : Google Cloud TTS (WaveNet). Secret GOOGLE_TTS_KEY.
-//     'openai'        : OpenAI Audio Speech. Secret OPENAI_API_KEY.
+//     'gtrad' (DÉFAUT) : Google Translate TTS — GRATUIT, sans carte, sans clé,
+//                        fiable côté serveur. Voix FR unique, correcte.
+//     'openai'        : OpenAI Audio Speech — TRÈS humain (payant à l'usage).
+//                        Secret OPENAI_API_KEY ; voix TTS_VOICE (défaut shimmer).
+//     'google'        : Google Cloud TTS WaveNet (carte requise). GOOGLE_TTS_KEY.
+//     'edge'          : voix neurales Microsoft (souvent bloquées côté serveur) ;
+//                        repli automatique sur 'gtrad'.
 //
 // Déploiement : voir supabase/functions/voix/README.md
 // =============================================================================
@@ -20,23 +20,48 @@ const CORS = {
   'access-control-allow-methods': 'POST, OPTIONS',
 };
 
-// --- Microsoft Edge neural (gratuit) -----------------------------------------
+// --- Google Translate TTS (gratuit, sans clé) — fiable -----------------------
+// Découpe en morceaux ≤ 190 caractères (limite du service), puis concatène.
+function couper(t: string, max = 190): string[] {
+  const out: string[] = [];
+  let reste = t.replace(/\s+/g, ' ').trim();
+  while (reste.length > max) {
+    let i = reste.lastIndexOf(' ', max);
+    if (i < max * 0.5) i = max;
+    out.push(reste.slice(0, i));
+    reste = reste.slice(i).trim();
+  }
+  if (reste) out.push(reste);
+  return out;
+}
+async function ttsGoogleTrad(texte: string): Promise<Uint8Array> {
+  const parts = couper(texte);
+  const bufs: Uint8Array[] = [];
+  for (let i = 0; i < parts.length; i++) {
+    const u = `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=fr&total=${parts.length}&idx=${i}&textlen=${parts[i].length}&q=${encodeURIComponent(parts[i])}`;
+    const r = await fetch(u, { headers: {
+      'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120 Safari/537.36',
+      'referer': 'https://translate.google.com/',
+    } });
+    if (!r.ok) throw new Error(`gtrad ${r.status}`);
+    bufs.push(new Uint8Array(await r.arrayBuffer()));
+  }
+  let len = 0; for (const b of bufs) len += b.length;
+  const out = new Uint8Array(len); let o = 0; for (const b of bufs) { out.set(b, o); o += b.length; }
+  return out;
+}
+
+// --- Microsoft Edge neural (souvent bloqué côté serveur : en option) ---------
 const TRUSTED = '6A5AA1D4EAFF4E9FB37E23D68491D6F4';
 const WSS = 'wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1';
 const GEC_VERSION = '1-131.0.2903.99';
-
-function escapeXml(s: string): string {
-  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-}
-
-// Jeton anti-abus Sec-MS-GEC : SHA-256(ticks arrondis 5 min + token), en HEX maj.
+const xml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 async function secMsGec(): Promise<string> {
   const ticks = (BigInt(Math.floor(Date.now() / 1000) + 11644473600)) * 10000000n;
   const rounded = ticks - (ticks % 3000000000n);
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rounded.toString() + TRUSTED));
   return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('').toUpperCase();
 }
-
 async function ttsEdge(texte: string, voixNom: string): Promise<Uint8Array> {
   const gec = await secMsGec();
   const voice = voixNom || 'fr-FR-DeniseNeural';
@@ -46,39 +71,20 @@ async function ttsEdge(texte: string, voixNom: string): Promise<Uint8Array> {
     ws.binaryType = 'arraybuffer';
     const chunks: Uint8Array[] = [];
     let settled = false;
-    const rassembler = () => {
-      let len = 0; for (const c of chunks) len += c.length;
-      const out = new Uint8Array(len); let o = 0; for (const c of chunks) { out.set(c, o); o += c.length; }
-      return out;
-    };
+    const join = () => { let l = 0; for (const c of chunks) l += c.length; const o = new Uint8Array(l); let p = 0; for (const c of chunks) { o.set(c, p); p += c.length; } return o; };
     const fin = (fn: (v: any) => void, arg: any) => { if (settled) return; settled = true; clearTimeout(t); try { ws.close(); } catch { /* */ } fn(arg); };
-    const t = setTimeout(() => fin(reject, new Error('edge timeout')), 12000);
+    const t = setTimeout(() => fin(reject, new Error('edge timeout')), 4500);
     ws.onopen = () => {
       ws.send(`X-Timestamp:${new Date().toString()}\r\nContent-Type:application/json; charset=utf-8\r\nPath:speech.config\r\n\r\n{"context":{"synthesis":{"audio":{"metadataoptions":{"sentenceBoundaryEnabled":"false","wordBoundaryEnabled":"false"},"outputFormat":"audio-24khz-48kbitrate-mono-mp3"}}}}`);
-      const ssml = `<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='fr-FR'><voice name='${voice}'>${escapeXml(texte)}</voice></speak>`;
-      ws.send(`X-RequestId:${crypto.randomUUID().replace(/-/g, '')}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${new Date().toString()}\r\nPath:ssml\r\n\r\n${ssml}`);
+      ws.send(`X-RequestId:${crypto.randomUUID().replace(/-/g, '')}\r\nContent-Type:application/ssml+xml\r\nX-Timestamp:${new Date().toString()}\r\nPath:ssml\r\n\r\n<speak version='1.0' xmlns='http://www.w3.org/2001/10/synthesis' xml:lang='fr-FR'><voice name='${voice}'>${xml(texte)}</voice></speak>`);
     };
     ws.onmessage = (ev: MessageEvent) => {
-      if (typeof ev.data === 'string') {
-        if (ev.data.includes('Path:turn.end')) fin(resolve, rassembler());
-      } else {
-        const buf = new Uint8Array(ev.data as ArrayBuffer);
-        const headerLen = (buf[0] << 8) | buf[1];
-        const audio = buf.subarray(2 + headerLen);
-        if (audio.length) chunks.push(audio);
-      }
+      if (typeof ev.data === 'string') { if (ev.data.includes('Path:turn.end')) fin(resolve, join()); }
+      else { const b = new Uint8Array(ev.data as ArrayBuffer); const h = (b[0] << 8) | b[1]; const a = b.subarray(2 + h); if (a.length) chunks.push(a); }
     };
     ws.onerror = () => fin(reject, new Error('edge ws error'));
-    ws.onclose = () => { if (!settled) { chunks.length ? fin(resolve, rassembler()) : fin(reject, new Error('edge closed')); } };
+    ws.onclose = () => { if (!settled) chunks.length ? fin(resolve, join()) : fin(reject, new Error('edge closed')); };
   });
-}
-
-// --- StreamElements (Amazon Polly, gratuit) — filet de secours ---------------
-async function ttsStream(texte: string, voixNom: string): Promise<Uint8Array> {
-  const v = voixNom || 'Celine';
-  const r = await fetch(`https://api.streamelements.com/kappa/v2/speech?voice=${encodeURIComponent(v)}&text=${encodeURIComponent(texte)}`);
-  if (!r.ok) throw new Error(`streamelements ${r.status}`);
-  return new Uint8Array(await r.arrayBuffer());
 }
 
 // --- Handler -----------------------------------------------------------------
@@ -95,7 +101,7 @@ Deno.serve(async (req) => {
   } catch { return new Response('requête invalide', { status: 400, headers: CORS }); }
   if (!texte.trim()) return new Response('texte vide', { status: 400, headers: CORS });
 
-  const provider = (Deno.env.get('TTS_PROVIDER') ?? 'edge').toLowerCase();
+  const provider = (Deno.env.get('TTS_PROVIDER') ?? 'gtrad').toLowerCase();
   const voixEnv = Deno.env.get('TTS_VOICE') ?? '';
   try {
     let audio: Uint8Array;
@@ -103,8 +109,7 @@ Deno.serve(async (req) => {
       const key = Deno.env.get('OPENAI_API_KEY');
       if (!key) throw new Error('OPENAI_API_KEY manquant');
       const r = await fetch('https://api.openai.com/v1/audio/speech', {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
+        method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${key}` },
         body: JSON.stringify({ model: Deno.env.get('TTS_MODEL') ?? 'gpt-4o-mini-tts', voice: voixDemandee || voixEnv || 'shimmer', input: texte, response_format: 'mp3' }),
       });
       if (!r.ok) throw new Error(`OpenAI TTS ${r.status}`);
@@ -119,12 +124,11 @@ Deno.serve(async (req) => {
       if (!r.ok) throw new Error(`Google TTS ${r.status}`);
       const j = await r.json();
       audio = Uint8Array.from(atob(j.audioContent), (c) => c.charCodeAt(0));
-    } else if (provider === 'streamelements') {
-      audio = await ttsStream(texte, voixDemandee || voixEnv);
-    } else {
-      // 'edge' (défaut) : neural gratuit, repli StreamElements si indispo.
+    } else if (provider === 'edge') {
       try { audio = await ttsEdge(texte, voixDemandee || voixEnv); }
-      catch { audio = await ttsStream(texte, voixEnv && !voixEnv.includes('Neural') ? voixEnv : 'Celine'); }
+      catch { audio = await ttsGoogleTrad(texte); }
+    } else {
+      audio = await ttsGoogleTrad(texte); // 'gtrad' (défaut)
     }
     return new Response(audio, { headers: { ...CORS, 'content-type': 'audio/mpeg', 'cache-control': 'public, max-age=86400' } });
   } catch (e) {

@@ -3,22 +3,19 @@
 Renvoie un MP3 à partir d'un texte. L'appli le joue à la place de la voix
 robotique du navigateur → intonations naturelles. Provider **configurable**.
 
-## Option GRATUITE recommandée : voix neurales Microsoft Edge (sans carte, sans clé)
+## Option GRATUITE par défaut : Google Translate TTS (sans carte, sans clé)
 
-Ce sont les voix de « Lecture à voix haute » d'Edge — excellentes en français,
-**gratuites, aucune clé, aucune carte bancaire**. C'est le défaut.
+Fiable côté serveur, voix française correcte (plus naturelle que le navigateur).
+**Aucun secret requis** — c'est le défaut.
 
 ```bash
-# Aucun secret requis ! (voix par défaut : fr-FR-DeniseNeural, féminine)
-supabase functions deploy voix --no-verify-jwt
-# (optionnel) changer de voix :
-supabase secrets set TTS_VOICE=fr-FR-VivienneMultilingualNeural   # ou -EloiseNeural, -HenriNeural…
+supabase functions deploy voix --no-verify-jwt   # rien d'autre à faire
 ```
 
-Si Microsoft bloque (anti-abus) ou si le WebSocket est indispo, la fonction
-retombe **automatiquement** sur StreamElements (Amazon Polly, gratuit aussi).
-Pour forcer ce mode : `supabase secrets set TTS_PROVIDER=streamelements`
-(voix `Celine`, `Mathieu`, `Lea`…).
+Pour une voix VRAIMENT humaine, voir « OpenAI » ci-dessous (payant mais très
+peu cher). L'option `edge` (voix neurales Microsoft) existe mais est souvent
+bloquée côté serveur (repli auto sur Google Translate) :
+`supabase secrets set TTS_PROVIDER=edge`.
 
 ## Option payante : Google Cloud TTS (WaveNet) — nécessite une carte
 
