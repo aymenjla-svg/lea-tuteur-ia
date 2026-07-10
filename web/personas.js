@@ -21,32 +21,11 @@ export const PERSONAS = [
     coiffe: 'longs', sexe: 'f', voix: { pitch: 1.14, rate: 0.98 }, voixN: { lecture: 1.05, openai: 'shimmer' },
   },
   {
-    id: 'persona-noe', nom: 'Noé', style: 'Énergique & curieux', emoji: '⚡',
-    tagline: 'Transforme chaque notion de physique en expérience.',
-    peau: '#f3c9a0', cheveux: '#3a2f2a', cheveux2: '#241d19',
-    tenue: '#f2f4f8', tenue2: '#d6dbe4', iris: '#7a5230', accent: '#4a90d9',
-    coiffe: 'courts', sexe: 'h', voix: { pitch: 0.85, rate: 1.06 }, voixN: { lecture: 0.9, openai: 'echo' },
-  },
-  {
     id: 'persona-mila', nom: 'Mila', style: 'Créative & imagée', emoji: '🎨',
     tagline: 'Fait comprendre avec des images et des exemples concrets.',
     peau: '#ffd9c2', cheveux: '#c86fa6', cheveux2: '#a8558a',
     tenue: '#b06ab3', tenue2: '#98549b', iris: '#8e5bd0', accent: '#b06ab3',
     coiffe: 'queue', sexe: 'f', voix: { pitch: 1.22, rate: 1.0 }, voixN: { lecture: 1.12, openai: 'nova' },
-  },
-  {
-    id: 'persona-kenji', nom: 'Kenji', style: 'Calme & rigoureux', emoji: '🧭',
-    tagline: 'Avance étape par étape, en posant bien les bases.',
-    peau: '#f0c49a', cheveux: '#20242c', cheveux2: '#12151b',
-    tenue: '#3f6f8f', tenue2: '#2f556e', iris: '#4a5568', accent: '#2e8b74',
-    coiffe: 'carre', lunettes: true, sexe: 'h', voix: { pitch: 0.8, rate: 0.92 }, voixN: { lecture: 0.85, openai: 'onyx' },
-  },
-  {
-    id: 'persona-adam', nom: 'Adam', style: 'Sportif & motivant', emoji: '🏅',
-    tagline: 'Te donne de l’élan : chaque notion devient un défi à relever.',
-    peau: '#c68642', cheveux: '#241b15', cheveux2: '#150f0b',
-    tenue: '#2e8b74', tenue2: '#22685a', iris: '#5a4634', accent: '#f2994a',
-    coiffe: 'rase', barbe: true, sexe: 'h', voix: { pitch: 0.9, rate: 1.08 }, voixN: { lecture: 0.9, openai: 'ash' },
   },
   {
     id: 'persona-theo', nom: 'Théo', style: 'Malin & taquin', emoji: '😄',
@@ -61,13 +40,6 @@ export const PERSONAS = [
     peau: '#e0a878', cheveux: '#161619', cheveux2: '#0b0b0d',
     tenue: '#4a90d9', tenue2: '#3a72ad', iris: '#3a3f4c', accent: '#4a90d9',
     coiffe: 'ondules', sexe: 'h', voix: { pitch: 0.84, rate: 0.99 }, voixN: { lecture: 0.9, openai: 'verse' },
-  },
-  {
-    id: 'persona-victor', nom: 'Victor', style: 'Passionné & inspirant', emoji: '🎇',
-    tagline: 'Raconte la physique comme une grande aventure.',
-    peau: '#f3c9a0', cheveux: '#6b6f78', cheveux2: '#4a4e56',
-    tenue: '#7a5cc0', tenue2: '#634aa0', iris: '#4a5568', accent: '#7a5cc0',
-    coiffe: 'ondules', barbe: true, sexe: 'h', voix: { pitch: 0.78, rate: 0.94 }, voixN: { lecture: 0.83, openai: 'fable' },
   },
 ];
 
