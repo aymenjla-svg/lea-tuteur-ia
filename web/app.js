@@ -70,6 +70,25 @@ const ETAPE_PAR_FOCUS = {
   energie: { puissance: 4, tension: 2, intensite: 3, loi: 5 },
   signaux: { distance: 3, temps: 4, vitesse: 5 },
 };
+// Quand Léa PARLE d'une notion, elle « pointe » la bonne partie du schéma :
+// on repère un mot-clé dans sa réponse → on allume le focus correspondant.
+const MOTS_FOC = {
+  ohm: [[/résistance|ohm|frein|rétréci/i, 'R'], [/tension|volt|pile|pompe/i, 'U'], [/courant|intensité|amp[eè]re|débit/i, 'I'], [/loi d.ohm|u *= *r|relation/i, 'loi']],
+  vitesse: [[/distance|chemin|m[eè]tre|kilom/i, 'd'], [/temps|dur[eé]e|heure|seconde|horloge/i, 't'], [/vitesse|rapide|v *= *d/i, 'vitesse']],
+  poids: [[/masse|kilo|balance/i, 'masse'], [/poids|newton|force|attire/i, 'poids'], [/terre|lune|pesanteur|\bg\b/i, 'astre'], [/p *= *m|relation/i, 'relation']],
+  matiere: [[/volume|cm.?3|place/i, 'volume'], [/masse|gramme|balance/i, 'masse'], [/masse volumique|densit|rh[oô]|flotte|coule/i, 'relation']],
+  etats: [[/fusion|vaporis|solidif|liqu[eé]fa|changement|fond|bout/i, 'changements'], [/solide|liquide|gaz|[eé]tat/i, 'etats']],
+  energie: [[/puissance|watt|radiateur/i, 'puissance'], [/tension|volt/i, 'tension'], [/courant|intensité|amp[eè]re/i, 'intensite'], [/p *= *u|relation/i, 'loi']],
+  signaux: [[/temps|dur[eé]e|seconde/i, 'temps'], [/distance|m[eè]tre|kilom/i, 'distance'], [/vitesse|son|lumi[eè]re|340|300/i, 'vitesse']],
+};
+// Allume la partie du schéma correspondant au concept dont Léa parle.
+function souligneConcept(figId, texte) {
+  const svg = $('#figureHost')?.querySelector('svg');
+  if (!svg || figId !== figureRendue) return;
+  for (const [re, foc] of MOTS_FOC[figId] ?? []) {
+    if (re.test(texte)) { svg.setAttribute('data-foc', foc); return; }
+  }
+}
 // Bilan de séance (série d'exercices) : alimenté par etat.correction.
 let bilan = { total: 0, reussis: 0, erreurs: {} };
 
@@ -286,6 +305,9 @@ function appliquerMode() {
   $('#coursNav').hidden = !cours;
   $('#perdu').hidden = cours;
   $('#leverMain').hidden = false; // « lever la main » : cours ET exercices
+  // Micro « toujours prêt » : présent pendant le COURS si la voix est dispo
+  // (et masqué tant que le panneau de saisie est ouvert, pour ne pas se chevaucher).
+  syncParleLea();
   $('#revoirCours').hidden = cours || !COURS[moduleActuel?.id];
   if (cours) $('#rejouer').hidden = true;
   else { $('#form').hidden = false; $('#qcmZone').hidden = true; }
@@ -1069,6 +1091,7 @@ $('#leverMain').addEventListener('click', () => {
       ? 'Sur cet exercice : je t’explique la méthode, sans te donner la réponse.'
       : 'Sur le cours en physique. Léa peut aussi dessiner au tableau.';
   $('#mainModale').hidden = false;
+  syncParleLea();
   $('#mainQuestion').focus();
 });
 
@@ -1095,18 +1118,24 @@ async function envoyerQuestion(q) {
     mainOccupe = false;
     $('#mainEnvoyer').disabled = false;
   }
-  // Le tableau réagit en direct (l'élève le voit au-dessus du panneau).
-  if (mode === 'cours' && Array.isArray(rep.tableau) && rep.tableau.length) {
-    try { dessinerCroquis(rep.tableau); } catch { /* schéma absent */ }
+  // Le tableau réagit en direct : Léa dessine et POINTE la notion dont elle parle.
+  if (mode === 'cours') {
+    if (Array.isArray(rep.tableau) && rep.tableau.length) {
+      try { dessinerCroquis(rep.tableau); } catch { /* schéma absent */ }
+    }
+    souligneConcept(figureRendue, rep.reponse);
   }
-  // Sécurité : un message persistant et visible (ne pas se contenter de la voix).
+  // Sécurité : message persistant et visible (on ouvre le panneau au besoin).
   if (rep.alerte) {
+    $('#mainModale').hidden = false;
     ajouterFil('lea', rep.reponse, { alerte: true });
     if (rep.alerte.escalade_requise) ajouterFil('lea', '⚠️ Parles-en à un adulte de confiance dès que possible.', { alerte: true });
     expression = 'encouraging';
   }
-  parler(rep.reponse); // → sous-titres + voix + visage, exactement comme le cours
-  $('#mainQuestion').focus();
+  // Reprise naturelle : petite passerelle vers le cours (sauf alerte).
+  const bridge = mode === 'cours' && !rep.alerte ? ' On reprend le cours quand tu veux.' : '';
+  parler(rep.reponse + bridge); // → sous-titres + voix + visage, comme le cours
+  if (!$('#mainModale').hidden) $('#mainQuestion').focus();
 }
 
 $('#mainForm').addEventListener('submit', (e) => { e.preventDefault(); envoyerQuestion($('#mainQuestion').value); });
@@ -1141,11 +1170,48 @@ function ecouterMainMic() {
 if (voix.stt) {
   $('#mainMic').hidden = false;
   $('#mainMic').addEventListener('click', ecouterMainMic);
-  // Fermer la fenêtre coupe la dictée en cours.
+  // Fermer la fenêtre coupe la dictée en cours et rend le micro flottant.
   $('#mainModale').addEventListener('click', (e) => {
-    if (e.target.id === 'mainModale' || e.target.dataset.fermer === 'mainModale') mainMicHandle?.stop();
+    if (e.target.id === 'mainModale' || e.target.dataset.fermer === 'mainModale') {
+      mainMicHandle?.stop();
+      setTimeout(syncParleLea, 0);
+    }
   });
 }
+
+// Micro « toujours prêt » : l'élève parle à Léa pendant le cours, sans fenêtre.
+// La réponse arrive par le canal de Léa (voix + sous-titres + tableau).
+let parleActif = false;
+let parleHandle = null;
+let texteParle = '';
+// Le micro flottant n'apparaît qu'en cours, voix dispo, et panneau fermé.
+function syncParleLea() {
+  const b = $('#parleLea');
+  if (b) b.hidden = !(mode === 'cours' && voix.stt && $('#mainModale').hidden);
+}
+function majParleUI() { $('#parleLea')?.classList.toggle('ecoute', parleActif); }
+function ecouterParle() {
+  if (!voix.stt) return;
+  if (parleActif) { parleHandle?.stop(); return; }
+  voix.interrompre(); // barge-in : Léa se tait pour écouter
+  parleActif = true;
+  texteParle = '';
+  majParleUI();
+  expression = 'happy';
+  parleHandle = voix.ecouter({
+    onPartial: (txt) => { texteParle = txt; },
+    onFinal: (txt) => { texteParle = txt; },
+    onEnd: () => {
+      parleActif = false; majParleUI();
+      const v = texteParle.trim();
+      texteParle = '';
+      if (v) envoyerQuestion(v);
+    },
+    onErreur: () => { parleActif = false; majParleUI(); },
+  });
+  if (!parleHandle) { parleActif = false; majParleUI(); }
+}
+if (voix.stt) $('#parleLea').addEventListener('click', ecouterParle);
 
 // Démarrage : accessibilité + série du jour + interface adaptée à la classe.
 appliquerA11y();
