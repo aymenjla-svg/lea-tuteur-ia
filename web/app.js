@@ -20,6 +20,9 @@ import { poserQuestion, tuteurConfigure, testerTuteur } from './tuteur-llm.js';
 import {
   lireProfil, profilExiste, creerProfil, enregistrerVisite, memoriserModule, joursDepuis,
 } from './profil.js';
+import {
+  salutRetour, reprise, introCours, clotureCours, felicite, courage, auRevoir,
+} from './humain.js';
 
 const $ = (s) => document.querySelector(s);
 const reduireMouvement = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -288,29 +291,38 @@ function construireAccueil() {
   afficherAccueilPerso();
 }
 
-// Accueil personnalisé : Léa reconnaît l'élève et l'accueille chaleureusement.
+// Accueil personnalisé : Léa reconnaît l'élève, le salue (voix + texte), varié.
+let salutSession = null; // figé pour la session (ne rejoue pas à chaque rendu)
+let repriseSession = null;
+let salutDit = false;
 function afficherAccueilPerso() {
   const p = lireProfil();
   const salut = $('#accueilSalut');
   const h = $('#heroH');
   if (!p) { if (salut) salut.hidden = true; return; }
+  if (salutSession === null) {
+    salutSession = salutRetour(p.prenom);
+    repriseSession = reprise(p.dernierModuleTitre);
+  }
   const heure = new Date().getHours();
   const bonjour = heure < 6 ? 'Bonne nuit' : heure < 18 ? 'Bonjour' : 'Bonsoir';
   if (h) h.innerHTML = `${bonjour} ${p.prenom}, prêt·e à continuer&nbsp;?`;
-  const j = joursDepuis(p);
-  let hi = `Rebonjour ${p.prenom} 👋`;
-  if ((p.visites || 1) <= 1) hi = `Bienvenue dans ton école, ${p.prenom} 🎉`;
-  else if (j === 0) hi = `Re ${p.prenom} ! Déjà de retour 💪`;
-  else if (j === 1) hi = `Rebonjour ${p.prenom} 👋 Contente de te revoir !`;
-  else if (j >= 2) hi = `Rebonjour ${p.prenom} 👋 Ça faisait un moment, super de te revoir !`;
   const s = serie?.() ?? 0;
   const flamme = s >= 2 ? ` · 🔥 ${s} jours de suite` : '';
-  const reprise = p.dernierModuleTitre ? `Tu es prêt·e à reprendre « ${p.dernierModuleTitre} » ?` : 'On continue l’aventure ?';
   if (salut) {
     salut.hidden = false;
-    salut.innerHTML = `<span class="salut-hi">${hi}${flamme}</span><span class="salut-suite">${reprise}</span>`;
+    salut.innerHTML = `<span class="salut-hi">${salutSession}${flamme}</span><span class="salut-suite">${repriseSession}</span>`;
   }
 }
+
+// La voix ne peut démarrer qu'après un geste : au 1er clic, Léa te salue.
+function direSalutRetour() {
+  if (salutDit || !profilExiste() || !voix.tts || !salutSession) return;
+  salutDit = true;
+  voixActive = true; majVoixUI();
+  voix.parler(`${salutSession} ${repriseSession}`, { params: { ...persona?.voix, sexe: persona?.sexe } });
+}
+window.addEventListener('pointerdown', direSalutRetour, { once: true });
 
 /* --- Accueil interactif « l'École de Léa » (tout premier passage) --------- */
 
@@ -441,7 +453,23 @@ const CHIPS_PAR_UNITE = {
 function ouvrirCours(m) {
   mode = 'cours';
   const c = COURS[m.id];
-  coursScenes = c?.scenes ?? [];
+  const scenes = c?.scenes ?? [];
+  const prenom = lireProfil()?.prenom;
+  // On encadre le cours de moments HUMAINS : un accueil parlé au début, une
+  // clôture chaleureuse à la fin — comme un vrai prof, pas un enchaînement sec.
+  const fig0 = scenes[0]?.figure ?? c?.figure;
+  const figN = scenes[scenes.length - 1]?.figure ?? c?.figure;
+  const intro = {
+    titre: 'On se retrouve !', focus: '', stage: 0, figure: fig0, humain: true,
+    points: ['Content de te voir 😊', 'Prends ton temps, on est ensemble.'],
+    narration: introCours(prenom, m.titre),
+  };
+  const cloture = {
+    titre: 'Bravo, c’est bouclé !', focus: '', stage: 99, figure: figN, humain: true,
+    points: ['Tu as tout suivi 👏', 'On peut s’entraîner, ou revoir un point.'],
+    narration: clotureCours(prenom, m.titre),
+  };
+  coursScenes = scenes.length ? [intro, ...scenes, cloture] : scenes;
   coursFigureId = c?.figure ?? '';
   sceneIdx = 0;
   figureRendue = ''; // forcer un tableau vierge qui se (re)construira
@@ -629,12 +657,12 @@ function repondreQcm(idx) {
     btn?.classList.add('juste');
     effacerCroquis();
     majNavCours();
-    parler(`Exact ! ${opt.retour ?? ''}`);
+    parler(`${felicite(lireProfil()?.prenom)} ${opt.retour ?? ''}`);
   } else {
     expression = 'encouraging';
     btn?.classList.add('faux');
     entourerRelation('regarde le schéma');
-    parler(opt.retour ?? 'Pas tout à fait, réessaie.');
+    parler(`${courage(lireProfil()?.prenom)} ${opt.retour ?? ''}`);
   }
 }
 
@@ -655,7 +683,8 @@ function repondreCheckpoint(texte) {
     expression = 'encouraging';
     entourerRelation();
   }
-  parler(r.message);
+  const n = lireProfil()?.prenom;
+  parler(`${r.correct ? felicite(n) : courage(n)} ${r.message}`);
 }
 
 function majNavCours() {
@@ -804,6 +833,7 @@ function afficherBilan() {
   $('#bilan').hidden = false;
   $('#form').hidden = true;
   $('#unites').hidden = true;
+  parler(auRevoir(lireProfil()?.prenom)); // Léa te dit au revoir, comme un humain
 }
 
 function rendre(etat) {
