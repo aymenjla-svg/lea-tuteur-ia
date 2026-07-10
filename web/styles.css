@@ -474,9 +474,11 @@ body::after {
 /* « Lever la main » = panneau ancré en bas, PAS une fenêtre qui recouvre tout :
    l'élève voit le tableau au-dessus réagir en direct pendant qu'il discute. */
 #mainModale { align-items: flex-end; justify-content: center; padding: 0 10px 10px; background: transparent; backdrop-filter: none; pointer-events: none; }
-#mainModale .modale-carte { pointer-events: auto; max-width: 560px; max-height: 46vh; padding: 16px 18px; box-shadow: 0 -12px 40px rgba(3, 12, 26, 0.6); animation: sheetUp 0.25s ease; }
-#mainModale h2 { margin-bottom: 8px; font-size: 1.1rem; }
-#mainModale .main-fil { max-height: 26vh; }
+#mainModale .modale-carte { pointer-events: auto; max-width: 560px; max-height: 42vh; padding: 12px 14px; box-shadow: 0 -12px 40px rgba(3, 12, 26, 0.6); animation: sheetUp 0.25s ease; }
+#mainModale h2 { display: none; }                    /* barre légère, pas une fenêtre */
+#mainModale .fb-note { margin: 0 0 8px; }
+#mainModale .main-fil { max-height: 22vh; margin: 0 0 8px; }
+#mainModale .modale-fermer { margin-top: 8px; padding: 8px; font-size: 0.85rem; background: var(--panel); color: var(--txt2); }
 @keyframes sheetUp { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
 
 .actions-sec { display: flex; gap: 10px; justify-content: center; margin-top: 12px; flex-wrap: wrap; }

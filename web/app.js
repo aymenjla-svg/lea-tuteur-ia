@@ -1073,34 +1073,40 @@ $('#leverMain').addEventListener('click', () => {
 });
 
 let mainOccupe = false;
+// L'IA répond par le MÊME canal que le cours : la voix de Léa + les sous-titres
+// + son visage + le tableau. Aucune « bulle de chatbot » : on ne doit pas
+// sentir la frontière script / IA. Le fil ne sert qu'aux alertes de sécurité.
 async function envoyerQuestion(q) {
   q = String(q ?? '').trim();
   if (!q || mainOccupe) return;
   $('#mainQuestion').value = '';
-  ajouterFil('eleve', q);
-  const attente = ajouterFil('lea', '…');
+  $('#mainFil').innerHTML = '';
+  voix.interrompre(); // barge-in : Léa se tait pour écouter/répondre
   mainOccupe = true;
   $('#mainEnvoyer').disabled = true;
+  expression = 'happy';
+  $('#soustitre').textContent = 'Hmm, bonne question… laisse-moi réfléchir.';
   let rep;
   try {
     rep = await poserQuestion(q, contexteTuteur());
   } catch {
-    rep = { reponse: 'Je n’ai pas pu répondre. Reprenons le cours ensemble ?', tableau: [], dans_programme: true };
+    rep = { reponse: 'Je n’ai pas pu répondre là. On reprend le cours ensemble ?', tableau: [], dans_programme: true };
   } finally {
     mainOccupe = false;
     $('#mainEnvoyer').disabled = false;
   }
-  attente.remove();
-  ajouterFil('lea', rep.reponse, { alerte: !!rep.alerte, horsprog: rep.dans_programme === false });
-  // Léa dessine au tableau (derrière la fenêtre) : on le signale et ça persiste.
+  // Le tableau réagit en direct (l'élève le voit au-dessus du panneau).
   if (mode === 'cours' && Array.isArray(rep.tableau) && rep.tableau.length) {
-    try { dessinerCroquis(rep.tableau); ajouterFil('lea', '✏️ Regarde le tableau au-dessus, je te le dessine.'); } catch { /* schéma absent */ }
+    try { dessinerCroquis(rep.tableau); } catch { /* schéma absent */ }
   }
-  if (rep.alerte?.escalade_requise) {
-    ajouterFil('lea', '⚠️ Parles-en à un adulte de confiance dès que possible.', { alerte: true });
+  // Sécurité : un message persistant et visible (ne pas se contenter de la voix).
+  if (rep.alerte) {
+    ajouterFil('lea', rep.reponse, { alerte: true });
+    if (rep.alerte.escalade_requise) ajouterFil('lea', '⚠️ Parles-en à un adulte de confiance dès que possible.', { alerte: true });
+    expression = 'encouraging';
   }
-  expression = rep.alerte ? 'encouraging' : 'happy';
-  parler(rep.reponse);
+  parler(rep.reponse); // → sous-titres + voix + visage, exactement comme le cours
+  $('#mainQuestion').focus();
 }
 
 $('#mainForm').addEventListener('submit', (e) => { e.preventDefault(); envoyerQuestion($('#mainQuestion').value); });
