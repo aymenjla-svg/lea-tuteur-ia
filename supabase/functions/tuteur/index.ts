@@ -117,9 +117,51 @@ function filtrerSortie(texte: string): string {
     .replace(/\bc.est (nul|débile|idiot)\b/gi, 'ce n’est pas encore ça');
 }
 
+// --- RAG (optionnel) : passages du cours les plus proches de la question ------
+// Activé si RAG_ENABLED=1 + SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY +
+// OPENAI_API_KEY. Sinon on garde l'ancrage fourni par le client (points_vus).
+async function ragExtraits(question: string): Promise<string[]> {
+  if (Deno.env.get('RAG_ENABLED') !== '1') return [];
+  const url = Deno.env.get('SUPABASE_URL');
+  const srv = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+  const okey = Deno.env.get('OPENAI_API_KEY');
+  if (!url || !srv || !okey) return [];
+  const model = Deno.env.get('EMBED_MODEL') ?? 'text-embedding-3-small';
+  const dim = Number(Deno.env.get('EMBED_DIM') ?? '768');
+  try {
+    // 1) encoder la question (mêmes dimensions que la colonne vector).
+    const er = await fetch('https://api.openai.com/v1/embeddings', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', authorization: `Bearer ${okey}` },
+      body: JSON.stringify({ model, input: question, dimensions: dim }),
+    });
+    if (!er.ok) return [];
+    const emb = (await er.json()).data?.[0]?.embedding;
+    if (!Array.isArray(emb)) return [];
+    // 2) kNN via PostgREST (rpc match_embeddings), service-role.
+    const rr = await fetch(`${url}/rest/v1/rpc/match_embeddings`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', apikey: srv, authorization: `Bearer ${srv}` },
+      body: JSON.stringify({
+        query_embedding: `[${emb.join(',')}]`,
+        match_count: 4,
+        p_tenant: Deno.env.get('TENANT_ID') ?? null,
+      }),
+    });
+    if (!rr.ok) return [];
+    const rows = await rr.json();
+    return Array.isArray(rows) ? rows.map((r: any) => String(r.texte)).slice(0, 4) : [];
+  } catch {
+    return [];
+  }
+}
+
 // --- Système (prompt) ---------------------------------------------------------
 
-function systeme(ctx: Contexte): string {
+function systeme(ctx: Contexte, extraits: string[] = []): string {
+  const rag = extraits.length
+    ? `\n\nExtraits du cours (source de vérité — appuie-toi dessus en priorité) :\n"""\n${extraits.join('\n---\n')}\n"""`
+    : '';
   const ancrage = ctx.points_vus?.length
     ? `\n\nCe que l'élève vient de voir dans « ${ctx.notion ?? ctx.module ?? ''} » :\n- ${ctx.points_vus.join('\n- ')}` +
       (ctx.relation ? `\nRelation en jeu : ${ctx.relation}.` : '')
@@ -136,7 +178,7 @@ Règles :
 - Ne jamais valider une idée fausse ; corrige avec douceur.
 - Ne jamais humilier ni juger. Encourage toujours.
 - Sécurité : jamais d’expérience dangereuse (secteur 230 V, produits chimiques, feu…). Rappelle qu’on n’expérimente qu’avec des piles et sous la supervision d’un adulte.
-- Reste bref : 2 à 5 phrases. Pas de pavé.${ancrage}${spoiler}
+- Reste bref : 2 à 5 phrases. Pas de pavé.${rag}${ancrage}${spoiler}
 
 Tu PEUX dessiner au tableau pour illustrer, en renvoyant des commandes de dessin. Le tableau est un repère SVG de 320 (largeur) × 200 (hauteur), origine en haut à gauche. Primitives autorisées :
 - {"type":"fleche","d":"M x1 y1 L x2 y2","len":<longueur approx>}
@@ -267,10 +309,11 @@ Deno.serve(async (req) => {
     });
   }
 
-  // 2) Appel LLM borné au programme.
+  // 2) Appel LLM borné au programme (avec ancrage RAG si activé).
   let brut: string;
   try {
-    brut = await appelLLM(systeme(ctx), question);
+    const extraits = await ragExtraits(question);
+    brut = await appelLLM(systeme(ctx, extraits), question);
   } catch (e) {
     return json(
       {

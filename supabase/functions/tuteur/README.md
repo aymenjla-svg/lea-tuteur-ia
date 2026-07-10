@@ -56,8 +56,35 @@ Réponse :
 Les commandes `tableau` utilisent le repère du schéma (320×200) et les
 primitives de la couche croquis (`fleche`/`trait`/`cercle`/`ellipse`/`texte`).
 
-## Points d'extension (non requis pour tourner)
+## Ancrage RAG (optionnel, pgvector)
 
-- Journaliser `events` / `safety_alerts` (tables §5) — brancher le service-role.
-- Ancrage RAG (pgvector, phase 2) — enrichir le `systeme()` avec les passages
-  du cours les plus proches de la question.
+Pour ancrer les réponses sur le texte exact du cours (au-delà des `points_vus`
+envoyés par le client), on active la recherche sémantique.
+
+1. Appliquer les migrations (dont `..._match_embeddings.sql`) :
+   ```bash
+   supabase db push
+   ```
+2. Indexer le contenu des cours (à relancer quand `web/cours.js` change) :
+   ```bash
+   SUPABASE_URL=https://<projet>.supabase.co \
+   SUPABASE_SERVICE_ROLE_KEY=... OPENAI_API_KEY=sk-... TENANT_ID=<tenant> \
+   node scripts/indexer-cours.mjs
+   ```
+3. Activer le RAG côté fonction Edge :
+   ```bash
+   supabase secrets set RAG_ENABLED=1
+   supabase secrets set SUPABASE_URL=https://<projet>.supabase.co
+   supabase secrets set SUPABASE_SERVICE_ROLE_KEY=...
+   supabase secrets set OPENAI_API_KEY=sk-...   # embeddings (768-d)
+   supabase secrets set TENANT_ID=<tenant>       # optionnel (filtre)
+   ```
+
+Les embeddings utilisent OpenAI `text-embedding-3-small` en **768 dimensions**
+(pour matcher `vector(768)`), indépendamment du provider de chat. Si le RAG
+n'est pas activé, la fonction retombe sur l'ancrage `points_vus` du client.
+
+## Points d'extension restants
+
+- Journaliser `events` / `safety_alerts` (tables §5) via le service-role
+  (voir la fonction `journaliser` ci-dessous une fois branchée).
