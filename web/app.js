@@ -224,9 +224,13 @@ const DECOR_SALLE = {
 };
 function decorSalle(id) {
   const e = DECOR_SALLE[id] ?? [];
-  const poster = (emo, cls) => (emo ? `<span class="poster ${cls}">${emo}</span>` : '');
-  return `<span class="fanion"></span><span class="mur-motif">${decorMatiere(id)}</span>` +
-    poster(e[0], 'p1') + poster(e[1], 'p2') + poster(e[2], 'p3');
+  const obj = (emo, cls) => (emo ? `<span class="obj ${cls}">${emo}</span>` : '');
+  return `<span class="fanion"></span>` +
+    `<span class="cadre c1"></span><span class="cadre c2"></span>` +
+    obj('🕐', 'horloge') +
+    obj(e[0], 'p1') + obj(e[1], 'p2') +
+    `<span class="etagere"><span class="mur-motif">${decorMatiere(id)}</span></span>` +
+    obj('🪴', 'plante') + obj(e[2], 'p3');
 }
 
 function construireModules() {
@@ -439,7 +443,7 @@ function ouvrirModule(m) {
   $('#scene').style.setProperty('--c', m.couleur);
   $('#salleDeco').innerHTML = decorSalle(m.id);
   theme(m.couleur);
-  $('#avatarHost').innerHTML = avatarSVG(persona);
+  $('#avatarHost').innerHTML = avatarSVG(persona, '', { entier: true }); // prof en pied
   $('#hudTitre').textContent = `${persona.nom} · ${m.titre}`;
   $('#accueil').hidden = true;
   $('#lecon').hidden = false;

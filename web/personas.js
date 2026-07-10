@@ -120,8 +120,9 @@ function cheveuxAvant(p, s) {
  * #oeilD #irisG #irisD #sourcilG #sourcilD #bouche #sourire #joueG #joueD
  * #goutte #etincelles #bulle. Ancrages : yeux à y≈112, bouche à y≈146.
  */
-export function avatarSVG(p, uid = '') {
+export function avatarSVG(p, uid = '', opts = {}) {
   const s = uid ? `-${uid}` : '';
+  const entier = !!opts.entier; // corps complet (debout, avec les pieds)
   // Un œil manga complet, paramétré par le centre x (miroir pour l'autre œil).
   const oeil = (cx, dir) => {
     const o = -dir; // sens « vers l'extérieur » : gauche→-1, droite→+1
@@ -159,8 +160,23 @@ export function avatarSVG(p, uid = '') {
          <path d="M92 114 h16" fill="none"/><path d="M52 110 l-10 -3" fill="none"/><path d="M148 110 l10 -3" fill="none"/>
        </g>`
     : '';
+  // Bas du corps (uniquement en mode « entier ») : debout, blouse + pantalon +
+  // chaussures, pour voir le prof en pied.
+  const basCorps = entier ? `
+    <g id="jambes${s}">
+      <path d="M78 346 L74 432 Q74 446 88 446 L95 446 Q100 446 100 433 L100 368 L100 433 Q100 446 105 446 L112 446 Q126 446 126 432 L122 346 Z" fill="#2b3a56"/>
+      <ellipse cx="87" cy="450" rx="18" ry="9" fill="#20242c"/>
+      <ellipse cx="113" cy="450" rx="18" ry="9" fill="#20242c"/>
+      <ellipse cx="100" cy="459" rx="48" ry="8" fill="#00000030"/>
+    </g>
+    <path d="M34 240 Q32 322 56 366 Q100 382 144 366 Q168 322 166 240 Z" fill="url(#coat${s})"/>
+    <path d="M84 238 Q84 274 100 282 Q116 274 116 238 Z" fill="${p.tenue}"/>
+    <path d="M100 282 L95 366 M100 282 L105 366" stroke="#00000010" stroke-width="1.5" fill="none"/>
+    <circle cx="100" cy="302" r="2.6" fill="#c9d2e0"/><circle cx="100" cy="324" r="2.6" fill="#c9d2e0"/><circle cx="100" cy="346" r="2.6" fill="#c9d2e0"/>
+    <path d="M56 332 h22 v20 h-22 Z" fill="#00000010"/><path d="M124 332 h22 v20 h-22 Z" fill="#00000010"/>
+  ` : '';
   return `
-<svg viewBox="0 0 200 240" class="visage" role="img" aria-label="Avatar de ${p.nom}">
+<svg viewBox="0 0 200 ${entier ? 468 : 240}" class="visage${entier ? ' visage-entier' : ''}" role="img" aria-label="Avatar de ${p.nom}">
   <defs>
     <radialGradient id="joueGrad${s}" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#ff8fa3" stop-opacity="0.9"/>
@@ -202,6 +218,7 @@ export function avatarSVG(p, uid = '') {
     <path d="M170 240 Q167 200 128 185 L102 214 L118 240 Z" fill="url(#coat${s})"/>
     <path d="M72 185 L98 214 L92 216 L70 190 Z" fill="#00000010"/>
     <path d="M128 185 L102 214 L108 216 L130 190 Z" fill="#00000010"/>
+    ${basCorps}
   </g>
 
   <!-- Tête (inclinaison/rebond via #visageG) -->

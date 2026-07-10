@@ -349,18 +349,24 @@ body::after {
    est encadré à l'intérieur, avec de la déco autour, en lien avec le cours. */
 .scene {
   --c: var(--accent);
-  position: relative; min-height: 300px;
+  position: relative; min-height: 320px;
   background:
     radial-gradient(120% 70% at 50% 118%, color-mix(in srgb, var(--c) 20%, transparent), transparent 62%),
     linear-gradient(180deg, #1a2a46, #131f38);
   border: 2px solid var(--border);
   border-radius: var(--rad-lg);
-  padding: 52px 26px 0;
+  padding: 52px 26px 34px;
   overflow: hidden;
   box-shadow: 0 14px 40px rgba(6, 20, 48, 0.35);
 }
+/* Sol de la salle : bande plus claire en bas où se tient le prof. */
+.scene::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 40px; z-index: 0;
+  background: linear-gradient(180deg, transparent, color-mix(in srgb, var(--c) 20%, #0a1526));
+  border-top: 1px solid color-mix(in srgb, var(--c) 30%, transparent);
+}
 .tableau {
-  position: relative; z-index: 2; height: 100%; min-height: 216px;
+  position: relative; z-index: 2; height: 100%; min-height: 206px;
   display: flex; flex-direction: column;
   background: linear-gradient(180deg, #14483f, #103a35);
   border: 3px solid rgba(255, 255, 255, 0.85);
@@ -368,18 +374,23 @@ body::after {
   padding: 14px 14px 10px;
   box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
 }
-/* Déco de salle : posters/objets thématiques dans les marges autour du tableau */
+/* Déco de salle : objets/posters thématiques dans les marges autour du tableau */
 .salle-deco { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.salle-deco .mur-motif { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); width: 130px; height: 38px; color: #fff; opacity: 0.14; }
-.salle-deco .mur-motif svg { width: 100%; height: 100%; }
-.salle-deco .poster { position: absolute; display: grid; place-items: center; width: 36px; height: 36px; font-size: 1.15rem;
-  background: color-mix(in srgb, var(--c) 26%, rgba(10, 26, 42, 0.55)); border: 1.5px solid color-mix(in srgb, var(--c) 55%, var(--border));
-  border-radius: 10px; box-shadow: 0 3px 9px rgba(0, 0, 0, 0.32); }
-.salle-deco .p1 { top: 9px; left: 12px; transform: rotate(-6deg); }
-.salle-deco .p2 { top: 9px; right: 12px; transform: rotate(6deg); }
-.salle-deco .p3 { top: 10px; left: 58px; transform: rotate(-3deg); }
 .salle-deco .fanion { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--c), transparent); opacity: 0.6; }
-@media (max-width: 480px) { .scene { padding: 48px 16px 0; } .salle-deco .p3 { display: none; } }
+.salle-deco .obj { position: absolute; font-size: 1.2rem; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
+.salle-deco .p1 { top: 9px; right: 46px; }
+.salle-deco .p2 { top: 9px; right: 14px; }
+.salle-deco .horloge { top: 8px; left: 50%; transform: translateX(-50%); font-size: 1.35rem; }
+.salle-deco .plante { bottom: 3px; left: 8px; font-size: 1.5rem; }
+.salle-deco .p3 { bottom: 5px; left: 46px; font-size: 1.1rem; }
+.salle-deco .cadre { position: absolute; top: 12px; width: 26px; height: 20px; border: 2px solid color-mix(in srgb, var(--c) 55%, #caa46a);
+  background: color-mix(in srgb, var(--c) 22%, rgba(10, 26, 42, 0.5)); border-radius: 3px; }
+.salle-deco .c1 { left: 12px; transform: rotate(-4deg); }
+.salle-deco .c2 { left: 44px; transform: rotate(3deg); }
+.salle-deco .etagere { position: absolute; top: 7px; left: 50%; transform: translateX(-50%); width: 120px; height: 34px; }
+.salle-deco .mur-motif { width: 100%; height: 100%; color: #fff; opacity: 0.13; display: block; }
+.salle-deco .mur-motif svg { width: 100%; height: 100%; }
+@media (max-width: 480px) { .scene { padding: 48px 14px 32px; } .salle-deco .c2, .salle-deco .p3 { display: none; } }
 .tableau-formule { align-self: flex-end; color: #a8f0da; font-family: var(--round); font-size: 1rem; }
 .tableau-formule:empty { display: none; }
 .tableau-texte {
@@ -389,8 +400,14 @@ body::after {
   font-family: var(--round);
   font-size: clamp(1.1rem, 4vw, 1.6rem); font-weight: 500; line-height: 1.45;
 }
-.avatar-host { position: absolute; right: 4px; bottom: 0; }
+.avatar-host { position: absolute; right: 2px; bottom: 0; z-index: 3; pointer-events: none; }
 .visage { width: 138px; height: 166px; display: block; }
+/* Prof en pied (dans le cours) : au-dessus du tableau, debout sur le sol,
+   avec un léger balancement « vivant ». */
+.visage-entier { width: auto; height: 252px; transform-origin: 50% 100%; animation: profIdle 4.6s ease-in-out infinite; }
+@keyframes profIdle { 0%, 100% { transform: rotate(-1deg) translateY(0); } 50% { transform: rotate(1.4deg) translateY(-3px); } }
+@media (max-width: 480px) { .visage-entier { height: 216px; } }
+@media (prefers-reduced-motion: reduce) { .visage-entier { animation: none; } }
 
 /* ---- Cours : tableau animé (lecteur de scènes) ---- */
 .cours-titre { font-family: var(--round); font-weight: 700; font-size: clamp(1.05rem, 3.6vw, 1.4rem); color: #eafff8; padding-right: 120px; }
