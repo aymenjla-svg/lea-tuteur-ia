@@ -945,7 +945,26 @@ function majA11yUI() {
     el.querySelector('.etat').textContent = on ? 'Oui' : 'Non';
   }
 }
-$('#a11yBtn').addEventListener('click', () => { majA11yUI(); $('#a11yModale').hidden = false; });
+// Config du tuteur IA (« lever la main ») : coller l'URL de la fonction Edge
+// sans passer par la console. Stocké sur l'appareil (localStorage).
+function majTuteurUI() {
+  let url = '';
+  try { url = localStorage.getItem('lea.tuteur.url') || ''; } catch { /* indispo */ }
+  $('#tuteurUrl').value = url;
+  $('#tuteurEtat').textContent = tuteurConfigure()
+    ? '✅ Tuteur connecté — « lever la main » répond en direct.'
+    : 'Non connecté : « lever la main » fonctionne en mode hors-ligne.';
+}
+$('#tuteurSave').addEventListener('click', () => {
+  const u = $('#tuteurUrl').value.trim();
+  try {
+    if (u) localStorage.setItem('lea.tuteur.url', u);
+    else localStorage.removeItem('lea.tuteur.url');
+  } catch { /* indispo */ }
+  majTuteurUI();
+});
+
+$('#a11yBtn').addEventListener('click', () => { majA11yUI(); majTuteurUI(); $('#a11yModale').hidden = false; });
 $('#segTaille').addEventListener('click', (e) => {
   const b = e.target.closest('button');
   if (!b) return;
@@ -1052,11 +1071,9 @@ $('#leverMain').addEventListener('click', () => {
 });
 
 let mainOccupe = false;
-$('#mainForm').addEventListener('submit', async (e) => {
-  e.preventDefault();
-  if (mainOccupe) return;
-  const q = $('#mainQuestion').value.trim();
-  if (!q) return;
+async function envoyerQuestion(q) {
+  q = String(q ?? '').trim();
+  if (!q || mainOccupe) return;
   $('#mainQuestion').value = '';
   ajouterFil('eleve', q);
   const attente = ajouterFil('lea', '…');
@@ -1082,7 +1099,45 @@ $('#mainForm').addEventListener('submit', async (e) => {
   }
   expression = rep.alerte ? 'encouraging' : 'happy';
   parler(rep.reponse);
-});
+}
+
+$('#mainForm').addEventListener('submit', (e) => { e.preventDefault(); envoyerQuestion($('#mainQuestion').value); });
+
+// Poser sa question À LA VOIX : dictée dans le champ puis envoi automatique.
+let mainMicActif = false;
+let mainMicHandle = null;
+function majMainMicUI() {
+  const b = $('#mainMic');
+  if (!b) return;
+  b.classList.toggle('actif', mainMicActif);
+  b.textContent = mainMicActif ? '●' : '🎤';
+}
+function ecouterMainMic() {
+  if (!voix.stt) return;
+  if (mainMicActif) { mainMicHandle?.stop(); return; }
+  voix.interrompre();
+  mainMicActif = true;
+  majMainMicUI();
+  mainMicHandle = voix.ecouter({
+    onPartial: (txt) => { $('#mainQuestion').value = txt; },
+    onFinal: (txt) => { $('#mainQuestion').value = txt; },
+    onEnd: () => {
+      mainMicActif = false; majMainMicUI();
+      const v = $('#mainQuestion').value.trim();
+      if (v) envoyerQuestion(v);
+    },
+    onErreur: () => { mainMicActif = false; majMainMicUI(); },
+  });
+  if (!mainMicHandle) { mainMicActif = false; majMainMicUI(); }
+}
+if (voix.stt) {
+  $('#mainMic').hidden = false;
+  $('#mainMic').addEventListener('click', ecouterMainMic);
+  // Fermer la fenêtre coupe la dictée en cours.
+  $('#mainModale').addEventListener('click', (e) => {
+    if (e.target.id === 'mainModale' || e.target.dataset.fermer === 'mainModale') mainMicHandle?.stop();
+  });
+}
 
 // Démarrage : accessibilité + série du jour + interface adaptée à la classe.
 appliquerA11y();

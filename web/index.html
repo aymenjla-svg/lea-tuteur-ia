@@ -152,6 +152,12 @@
           <a href="guide.html">Guide de test</a>
           <button type="button" id="ouvrirAvis">Donner mon avis</button>
         </div>
+        <div class="a11y-lib">Tuteur IA (« lever la main »)</div>
+        <div class="tuteur-cfg">
+          <input id="tuteurUrl" type="url" inputmode="url" placeholder="https://…functions.supabase.co/tuteur" aria-label="URL de la fonction tuteur" />
+          <button type="button" id="tuteurSave">Connecter</button>
+        </div>
+        <p id="tuteurEtat" class="fb-note"></p>
         <button type="button" class="modale-fermer" data-fermer="a11yModale">Fermer</button>
       </div>
     </div>
@@ -178,6 +184,7 @@
         <div id="mainFil" class="main-fil" aria-live="polite"></div>
         <form id="mainForm" class="main-saisie" autocomplete="off">
           <input id="mainQuestion" type="text" placeholder="Ta question…" aria-label="Ta question" />
+          <button id="mainMic" type="button" class="micro-btn" hidden title="Poser à la voix" aria-label="Poser ta question à la voix">🎤</button>
           <button type="submit" id="mainEnvoyer">Demander</button>
         </form>
         <button type="button" class="modale-fermer" data-fermer="mainModale">Fermer</button>

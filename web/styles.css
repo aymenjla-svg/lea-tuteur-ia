@@ -453,6 +453,9 @@ body::after {
 .modale-fermer { margin-top: 16px; width: 100%; font-family: var(--round); font-weight: 700; padding: 12px; border: none; border-radius: var(--rad); background: linear-gradient(120deg, var(--or), #ffd166); color: #4a2f00; cursor: pointer; }
 .fb-zone { width: 100%; min-height: 110px; border-radius: 12px; border: 1.5px solid var(--border); background: rgba(10, 26, 42, 0.55); color: #fff; font-family: var(--sans); padding: 11px 13px; font-size: 0.95rem; resize: vertical; }
 .fb-note { font-size: 0.82rem; color: var(--txt2); margin: 8px 0 0; }
+.tuteur-cfg { display: flex; gap: 8px; margin: 6px 0 2px; }
+.tuteur-cfg input { flex: 1; min-width: 0; border-radius: 12px; border: 1.5px solid var(--border); background: rgba(10, 26, 42, 0.55); color: #fff; font-family: var(--sans); padding: 10px 12px; font-size: 0.9rem; }
+.tuteur-cfg button { font-family: var(--round); font-weight: 700; border: none; border-radius: 12px; padding: 10px 14px; background: linear-gradient(120deg, var(--or), #ffd166); color: #4a2f00; cursor: pointer; white-space: nowrap; }
 
 /* « Lever la main » : fil de discussion + saisie */
 .modale-main { max-width: 470px; }
