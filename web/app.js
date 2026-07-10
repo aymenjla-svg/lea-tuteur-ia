@@ -416,7 +416,7 @@ function direSalutRetour() {
   if (salutDit || !profilExiste() || !voix.tts || !salutSession) return;
   salutDit = true;
   voixActive = true; majVoixUI();
-  voix.parler(genrer(`${salutSession} ${repriseSession}`, lireProfil()?.sexe), { params: paramsVoix() });
+  voix.parler(pourLaVoix(genrer(`${salutSession} ${repriseSession}`, lireProfil()?.sexe)), { params: paramsVoix() });
 }
 window.addEventListener('pointerdown', direSalutRetour, { once: true });
 
@@ -429,7 +429,7 @@ let onbStep = 0;
 function onbDire(texte) {
   const t = genrer(texte, onb.sexe);
   $('#onbMsg').textContent = t;
-  if (voix.tts) { voixActive = true; voix.parler(t, { params: paramsVoix() }); }
+  if (voix.tts) { voixActive = true; voix.parler(pourLaVoix(t), { params: paramsVoix() }); }
 }
 
 function onbEtapes() {
@@ -1074,9 +1074,51 @@ function paramsVoix() {
   };
 }
 
+// Unités & symboles → mots, POUR LA VOIX seulement (le sous-titre garde « m/s »).
+// Évite que la synthèse épelle « M S » au lieu de « mètres par seconde ».
+const UNITES_VOIX = {
+  km: 'kilomètres', hm: 'hectomètres', dam: 'décamètres', dm: 'décimètres', cm: 'centimètres', mm: 'millimètres', µm: 'micromètres', m: 'mètres',
+  kg: 'kilogrammes', mg: 'milligrammes', µg: 'microgrammes', g: 'grammes', t: 'tonnes',
+  kL: 'kilolitres', dL: 'décilitres', cL: 'centilitres', mL: 'millilitres', ml: 'millilitres', L: 'litres', l: 'litres',
+  min: 'minutes', ms: 'millisecondes', h: 'heures', s: 'secondes',
+  kN: 'kilonewtons', N: 'newtons', kW: 'kilowatts', mW: 'milliwatts', W: 'watts',
+  kV: 'kilovolts', mV: 'millivolts', V: 'volts', mA: 'milliampères', A: 'ampères',
+  kJ: 'kilojoules', J: 'joules', kHz: 'kilohertz', Hz: 'hertz', 'Ω': 'ohms',
+};
+function pourLaVoix(t) {
+  if (!t) return t;
+  let s = String(t);
+  // 1) Unités composées (avant les simples) — toujours parlées pareil.
+  const composes = [
+    [/\bkm\s*\/\s*h(?![\p{L}])/giu, ' kilomètres par heure'],
+    [/\bm\s*\/\s*s\s*(?:²|2)(?![\p{L}])/giu, ' mètres par seconde carré'],
+    [/\bm\s*\/\s*s(?![\p{L}])/giu, ' mètres par seconde'],
+    [/\bg\s*\/\s*cm\s*(?:³|3)(?![\p{L}])/giu, ' grammes par centimètre cube'],
+    [/\bkg\s*\/\s*m\s*(?:³|3)(?![\p{L}])/giu, ' kilogrammes par mètre cube'],
+    [/\bkg\s*\/\s*L(?![\p{L}])/giu, ' kilogrammes par litre'],
+    [/\bN\s*\/\s*kg(?![\p{L}])/giu, ' newtons par kilogramme'],
+    [/\bkWh(?![\p{L}])/giu, ' kilowattheures'], [/\bWh(?![\p{L}])/giu, ' wattheures'],
+  ];
+  for (const [re, rep] of composes) s = s.replace(re, rep);
+  // 2) Unité juste après un nombre (ex. « 5 m », « 230 V ») — sensible à la casse
+  //    pour ne pas confondre avec une lettre de mot. Clés longues d'abord.
+  const keys = Object.keys(UNITES_VOIX).sort((a, b) => b.length - a.length).join('|');
+  const reNum = new RegExp('(\\d(?:[.,]\\d+)?)\\s*(' + keys + ')(?![\\p{L}])', 'gu');
+  s = s.replace(reNum, (_, n, u) => `${n} ${UNITES_VOIX[u] ?? u}`);
+  // 3) Symboles isolés.
+  s = s.replace(/°C\b/g, ' degrés Celsius').replace(/°/g, ' degrés')
+    .replace(/(\d)\s*²/g, '$1 au carré').replace(/(\d)\s*³/g, '$1 au cube')
+    .replace(/²/g, ' carré').replace(/³/g, ' cube')
+    .replace(/\s*×\s*/g, ' fois ').replace(/\s*÷\s*/g, ' divisé par ')
+    .replace(/≈/g, ' environ ').replace(/Ω/g, ' ohms');
+  return s.replace(/\s{2,}/g, ' ').trim();
+}
+
 function parler(texte) {
   // La voix du prof s'accorde au genre de l'élève (prêt·e → prêt / prête).
   texte = genrer(String(texte ?? ''), lireProfil()?.sexe);
+  const texteVoix = pourLaVoix(texte); // « m/s » → « mètres par seconde » (voix)
+  const memeTexte = texteVoix === texte; // si inchangé, on garde le sous-titrage mot à mot
   const duree = Math.min(4000, 400 + texte.length * 32);
   parleJusqua = performance.now() + duree;
 
@@ -1084,15 +1126,18 @@ function parler(texte) {
     // Sous-titre révélé au fil de la parole (word-boundary), avec filet.
     majSousTitre(texte, 0);
     const est = Math.min(15000, 500 + texte.length * 80);
-    voix.parler(texte, {
+    voix.parler(texteVoix, {
       params: paramsVoix(),
       onStart: () => { parleJusqua = performance.now() + est; },
-      onBoundary: (e) => {
+      // La révélation mot à mot n'est fiable que si le texte lu = le sous-titre.
+      // Quand on a développé des unités, on affiche le sous-titre en entier.
+      onBoundary: memeTexte ? (e) => {
         clearTimeout(stFallback);
         majSousTitre(texte, (e.charIndex ?? 0) + (e.charLength ?? 1));
-      },
+      } : undefined,
       onEnd: () => { parleJusqua = performance.now(); majSousTitre(texte, texte.length); },
     });
+    if (!memeTexte) majSousTitre(texte, texte.length);
     clearTimeout(stFallback);
     stFallback = setTimeout(() => {
       if ($('#soustitre')?.textContent === '') majSousTitre(texte, texte.length);
