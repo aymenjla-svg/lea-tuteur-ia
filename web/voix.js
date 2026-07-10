@@ -61,7 +61,11 @@ export const voix = {
         const src = URL.createObjectURL(blob);
         const a = new Audio(src);
         audioCourant = a;
-        a.playbackRate = opts.params?.rate ?? 1;
+        // Timbre par prof : on décale la hauteur (pitch) via la vitesse de
+        // lecture — graves pour les hommes, aigus pour les femmes. Donne 4 voix
+        // distinctes même quand le serveur n'en propose qu'une (Google Translate).
+        try { a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; } catch { /* */ }
+        a.playbackRate = opts.params?.lecture ?? 1;
         a.onplay = () => opts.onStart?.();
         a.onended = () => { URL.revokeObjectURL(src); if (audioCourant === a) audioCourant = null; opts.onEnd?.(); };
         a.onerror = () => { URL.revokeObjectURL(src); if (audioCourant === a) audioCourant = null; opts.onEnd?.(); };

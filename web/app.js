@@ -213,6 +213,22 @@ function decorMatiere(id) {
   }
 }
 
+// Objets de « salle de classe » propres à chaque matière (déco autour du tableau).
+const DECOR_SALLE = {
+  mouvement: ['⏱️', '🏁', '🚦'],
+  poids: ['⚖️', '🪐', '🍎'],
+  electricite: ['💡', '🔌', '🔋'],
+  matiere: ['⚗️', '🧊', '💧'],
+  energie: ['🔥', '💡', '🔌'],
+  signaux: ['🔊', '🌈', '📡'],
+};
+function decorSalle(id) {
+  const e = DECOR_SALLE[id] ?? [];
+  const poster = (emo, cls) => (emo ? `<span class="poster ${cls}">${emo}</span>` : '');
+  return `<span class="fanion"></span><span class="mur-motif">${decorMatiere(id)}</span>` +
+    poster(e[0], 'p1') + poster(e[1], 'p2') + poster(e[2], 'p3');
+}
+
 function construireModules() {
   const grille = $('#modulesGrille');
   const prog = chargerProgress();
@@ -320,7 +336,7 @@ function direSalutRetour() {
   if (salutDit || !profilExiste() || !voix.tts || !salutSession) return;
   salutDit = true;
   voixActive = true; majVoixUI();
-  voix.parler(`${salutSession} ${repriseSession}`, { params: { ...persona?.voix, sexe: persona?.sexe } });
+  voix.parler(`${salutSession} ${repriseSession}`, { params: paramsVoix() });
 }
 window.addEventListener('pointerdown', direSalutRetour, { once: true });
 
@@ -332,7 +348,7 @@ let onbStep = 0;
 
 function onbDire(texte) {
   $('#onbMsg').textContent = texte;
-  if (voix.tts) { voixActive = true; voix.parler(texte, { params: { ...persona?.voix, sexe: persona?.sexe } }); }
+  if (voix.tts) { voixActive = true; voix.parler(texte, { params: paramsVoix() }); }
 }
 
 function onbEtapes() {
@@ -419,6 +435,9 @@ function entrerParPorte(carte, m) {
 function ouvrirModule(m) {
   moduleActuel = m;
   memoriserModule(m.id, m.titre); // pour « tu es prêt à reprendre … ? »
+  // La salle prend les couleurs et la déco de la matière du cours.
+  $('#scene').style.setProperty('--c', m.couleur);
+  $('#salleDeco').innerHTML = decorSalle(m.id);
   theme(m.couleur);
   $('#avatarHost').innerHTML = avatarSVG(persona);
   $('#hudTitre').textContent = `${persona.nom} · ${m.titre}`;
@@ -918,6 +937,12 @@ function majSousTitre(texte, n) {
   if (el) el.textContent = texte.slice(0, n);
 }
 
+// Paramètres de voix du prof courant : sexe (voix navigateur) + timbre neural
+// (lecture = décalage de hauteur, voixNeurale = voix serveur si OpenAI).
+function paramsVoix() {
+  return { ...persona?.voix, sexe: persona?.sexe, lecture: persona?.voixN?.lecture, voixNeurale: persona?.voixN?.openai };
+}
+
 function parler(texte) {
   const duree = Math.min(4000, 400 + texte.length * 32);
   parleJusqua = performance.now() + duree;
@@ -927,7 +952,7 @@ function parler(texte) {
     majSousTitre(texte, 0);
     const est = Math.min(15000, 500 + texte.length * 80);
     voix.parler(texte, {
-      params: { ...persona?.voix, sexe: persona?.sexe },
+      params: paramsVoix(),
       onStart: () => { parleJusqua = performance.now() + est; },
       onBoundary: (e) => {
         clearTimeout(stFallback);
