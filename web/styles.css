@@ -150,15 +150,26 @@ body::after {
 .salle-profs {
   position: relative; width: 100%;
   border-radius: 16px; overflow: hidden; isolation: isolate;
-  background: linear-gradient(180deg, #26365c 0%, #1b2745 62%, #172038 100%);
+  perspective: 560px; perspective-origin: 50% 32%; /* profondeur 3D (CSS) */
+  background: linear-gradient(180deg, #26365c 0%, #1b2745 55%, #141b30 100%);
   border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 0 70px rgba(0, 0, 0, 0.4); /* vignette → creuse la salle */
 }
 .sp-mur { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
-.sp-mur::after { /* le sol */
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 34%;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.18)),
-              repeating-linear-gradient(90deg, #2a2036 0 22px, #2f2540 22px 44px);
-  border-top: 2px solid rgba(255, 255, 255, 0.1);
+/* Sol en PERSPECTIVE : un plan couché (rotateX) avec un damier qui fuit vers
+   le fond → la salle paraît en 3D, les profs sont debout dessus. */
+.sp-mur::after {
+  content: ""; position: absolute; left: -45%; right: -45%; bottom: 0; height: 172px;
+  transform-origin: bottom center; transform: rotateX(64deg);
+  background:
+    linear-gradient(180deg, #141b30 0%, rgba(20, 27, 48, 0) 30%),
+    repeating-linear-gradient(90deg, rgba(160, 200, 255, 0.2) 0 2px, transparent 2px 46px),
+    repeating-linear-gradient(0deg, rgba(160, 200, 255, 0.16) 0 2px, transparent 2px 46px),
+    linear-gradient(180deg, #3a2c54, #1e1630);
+}
+.sp-mur::before { /* halo/mur du fond pour asseoir la profondeur */
+  content: ""; position: absolute; left: 0; right: 0; top: 0; height: 70%;
+  background: radial-gradient(120% 90% at 50% 0%, rgba(90, 120, 190, 0.22), transparent 62%);
 }
 .sp-fanion {
   position: absolute; top: 0; left: 50%; transform: translateX(-50%);

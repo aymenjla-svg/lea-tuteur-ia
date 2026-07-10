@@ -464,7 +464,7 @@ function afficherAccueilPerso() {
   const flamme = s >= 2 ? ` · 🔥 ${s} jours de suite` : '';
   if (salut) {
     salut.hidden = false;
-    salut.innerHTML = `<span class="salut-hi">${salutSession}${flamme}</span><span class="salut-suite">${repriseSession}</span>`;
+    salut.innerHTML = `<span class="salut-hi">${genrer(salutSession, p.sexe)}${flamme}</span><span class="salut-suite">${genrer(repriseSession, p.sexe)}</span>`;
   }
 }
 
