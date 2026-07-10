@@ -14,3 +14,8 @@
 
 window.LEA_TUTEUR_URL = 'https://wncsqdxtqfhwjkmeqpgt.supabase.co/functions/v1/tuteur';
 window.LEA_TUTEUR_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InduY3NxZHh0cWZod2prbWVxcGd0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI2Nzc5MDcsImV4cCI6MjA5ODI1MzkwN30.z3y0u2FuAlbOEj5eErHs_-WoRyL8tgpuFoQgHcW38Vk'; // clé anon (publique)
+
+// Voix NEURALE (fonction Edge « voix ») — déploie-la puis colle l'URL ici pour
+// remplacer la voix robotique du navigateur. Vide = voix du navigateur.
+window.LEA_TTS_URL = ''; // ex. 'https://wncsqdxtqfhwjkmeqpgt.supabase.co/functions/v1/voix'
+window.LEA_TTS_KEY = window.LEA_TUTEUR_KEY; // même clé anon (publique) si Verify JWT activé

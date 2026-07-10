@@ -1,11 +1,9 @@
-// Léa — voix (Addendum A2 MVP). Pipeline navigateur via la Web Speech API :
-//  - TTS  : SpeechSynthesis (Léa parle ses réponses, voix FR).
-//  - STT  : SpeechRecognition (l'élève répond au micro, transcription partielle).
-//  - Barge-in : interrompre() coupe la synthèse dès que l'élève prend la parole.
-//
-// Tout est détecté à l'exécution : sur un navigateur sans ces API, on dégrade
-// proprement (l'écrit reste de plein droit, P1). Aucune donnée ne sort de
-// l'appareil au-delà de ce que le navigateur envoie à son service de dictée.
+// Léa — voix. Deux pipelines de synthèse (TTS), transparents pour l'appli :
+//  1) VOIX NEURALE (si configurée) : une fonction Edge renvoie un audio humain
+//     (Google TTS gratuit / OpenAI…) qu'on joue → intonations naturelles.
+//  2) Repli NAVIGATEUR (Web Speech) : toujours dispo, mais souvent monotone.
+// STT (dictée) : SpeechRecognition. Barge-in : interrompre() coupe les deux.
+// Dégradation propre : sans aucune de ces briques, l'écrit reste de plein droit.
 
 const synth = typeof window !== 'undefined' ? window.speechSynthesis : null;
 const RecognitionCtor =
@@ -13,54 +11,89 @@ const RecognitionCtor =
     ? window.SpeechRecognition || window.webkitSpeechRecognition
     : null;
 
+let audioCourant = null; // <audio> neural en cours (pour le barge-in)
+
+/** Config de la voix neurale : URL de la fonction Edge (+ clé anon éventuelle). */
+function ttsConfig() {
+  const meta = (n) => (typeof document !== 'undefined' ? document.querySelector(`meta[name="${n}"]`)?.content?.trim() : '') || '';
+  let url = '';
+  let key = '';
+  try { url = localStorage.getItem('lea.tts.url') || ''; key = localStorage.getItem('lea.tts.key') || ''; } catch { /* indispo */ }
+  url = url || (typeof window !== 'undefined' && window.LEA_TTS_URL) || meta('lea-tts-url');
+  key = key || (typeof window !== 'undefined' && window.LEA_TTS_KEY) || meta('lea-tts-key');
+  return { url, key };
+}
+
 export const voix = {
   get tts() {
-    return !!synth;
+    return !!synth || !!ttsConfig().url;
   },
   get stt() {
     return !!RecognitionCtor;
   },
-
-  /** Vrai pendant que Léa parle (pour le lip-sync et le barge-in). */
-  enParole() {
-    return !!synth && synth.speaking;
+  /** Vrai si une voix neurale est branchée (vs la voix du navigateur). */
+  get neurale() {
+    return !!ttsConfig().url;
   },
 
-  /**
-   * Fait parler Léa. Coupe toute parole en cours d'abord. `params` module le
-   * timbre selon le prof (pitch/rate). Les callbacks pilotent le lip-sync.
-   */
-  parler(texte, { params, onStart, onBoundary, onEnd } = {}) {
-    if (!synth) return;
+  /** Vrai pendant que Léa parle (lip-sync + barge-in), voix neurale OU navigateur. */
+  enParole() {
+    return (!!synth && synth.speaking) || (!!audioCourant && !audioCourant.paused);
+  },
+
+  /** Fait parler Léa. Utilise la voix neurale si configurée, sinon le navigateur. */
+  parler(texte, opts = {}) {
+    const { url } = ttsConfig();
+    if (url) this._parlerNeural(String(texte ?? ''), opts, url);
+    else this._parlerNavigateur(String(texte ?? ''), opts);
+  },
+
+  // Voix neurale : on demande l'audio à la fonction Edge et on le joue.
+  _parlerNeural(texte, opts, url) {
+    this.interrompre();
+    if (!texte.trim()) { opts.onEnd?.(); return; }
+    const { key } = ttsConfig();
+    const headers = { 'content-type': 'application/json' };
+    if (key) { headers.apikey = key; headers.authorization = `Bearer ${key}`; }
+    fetch(url, { method: 'POST', headers, body: JSON.stringify({ texte, voix: opts.params?.voixNeurale }) })
+      .then((r) => { if (!r.ok) throw new Error('tts ' + r.status); return r.blob(); })
+      .then((blob) => {
+        const src = URL.createObjectURL(blob);
+        const a = new Audio(src);
+        audioCourant = a;
+        a.playbackRate = opts.params?.rate ?? 1;
+        a.onplay = () => opts.onStart?.();
+        a.onended = () => { URL.revokeObjectURL(src); if (audioCourant === a) audioCourant = null; opts.onEnd?.(); };
+        a.onerror = () => { URL.revokeObjectURL(src); if (audioCourant === a) audioCourant = null; opts.onEnd?.(); };
+        a.play().catch(() => { this._parlerNavigateur(texte, opts); }); // geste requis / bloqué → repli
+      })
+      .catch(() => { this._parlerNavigateur(texte, opts); }); // réseau/serveur KO → repli
+  },
+
+  // Voix du navigateur (Web Speech) — repli. Prosodie légèrement adoucie.
+  _parlerNavigateur(texte, { params, onStart, onBoundary, onEnd } = {}) {
+    if (!synth) { onEnd?.(); return; }
     try {
-      synth.cancel(); // repart propre (évite l'empilement)
+      synth.cancel();
       const u = new SpeechSynthesisUtterance(texte);
       u.lang = 'fr-FR';
-      u.pitch = params?.pitch ?? 1;
-      u.rate = params?.rate ?? 1;
+      u.pitch = params?.pitch ?? 1.05;
+      u.rate = params?.rate ?? 0.98;
       const vfr = choisirVoix(params?.sexe);
       if (vfr) u.voice = vfr;
       if (onStart) u.onstart = onStart;
-      if (onEnd) {
-        u.onend = onEnd;
-        u.onerror = onEnd;
-      }
+      if (onEnd) { u.onend = onEnd; u.onerror = onEnd; }
       if (onBoundary) u.onboundary = onBoundary;
       synth.speak(u);
     } catch {
-      /* API capricieuse selon navigateur : on ignore, l'écrit prend le relais. */
+      onEnd?.();
     }
   },
 
-  /** Barge-in : stoppe immédiatement la synthèse en cours (R4). */
+  /** Barge-in : stoppe immédiatement la parole (neurale ET navigateur). */
   interrompre() {
-    if (synth) {
-      try {
-        synth.cancel();
-      } catch {
-        /* no-op */
-      }
-    }
+    if (synth) { try { synth.cancel(); } catch { /* no-op */ } }
+    if (audioCourant) { try { audioCourant.pause(); audioCourant.currentTime = 0; } catch { /* no-op */ } audioCourant = null; }
   },
 
   /**
@@ -82,29 +115,14 @@ export const voix = {
       let partiel = '';
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const r = e.results[i];
-        if (r.isFinal) {
-          onFinal?.(r[0].transcript.trim());
-        } else {
-          partiel += r[0].transcript;
-        }
+        if (r.isFinal) onFinal?.(r[0].transcript.trim());
+        else partiel += r[0].transcript;
       }
       if (partiel) onPartial?.(partiel.trim());
     };
 
-    try {
-      reco.start();
-    } catch {
-      return null;
-    }
-    return {
-      stop() {
-        try {
-          reco.stop();
-        } catch {
-          /* no-op */
-        }
-      },
-    };
+    try { reco.start(); } catch { return null; }
+    return { stop() { try { reco.stop(); } catch { /* no-op */ } } };
   },
 };
 
@@ -115,9 +133,9 @@ const VOIX_HOMME = /thomas|henri|nicolas|daniel|paul|guillaume|mathieu|yannick|j
 const QUALITE = /neural|enhanced|premium|natural|siri|google|wavenet/i;
 
 /**
- * Choisit la meilleure voix FR pour un sexe ('f' | 'h'). Score = qualité
- * (neural/enhanced…) + correspondance de genre. À défaut, une voix FR quelconque.
- * La liste `getVoices()` se remplit de façon asynchrone : on relit à chaque appel.
+ * Choisit la meilleure voix FR du navigateur pour un sexe ('f' | 'h'). Score =
+ * qualité (neural/enhanced…) + correspondance de genre. À défaut, une voix FR.
+ * getVoices() se remplit de façon asynchrone : on relit à chaque appel.
  */
 function choisirVoix(sexe) {
   if (!synth) return null;
