@@ -391,6 +391,7 @@ export const COURS = {
       {
         titre: 'Pourquoi la masse volumique ?',
         focus: 'relation',
+        stage: 1,
         points: ['Reconnaître un matériau sans le voir.', 'Comprendre pourquoi ça flotte ou coule.'],
         narration:
           'Pourquoi un morceau de bois flotte-t-il alors qu’un clou coule ? Comment savoir si un ' +
@@ -490,6 +491,7 @@ export const COURS = {
       {
         titre: 'La puissance, ça se paie',
         focus: 'puissance',
+        stage: 1,
         points: ['Les appareils consomment de l’énergie.', 'La puissance mesure « combien, par seconde ».'],
         narration:
           'Une ampoule, un four, un chargeur… tous consomment de l’électricité, mais pas à la ' +

@@ -313,25 +313,38 @@ body::after {
 .cdot.fait { background: var(--ok); }
 .cdot.actif { background: #fff; transform: scale(1.35); }
 
-/* ---- Figures animées : mise en avant progressive (data-foc) ---- */
-.figure .part { transition: opacity 0.4s ease; }
-.figure[data-foc]:not([data-foc=""]) .part { opacity: 0.25; }
+/* ---- Figures animées : le tableau se CONSTRUIT scène après scène ---- */
+/* Reveal progressif : tout élément [data-etape] est caché tant que le cours
+   n'a pas atteint son étape ; app.js ajoute .revele pour le faire apparaître.
+   Résultat : le prof « dessine » le schéma au fur et à mesure. */
+.figure [data-etape] { opacity: 0; transition: opacity 0.6s ease, transform 0.6s ease; }
+.figure [data-etape].revele { opacity: 1; }
+/* Emphase de la notion courante (data-foc) : un halo, PAS un changement
+   d'opacité — sinon on révélerait des éléments pas encore introduits. */
+.figure .part { transition: opacity 0.6s ease, filter 0.35s ease; }
 .figure .lab { font: 700 17px var(--round, sans-serif); }
 .figure .cap, .figure .lab-g, .figure .astre-nom, .figure .objet-m { font-family: var(--round, sans-serif); }
 .figure .cap { font-size: 10px; }
 .figure .astre-nom { font-size: 14px; font-weight: 700; fill: #cfe6ff; }
 .figure .objet-m { font-size: 14px; font-weight: 700; fill: #4a2f00; }
 .figure .lab-g { font-size: 11px; fill: #ffb3c1; }
-.figure .loi { font: 800 20px var(--round, sans-serif); fill: #fff; opacity: 0; transition: opacity 0.5s ease; }
+.figure .loi { font: 800 20px var(--round, sans-serif); fill: #fff; }
 .fig-ohm[data-foc="U"] .part-U, .fig-ohm[data-foc="I"] .part-I, .fig-ohm[data-foc="R"] .part-R,
-.fig-ohm[data-foc="loi"] .part { opacity: 1; }
-.fig-ohm[data-foc="loi"] .loi { opacity: 1; }
+.fig-ohm[data-foc="loi"] .loi { filter: drop-shadow(0 0 6px rgba(120, 210, 255, 0.85)); }
 .fig-vitesse[data-foc="d"] .part-d, .fig-vitesse[data-foc="t"] .part-t,
-.fig-vitesse[data-foc="vitesse"] .part { opacity: 1; }
-.fig-vitesse[data-foc="vitesse"] .loi { opacity: 1; }
+.fig-vitesse[data-foc="vitesse"] .loi { filter: drop-shadow(0 0 6px rgba(120, 210, 255, 0.85)); }
 .fig-poids[data-foc="masse"] .part-masse, .fig-poids[data-foc="poids"] .part-poids,
-.fig-poids[data-foc="astre"] .part-astre, .fig-poids[data-foc="relation"] .part { opacity: 1; }
-.fig-poids[data-foc="relation"] .loi { opacity: 1; }
+.fig-poids[data-foc="astre"] .part-astre, .fig-poids[data-foc="relation"] .loi { filter: drop-shadow(0 0 6px rgba(120, 210, 255, 0.85)); }
+
+/* ---- Couche « croquis » : le prof dessine des explications à la volée ----
+   (annotations pilotées par app.js aujourd'hui, par le LLM plus tard, en
+   réponse à une question imprévisible de l'élève). */
+.figure .croquis path, .figure .croquis line { stroke: #ffd54a; stroke-width: 2.4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.figure .croquis text { font: 700 13px var(--round, sans-serif); fill: #ffe89a; }
+.figure .croquis .trace { stroke-dasharray: var(--len, 300); stroke-dashoffset: var(--len, 300); animation: tracer 0.7s ease forwards; }
+.figure .croquis .aq { animation: aqPop 0.4s ease forwards; opacity: 0; }
+@keyframes tracer { to { stroke-dashoffset: 0; } }
+@keyframes aqPop { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
 
 /* flux de charges dans le circuit (analogie hydraulique) */
 .fig-ohm .charge { offset-path: path("M60 40 H260 Q280 40 280 60 V140 Q280 160 260 160 H60 Q40 160 40 140 V60 Q40 40 60 40 Z"); animation: flowLoop 3.4s linear infinite; }
@@ -346,27 +359,24 @@ body::after {
 
 /* Matière : masse volumique */
 .fig-matiere[data-foc="masse"] .part-masse, .fig-matiere[data-foc="volume"] .part-volume,
-.fig-matiere[data-foc="relation"] .part { opacity: 1; }
-.fig-matiere[data-foc="relation"] .loi { opacity: 1; }
+.fig-matiere[data-foc="relation"] .loi { filter: drop-shadow(0 0 6px rgba(120, 210, 255, 0.85)); }
 
 /* Matière : les états (les flèches de changement d'état s'éclairent) */
-.fig-etats[data-foc="changements"] .part { opacity: 1; }
+.fig-etats[data-foc="changements"] .part-changements { filter: drop-shadow(0 0 6px rgba(255, 183, 3, 0.85)); }
 .fig-etats .astre-nom { font-size: 12px; }
 .fig-etats .gp { animation: jiggle 1.1s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes jiggle { 0%, 100% { transform: translate(0, 0); } 33% { transform: translate(2px, -2px); } 66% { transform: translate(-2px, 1px); } }
 
 /* Énergie : puissance électrique (charges qui circulent + chaleur) */
 .fig-energie[data-foc="tension"] .part-U, .fig-energie[data-foc="intensite"] .part-I,
-.fig-energie[data-foc="puissance"] .part-P, .fig-energie[data-foc="loi"] .part { opacity: 1; }
-.fig-energie[data-foc="loi"] .loi { opacity: 1; }
+.fig-energie[data-foc="puissance"] .part-P, .fig-energie[data-foc="loi"] .loi { filter: drop-shadow(0 0 6px rgba(120, 210, 255, 0.85)); }
 .fig-energie .charge { offset-path: path("M70 46 H250 Q268 46 268 64 V138 Q268 156 250 156 H70 Q52 156 52 138 V64 Q52 46 70 46 Z"); animation: flowLoop 3.6s linear infinite; }
 .fig-energie .chaleur { animation: chauffer 1.4s ease-in-out infinite; transform-origin: center; }
 @keyframes chauffer { 0%, 100% { opacity: 0.4; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
 
 /* Signaux : ondes qui se propagent */
 .fig-signaux[data-foc="distance"] .part-d, .fig-signaux[data-foc="temps"] .part-t,
-.fig-signaux[data-foc="vitesse"] .part { opacity: 1; }
-.fig-signaux[data-foc="vitesse"] .loi { opacity: 1; }
+.fig-signaux[data-foc="vitesse"] .loi { filter: drop-shadow(0 0 6px rgba(120, 210, 255, 0.85)); }
 .fig-signaux .onde { animation: propager 2.7s ease-out infinite; }
 @keyframes propager { 0% { r: 10px; opacity: 0.9; } 100% { r: 96px; opacity: 0; } }
 .fig-signaux .aiguille { transform-origin: 0 0; animation: tourner 2.7s linear infinite; }
@@ -455,6 +465,9 @@ body::after {
   .fig-ohm .charge, .fig-vitesse .mobile, .fig-vitesse .aiguille, .fig-poids .poids-fleche,
   .fig-energie .charge, .fig-energie .chaleur, .fig-signaux .onde, .fig-signaux .aiguille,
   .fig-etats .gp { animation: none; }
+  .figure [data-etape] { transition: opacity 0.2s ease; }
+  .figure .croquis .trace { stroke-dashoffset: 0; animation: none; }
+  .figure .croquis .aq { opacity: 1; animation: none; }
   .fig-vitesse .mobile { transform: translateX(200px); }
   .fig-signaux .onde { opacity: 0.5; }
   .qcm-opt.faux { animation: none; }

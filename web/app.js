@@ -54,6 +54,20 @@ let coursFigureId = '';
 let sceneIdx = 0;
 let checkpointOk = true;
 const cpFaits = new Set();
+// Tableau progressif : le schéma persiste et se CONSTRUIT au fil des scènes.
+let figureRendue = '';   // figure actuellement dessinée dans #figureHost
+let etapeMax = 0;        // plus haute étape déjà révélée (le tableau n'efface pas)
+// À quelle étape du schéma correspond chaque « focus » de scène (par figure).
+// Le tableau se remplit dans cet ordre, comme un prof qui dessine.
+const ETAPE_PAR_FOCUS = {
+  vitesse: { mobile: 1, d: 2, t: 3, vitesse: 4 },
+  poids: { masse: 1, astre: 2, poids: 3, relation: 4 },
+  ohm: { circuit: 1, U: 2, I: 3, R: 4, loi: 5 },
+  etats: { etats: 3, changements: 4 },
+  matiere: { bloc: 1, masse: 2, volume: 3, relation: 4 },
+  energie: { puissance: 4, tension: 2, intensite: 3, loi: 5 },
+  signaux: { distance: 3, temps: 4, vitesse: 5 },
+};
 // Bilan de séance (série d'exercices) : alimenté par etat.correction.
 let bilan = { total: 0, reussis: 0, erreurs: {} };
 
@@ -253,6 +267,8 @@ function ouvrirCours(m) {
   coursScenes = c?.scenes ?? [];
   coursFigureId = c?.figure ?? '';
   sceneIdx = 0;
+  figureRendue = ''; // forcer un tableau vierge qui se (re)construira
+  etapeMax = 0;
   appliquerMode();
   rendreScene();
 }
@@ -272,6 +288,79 @@ function appliquerMode() {
   else { $('#form').hidden = false; $('#qcmZone').hidden = true; }
 }
 
+// Met à jour le tableau : la figure PERSISTE (les animations ne redémarrent
+// pas) et se construit étape par étape. Le prof ne réécrit pas tout à chaque
+// scène — il ajoute ce qu'il vient d'expliquer et pointe la notion du moment.
+function majTableau(sc) {
+  const figId = sc.figure ?? coursFigureId;
+  const host = $('#figureHost');
+  // On ne redessine que si on change de schéma (ex. états → masse volumique).
+  if (figId !== figureRendue) {
+    host.innerHTML = figure(figId, sc.focus);
+    const svg = host.querySelector('svg');
+    if (svg) {
+      const ns = 'http://www.w3.org/2000/svg';
+      const g = document.createElementNS(ns, 'g');
+      g.setAttribute('class', 'croquis'); // couche des annotations à la volée
+      svg.appendChild(g);
+    }
+    figureRendue = figId;
+    etapeMax = 0;
+  }
+  const svg = host.querySelector('svg');
+  if (!svg) return;
+  svg.setAttribute('data-foc', sc.focus ?? ''); // halo sur la notion courante
+  // Étape visée par cette scène ; le tableau n'efface pas (cumulatif).
+  const cible = sc.stage ?? ETAPE_PAR_FOCUS[figId]?.[sc.focus] ?? etapeMax;
+  etapeMax = Math.max(etapeMax, cible);
+  for (const el of svg.querySelectorAll('[data-etape]')) {
+    el.classList.toggle('revele', Number(el.getAttribute('data-etape')) <= etapeMax);
+  }
+  effacerCroquis(); // les annotations ad hoc ne survivent pas au changement de scène
+}
+
+// --- Couche « croquis » : dessiner au tableau des explications non prévues ---
+// Aujourd'hui appelée par le code (ex. réponse à une question type) ; demain
+// pilotée par le LLM quand l'élève pose une question imprévisible.
+function coucheCroquis() {
+  return $('#figureHost')?.querySelector('svg .croquis') ?? null;
+}
+function effacerCroquis() {
+  const c = coucheCroquis();
+  if (c) c.innerHTML = '';
+}
+// prims : liste de primitives SVG { type:'fleche'|'texte'|'trait'|'cercle', ... }
+function dessinerCroquis(prims) {
+  const c = coucheCroquis();
+  if (!c) return;
+  const ns = 'http://www.w3.org/2000/svg';
+  for (const p of prims ?? []) {
+    let el;
+    if (p.type === 'texte') {
+      el = document.createElementNS(ns, 'text');
+      el.setAttribute('x', p.x); el.setAttribute('y', p.y);
+      if (p.ancre) el.setAttribute('text-anchor', p.ancre);
+      el.setAttribute('class', 'aq');
+      el.textContent = p.t ?? '';
+    } else if (p.type === 'cercle') {
+      el = document.createElementNS(ns, 'circle');
+      el.setAttribute('cx', p.x); el.setAttribute('cy', p.y); el.setAttribute('r', p.r ?? 10);
+      el.setAttribute('class', 'trace');
+      el.style.setProperty('--len', String(2 * Math.PI * (p.r ?? 10)));
+    } else { // 'trait' ou 'fleche' → un path
+      el = document.createElementNS(ns, 'path');
+      el.setAttribute('d', p.d);
+      el.setAttribute('class', 'trace');
+      el.style.setProperty('--len', String(p.len ?? 300));
+    }
+    c.appendChild(el);
+  }
+}
+
+// API du tableau : surface de dessin exposée pour la phase LLM (le prof répond
+// à une question imprévisible en dessinant) et pour les tests.
+window.LeaTableau = { dessiner: dessinerCroquis, effacer: effacerCroquis, croquis: coucheCroquis };
+
 function rendreScene() {
   const sc = coursScenes[sceneIdx];
   if (!sc) return;
@@ -279,7 +368,7 @@ function rendreScene() {
   const q = sc.qcm;
   checkpointOk = (!cp && !q) || cpFaits.has(sceneIdx);
 
-  $('#figureHost').innerHTML = figure(sc.figure ?? coursFigureId, sc.focus);
+  majTableau(sc);
   $('#coursTitre').textContent = sc.titre;
   const pts = [...sc.points];
   if (cp) pts.push(`<b class="cp-q">${cp.enonce}</b>`);
