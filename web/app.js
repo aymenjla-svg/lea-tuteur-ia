@@ -223,15 +223,30 @@ const DECOR_SALLE = {
   signaux: ['🔊', '🌈', '📡'],
 };
 // Meuble + comptoir (base commune de la paillasse), viewBox 320x96, comptoir ≈ y48.
+// Rendu soigné : dégradés (relief), tiroirs biseautés, poignées chromées, plan
+// de travail brillant à arête.
 function meubleSVG() {
-  return `<rect x="6" y="56" width="308" height="40" rx="3" fill="#e9eef6"/>
-    <g stroke="#c3ccda" stroke-width="1.6" fill="none">
-      <rect x="14" y="62" width="86" height="13" rx="2"/><rect x="14" y="79" width="86" height="12" rx="2"/>
-      <rect x="112" y="62" width="96" height="30" rx="2"/>
-      <rect x="220" y="62" width="86" height="13" rx="2"/><rect x="220" y="79" width="86" height="12" rx="2"/>
-    </g>
-    <g fill="#aeb8c8"><rect x="50" y="67" width="14" height="3" rx="1.5"/><rect x="50" y="83" width="14" height="3" rx="1.5"/><rect x="253" y="67" width="14" height="3" rx="1.5"/><rect x="253" y="83" width="14" height="3" rx="1.5"/></g>
-    <rect x="0" y="48" width="320" height="9" rx="2" fill="#5b7fa6"/><rect x="0" y="55" width="320" height="2" fill="#3f5f82"/>`;
+  const tiroir = (x, y, w, h) =>
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="url(#drw)" stroke="#c3ccda" stroke-width="1"/>` +
+    `<rect x="${x + 1.5}" y="${y + 1.5}" width="${w - 3}" height="2" rx="1" fill="#ffffff" opacity=".85"/>` +
+    `<rect x="${x}" y="${y + h - 2}" width="${w}" height="2" fill="#00000012"/>` +
+    `<rect x="${x + w / 2 - 11}" y="${y + h / 2 - 2}" width="22" height="4" rx="2" fill="url(#hdl)"/>`;
+  return `
+    <defs>
+      <linearGradient id="cptr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86abd2"/><stop offset="1" stop-color="#4d6d95"/></linearGradient>
+      <linearGradient id="cab" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f8fc"/><stop offset="1" stop-color="#cdd6e4"/></linearGradient>
+      <linearGradient id="drw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dde4ef"/></linearGradient>
+      <linearGradient id="hdl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f5f9"/><stop offset=".5" stop-color="#9aa6b8"/><stop offset="1" stop-color="#69748a"/></linearGradient>
+    </defs>
+    <rect x="8" y="94" width="304" height="2" rx="1" fill="#00000026"/>
+    <rect x="4" y="55" width="312" height="40" rx="4" fill="url(#cab)"/>
+    <rect x="4" y="55" width="312" height="2" rx="2" fill="#ffffff" opacity=".6"/>
+    ${tiroir(14, 61, 88, 14)}${tiroir(14, 78, 88, 13)}
+    <rect x="112" y="61" width="96" height="30" rx="3" fill="url(#drw)" stroke="#c3ccda" stroke-width="1"/><rect x="113.5" y="62.5" width="93" height="2" rx="1" fill="#ffffff" opacity=".85"/><circle cx="160" cy="76" r="3.2" fill="url(#hdl)"/>
+    ${tiroir(218, 61, 88, 14)}${tiroir(218, 78, 88, 13)}
+    <rect x="0" y="47" width="320" height="7" rx="2" fill="url(#cptr)"/>
+    <rect x="0" y="47" width="320" height="1.6" rx="1" fill="#c2dcf7" opacity=".75"/>
+    <rect x="0" y="53" width="320" height="3" fill="#39567a"/>`;
 }
 // Matériel posé sur le comptoir, PROPRE À CHAQUE MATIÈRE (bas des objets ≈ y48).
 function objetsMatiere(id) {
