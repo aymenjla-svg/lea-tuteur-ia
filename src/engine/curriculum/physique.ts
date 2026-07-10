@@ -139,6 +139,7 @@ export function curriculumPhysique(
     origine: 'prof',
     statut: 'valide',
     parametres: [],
+    niveau: 1,
     etapes: [
       {
         ordre: 1,
@@ -165,6 +166,7 @@ export function curriculumPhysique(
     origine: 'prof',
     statut: 'valide',
     parametres: [],
+    niveau: 4,
     etapes: [
       {
         ordre: 1,
@@ -215,6 +217,7 @@ export function curriculumPhysique(
     origine: 'prof',
     statut: 'valide',
     parametres: [],
+    niveau: 1,
     etapes: [
       {
         ordre: 1,
@@ -246,6 +249,7 @@ export function curriculumPhysique(
     origine: 'prof',
     statut: 'valide',
     parametres: [],
+    niveau: 1,
     etapes: [
       {
         ordre: 1,
@@ -345,6 +349,7 @@ export function curriculumPhysique(
     origine: 'prof',
     statut: 'valide',
     parametres: [],
+    niveau: 1,
     etapes: [
       {
         ordre: 1,
@@ -380,6 +385,7 @@ export function curriculumPhysique(
     tolerance?: number;
     indice: string;
     repr?: string;
+    niveau?: number;
     pieges?: ReadonlyArray<{ valeur: number; erreur_type_id: string; tolerance?: number }>;
   }): void =>
     c.ajouterTemplate({
@@ -389,6 +395,7 @@ export function curriculumPhysique(
       origine: 'prof',
       statut: 'valide',
       parametres: [],
+      niveau: o.niveau ?? 2,
       etapes: [
         {
           ordre: 1,
@@ -409,37 +416,37 @@ export function curriculumPhysique(
   const IND_VITESSE = 'La vitesse est une distance divisée par une durée : v = d ÷ t.';
 
   // Grandeur-quotient (m/s) — prérequis
-  exo({ id: 'tmpl-vq-100-20', objectif: OBJ_VITESSE_PREREQ, enonce: 'Un coureur parcourt 100 m en 20 s. Quelle est sa vitesse, en m/s ?', valeur: 5, indice: IND_VITESSE, pieges: [{ valeur: 2000, erreur_type_id: P_DIV }] });
+  exo({ id: 'tmpl-vq-100-20', objectif: OBJ_VITESSE_PREREQ, niveau: 1, enonce: 'Un coureur parcourt 100 m en 20 s. Quelle est sa vitesse, en m/s ?', valeur: 5, indice: IND_VITESSE, pieges: [{ valeur: 2000, erreur_type_id: P_DIV }] });
   exo({ id: 'tmpl-vq-72-8', objectif: OBJ_VITESSE_PREREQ, enonce: 'Un cycliste parcourt 72 m en 8 s. Quelle est sa vitesse, en m/s ?', valeur: 9, indice: IND_VITESSE, pieges: [{ valeur: 576, erreur_type_id: P_DIV }] });
   exo({ id: 'tmpl-vq-150-30', objectif: OBJ_VITESSE_PREREQ, enonce: 'Un mobile parcourt 150 m en 30 s. Quelle est sa vitesse, en m/s ?', valeur: 5, indice: IND_VITESSE, pieges: [{ valeur: 4500, erreur_type_id: P_DIV }] });
 
   // Vitesse (km/h) — variété une étape
   exo({ id: 'tmpl-vit-240-3', objectif: OBJ_VITESSE, enonce: 'Un train parcourt 240 km en 3 h. Quelle est sa vitesse moyenne, en km/h ?', valeur: 80, indice: IND_VITESSE, pieges: [{ valeur: 720, erreur_type_id: P_DIV }] });
-  exo({ id: 'tmpl-vit-90-2', objectif: OBJ_VITESSE, enonce: 'Une voiture parcourt 90 km en 2 h. Quelle est sa vitesse moyenne, en km/h ?', valeur: 45, indice: IND_VITESSE, pieges: [{ valeur: 180, erreur_type_id: P_DIV }] });
+  exo({ id: 'tmpl-vit-90-2', objectif: OBJ_VITESSE, niveau: 1, enonce: 'Une voiture parcourt 90 km en 2 h. Quelle est sa vitesse moyenne, en km/h ?', valeur: 45, indice: IND_VITESSE, pieges: [{ valeur: 180, erreur_type_id: P_DIV }] });
   exo({ id: 'tmpl-vit-200-4', objectif: OBJ_VITESSE, enonce: 'Un bus parcourt 200 km en 4 h. Quelle est sa vitesse moyenne, en km/h ?', valeur: 50, indice: IND_VITESSE, pieges: [{ valeur: 800, erreur_type_id: P_DIV }] });
 
   // Poids (N, g = 10 N/kg)
   const IND_POIDS = 'Le poids s’obtient avec P = m × g (g = 10 N/kg).';
-  exo({ id: 'tmpl-poids-2', objectif: OBJ_POIDS, enonce: 'Sur Terre (g = 10 N/kg), quel est le poids d’une masse de 2 kg, en newtons ?', valeur: 20, indice: IND_POIDS, pieges: [{ valeur: 2, erreur_type_id: 'confond_masse_poids' }, { valeur: 0.2, erreur_type_id: 'inverse_relation' }] });
-  exo({ id: 'tmpl-poids-8', objectif: OBJ_POIDS, enonce: 'Sur Terre (g = 10 N/kg), quel est le poids d’une masse de 8 kg, en newtons ?', valeur: 80, indice: IND_POIDS, pieges: [{ valeur: 8, erreur_type_id: 'confond_masse_poids' }] });
+  exo({ id: 'tmpl-poids-2', objectif: OBJ_POIDS, niveau: 1, enonce: 'Sur Terre (g = 10 N/kg), quel est le poids d’une masse de 2 kg, en newtons ?', valeur: 20, indice: IND_POIDS, pieges: [{ valeur: 2, erreur_type_id: 'confond_masse_poids' }, { valeur: 0.2, erreur_type_id: 'inverse_relation' }] });
+  exo({ id: 'tmpl-poids-8', objectif: OBJ_POIDS, niveau: 1, enonce: 'Sur Terre (g = 10 N/kg), quel est le poids d’une masse de 8 kg, en newtons ?', valeur: 80, indice: IND_POIDS, pieges: [{ valeur: 8, erreur_type_id: 'confond_masse_poids' }] });
   exo({ id: 'tmpl-poids-12', objectif: OBJ_POIDS, enonce: 'Sur Terre (g = 10 N/kg), quel est le poids d’une masse de 12 kg, en newtons ?', valeur: 120, indice: IND_POIDS, pieges: [{ valeur: 12, erreur_type_id: 'confond_masse_poids' }] });
 
   // Loi d'Ohm (V)
   const IND_OHM = 'La loi d’Ohm relie tension, résistance et intensité : U = R × I.';
-  exo({ id: 'tmpl-ohm-20-2', objectif: OBJ_OHM, enonce: 'Une résistance de 20 Ω est parcourue par un courant de 2 A. Quelle tension à ses bornes, en volts ?', valeur: 40, indice: IND_OHM, pieges: [{ valeur: 10, erreur_type_id: 'inverse_relation' }, { valeur: 22, erreur_type_id: 'additionne_au_lieu_de_multiplier' }] });
-  exo({ id: 'tmpl-ohm-100-05', objectif: OBJ_OHM, enonce: 'Une résistance de 100 Ω est parcourue par un courant de 0,5 A. Quelle tension, en volts ?', valeur: 50, indice: IND_OHM, pieges: [{ valeur: 200, erreur_type_id: 'inverse_relation' }] });
+  exo({ id: 'tmpl-ohm-20-2', objectif: OBJ_OHM, niveau: 1, enonce: 'Une résistance de 20 Ω est parcourue par un courant de 2 A. Quelle tension à ses bornes, en volts ?', valeur: 40, indice: IND_OHM, pieges: [{ valeur: 10, erreur_type_id: 'inverse_relation' }, { valeur: 22, erreur_type_id: 'additionne_au_lieu_de_multiplier' }] });
+  exo({ id: 'tmpl-ohm-100-05', objectif: OBJ_OHM, niveau: 3, enonce: 'Une résistance de 100 Ω est parcourue par un courant de 0,5 A. Quelle tension, en volts ?', valeur: 50, indice: IND_OHM, pieges: [{ valeur: 200, erreur_type_id: 'inverse_relation' }] });
   exo({ id: 'tmpl-ohm-15-4', objectif: OBJ_OHM, enonce: 'Une résistance de 15 Ω est parcourue par un courant de 4 A. Quelle tension, en volts ?', valeur: 60, indice: IND_OHM, pieges: [{ valeur: 19, erreur_type_id: 'additionne_au_lieu_de_multiplier' }] });
 
   // Masse volumique (g/cm³)
   const IND_MV = 'La masse volumique est la masse divisée par le volume : ρ = m ÷ V.';
   exo({ id: 'tmpl-mv-argent', objectif: OBJ_MASSE_VOLUMIQUE, enonce: 'Un lingot d’argent a une masse de 105 g et un volume de 10 cm³. Masse volumique, en g/cm³ ?', valeur: 10.5, indice: IND_MV, pieges: [{ valeur: 1050, erreur_type_id: P_DIV }] });
   exo({ id: 'tmpl-mv-27-10', objectif: OBJ_MASSE_VOLUMIQUE, enonce: 'Un bloc d’aluminium a une masse de 27 g et un volume de 10 cm³. Masse volumique, en g/cm³ ?', valeur: 2.7, indice: IND_MV, pieges: [{ valeur: 270, erreur_type_id: P_DIV }] });
-  exo({ id: 'tmpl-mv-90-100', objectif: OBJ_MASSE_VOLUMIQUE, enonce: 'De l’huile a une masse de 90 g pour un volume de 100 cm³. Masse volumique, en g/cm³ ?', valeur: 0.9, indice: IND_MV, pieges: [{ valeur: 9000, erreur_type_id: P_DIV }] });
+  exo({ id: 'tmpl-mv-90-100', objectif: OBJ_MASSE_VOLUMIQUE, niveau: 3, enonce: 'De l’huile a une masse de 90 g pour un volume de 100 cm³. Masse volumique, en g/cm³ ?', valeur: 0.9, indice: IND_MV, pieges: [{ valeur: 9000, erreur_type_id: P_DIV }] });
 
   // Puissance électrique (W)
   const IND_PUISS = 'La puissance électrique est le produit de la tension par l’intensité : P = U × I.';
-  exo({ id: 'tmpl-puiss-12-2', objectif: OBJ_PUISSANCE, enonce: 'Un appareil sous 12 V est parcouru par un courant de 2 A. Quelle est sa puissance, en watts ?', valeur: 24, indice: IND_PUISS, pieges: [{ valeur: 6, erreur_type_id: 'inverse_relation' }, { valeur: 14, erreur_type_id: 'additionne_au_lieu_de_multiplier' }] });
-  exo({ id: 'tmpl-puiss-6-05', objectif: OBJ_PUISSANCE, enonce: 'Une lampe sous 6 V est parcourue par un courant de 0,5 A. Quelle est sa puissance, en watts ?', valeur: 3, indice: IND_PUISS, pieges: [{ valeur: 12, erreur_type_id: 'inverse_relation' }] });
+  exo({ id: 'tmpl-puiss-12-2', objectif: OBJ_PUISSANCE, niveau: 1, enonce: 'Un appareil sous 12 V est parcouru par un courant de 2 A. Quelle est sa puissance, en watts ?', valeur: 24, indice: IND_PUISS, pieges: [{ valeur: 6, erreur_type_id: 'inverse_relation' }, { valeur: 14, erreur_type_id: 'additionne_au_lieu_de_multiplier' }] });
+  exo({ id: 'tmpl-puiss-6-05', objectif: OBJ_PUISSANCE, niveau: 3, enonce: 'Une lampe sous 6 V est parcourue par un courant de 0,5 A. Quelle est sa puissance, en watts ?', valeur: 3, indice: IND_PUISS, pieges: [{ valeur: 12, erreur_type_id: 'inverse_relation' }] });
   exo({ id: 'tmpl-puiss-230-10', objectif: OBJ_PUISSANCE, enonce: 'Un four sous 230 V est parcouru par un courant de 10 A. Quelle est sa puissance, en watts ?', valeur: 2300, indice: IND_PUISS, pieges: [{ valeur: 240, erreur_type_id: 'additionne_au_lieu_de_multiplier' }] });
 
   // Vitesse d'un signal (m/s)

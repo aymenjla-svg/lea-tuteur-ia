@@ -128,6 +128,8 @@ export interface ExerciceTemplate extends Aggregate {
   readonly parametres: readonly ParametreTemplate[];
   readonly etapes: readonly EtapeTemplate[];
   readonly representations: readonly Representation[];
+  /** Niveau de difficulté 1..4 (cadre BO). Absent = niveau moyen implicite. */
+  readonly niveau?: number;
 }
 
 /** Explication d'un objectif, déclinée par modalité (§5 : `explications`). */

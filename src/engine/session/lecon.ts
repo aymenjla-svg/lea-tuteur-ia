@@ -151,6 +151,8 @@ interface SessionInterne {
   termine: boolean;
   /** Bonnes réponses sur l'objectif VISÉ dans cette séance (crédibilité maîtrise). */
   reussites: number;
+  /** Difficulté visée (1..4) dérivée de la classe ; guide le choix d'exercice. */
+  niveau_cible: number | undefined;
   /** Compteur de propositions (rotation dans la banque d'exercices, D5). */
   proposalIndex: number;
   /** Décomposition disponible pour l'exercice courant (si l'auteur en a fourni). */
@@ -185,6 +187,8 @@ export class MoteurLecon {
   async demarrer(contexte: ContexteSession): Promise<EtatLecon> {
     const { template_id, question, indice, decomposition } = await this.#proposer(
       contexte.objectif_initial,
+      0,
+      contexte.niveau_cible,
     );
     const session: SessionInterne = {
       eleve_id: contexte.eleve_id,
@@ -196,6 +200,7 @@ export class MoteurLecon {
       echecs: 0,
       termine: false,
       reussites: 0,
+      niveau_cible: contexte.niveau_cible,
       proposalIndex: 0,
       decomposition,
     };
@@ -655,7 +660,7 @@ export class MoteurLecon {
    * `index` fait TOURNER la banque (variété d'exercices d'une proposition à
    * l'autre au sein d'une même session, D5) — déterministe (pas de random).
    */
-  async #proposer(objectif_id: ObjectifId, index = 0): Promise<{
+  async #proposer(objectif_id: ObjectifId, index = 0, niveauCible?: number): Promise<{
     template_id: ExerciceTemplateId;
     question: Question;
     indice: string | undefined;
@@ -663,8 +668,22 @@ export class MoteurLecon {
   }> {
     const templates =
       await this.deps.curriculum.templatesPourObjectif(objectif_id);
+    // Adaptation à la classe (D5) : on privilégie les exercices proches du
+    // niveau visé, en élargissant la bande jusqu'à garder ≥ 2 exercices (pour
+    // conserver de la variété par rotation). Sans niveau_cible → toute la banque.
+    let candidats = templates;
+    if (niveauCible != null && templates.length > 1) {
+      const ecart = (t: (typeof templates)[number]) => Math.abs((t.niveau ?? 2) - niveauCible);
+      for (const bande of [1, 2]) {
+        const proches = templates.filter((t) => ecart(t) <= bande);
+        if (proches.length >= 2) {
+          candidats = proches;
+          break;
+        }
+      }
+    }
     const tmpl =
-      templates.length > 0 ? templates[index % templates.length] : undefined;
+      candidats.length > 0 ? candidats[index % candidats.length] : undefined;
     if (!tmpl) {
       throw new Error(`Aucun template d’exercice pour l’objectif ${objectif_id}.`);
     }
@@ -684,7 +703,7 @@ export class MoteurLecon {
   async #charger(session: SessionInterne, cible: ObjectifId): Promise<void> {
     session.proposalIndex += 1; // rotation : exercice suivant de la banque
     const { template_id, question, indice, decomposition } =
-      await this.#proposer(cible, session.proposalIndex);
+      await this.#proposer(cible, session.proposalIndex, session.niveau_cible);
     session.objectif_courant = cible;
     session.template_id = template_id;
     session.question = question;

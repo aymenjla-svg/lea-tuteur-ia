@@ -81,6 +81,7 @@ function nettoyerEtat(etat: unknown): unknown {
 
 async function creerSession(
   objectifId?: string,
+  niveauCible?: number,
 ): Promise<{ session_id: string; etat: unknown }> {
   const session_id = nouvelId<SessionId>();
   const contexte: ContexteSession = {
@@ -88,6 +89,7 @@ async function creerSession(
     eleve_id: id<EleveId>('eleve-demo'),
     persona_id: id<PersonaId>('persona-lea'),
     objectif_initial: (objectifId ? id<ObjectifId>(objectifId) : OBJ_VITESSE) as ObjectifId,
+    ...(typeof niveauCible === 'number' ? { niveau_cible: niveauCible } : {}),
   };
   const etat = await moteur.demarrer(contexte);
   return { session_id, etat: nettoyerEtat(etat) };

@@ -69,10 +69,17 @@ async function api(chemin, methode = 'GET', corps) {
   if (!res.ok) throw new Error(data.erreur || `HTTP ${res.status}`);
   return data;
 }
+// Difficulté visée (1..4) dérivée de la classe choisie (6ᵉ→3ᵉ) : adapte le
+// choix des exercices de la série. Sans classe → pas d'adaptation.
+const NIVEAU_DIFFICULTE = { '6e': 1, '5e': 2, '4e': 3, '3e': 4 };
+function difficulteClasse() {
+  return NIVEAU_DIFFICULTE[niveauCourant()?.id] ?? undefined;
+}
 async function moteurCreer(objectifId) {
+  const niv = difficulteClasse();
   return EMBARQUE
-    ? window.LeaEngine.creerSession(objectifId)
-    : api('/sessions', 'POST', { objectif_id: objectifId });
+    ? window.LeaEngine.creerSession(objectifId, niv)
+    : api('/sessions', 'POST', { objectif_id: objectifId, niveau_cible: niv });
 }
 async function moteurRepondre(texte) {
   return EMBARQUE

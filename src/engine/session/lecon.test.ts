@@ -247,6 +247,23 @@ test('la banque tourne : des exercices variés au fil d’une même session (D5)
   assert.ok(enonces.size >= 2, `variété attendue, vu ${enonces.size} énoncé(s)`);
 });
 
+test('adaptation à la classe : la 6ᵉ évite l’exercice le plus dur, la 3ᵉ le rencontre', async () => {
+  // niveau_cible = 1 (6ᵉ) : on ne doit PAS voir le « 2 h 30 » (niveau 4).
+  const facile = bancPhysique();
+  let e = await facile.moteur.demarrer({ ...facile.contexte, niveau_cible: 1 });
+  const vus = new Set<string>();
+  for (let i = 0; i < 6 && !e.termine; i++) {
+    const q = e.question_courante as { enonce: string; attendu: { valeur: number } };
+    vus.add(q.enonce);
+    e = await facile.moteur.repondre(facile.session_id, String(q.attendu.valeur));
+  }
+  assert.ok(![...vus].some((x) => /2 h 30/.test(x)), 'la 6ᵉ ne doit pas voir le 2 h 30');
+  // niveau_cible = 4 (3ᵉ) : le premier exercice EST le « 2 h 30 ».
+  const dur = bancPhysique();
+  const e4 = await dur.moteur.demarrer({ ...dur.contexte, niveau_cible: 4 });
+  assert.match(e4.question_courante?.enonce ?? '', /2 h 30/);
+});
+
 test('blocage (2 échecs) → bascule en décomposition guidée plutôt que la réponse', async () => {
   const { moteur, contexte, session_id } = bancPhysique();
   await moteur.demarrer(contexte);
