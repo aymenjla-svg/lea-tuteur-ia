@@ -315,16 +315,19 @@ function meubleSVG() {
       <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eaeff5"/><stop offset=".5" stop-color="#aab4c2"/><stop offset="1" stop-color="#7d8798"/></linearGradient>
       <radialGradient id="glow" cx="50%" cy="42%" r="60%"><stop offset="0" stop-color="#fff6c8"/><stop offset="55%" stop-color="#ffd54a"/><stop offset="100%" stop-color="#f0a800"/></radialGradient>
     </defs>
-    <!-- ombre au sol + pieds -->
-    <ellipse cx="160" cy="94" rx="150" ry="3.2" fill="#00000026"/>
-    <rect x="16" y="84" width="13" height="11" rx="1" fill="url(#deskWood)"/><rect x="291" y="84" width="13" height="11" rx="1" fill="url(#deskWood)"/>
-    <!-- caissons à tiroirs (gauche + droite) et espace jambes (knee-hole) au centre -->
-    <rect x="8" y="54" width="96" height="32" rx="2" fill="url(#deskWood)"/>
-    <rect x="216" y="54" width="96" height="32" rx="2" fill="url(#deskWood)"/>
-    <rect x="104" y="55" width="112" height="30" fill="#6e4322"/>
-    <rect x="110" y="57" width="100" height="26" rx="1" fill="#8a5228"/>
-    ${tiroir(16, 58, 80, 12)}${tiroir(16, 72, 80, 12)}
-    ${tiroir(224, 58, 80, 12)}${tiroir(224, 72, 80, 12)}
+    <!-- ombre au sol -->
+    <ellipse cx="160" cy="126" rx="150" ry="3.5" fill="#00000026"/>
+    <!-- caissons à tiroirs (gauche + droite) descendant jusqu'au sol -->
+    <rect x="8" y="53" width="96" height="62" rx="2" fill="url(#deskWood)"/>
+    <rect x="216" y="53" width="96" height="62" rx="2" fill="url(#deskWood)"/>
+    <!-- espace pour les jambes au centre (renfoncement sombre) -->
+    <rect x="104" y="54" width="112" height="56" fill="#6e4322"/>
+    <rect x="110" y="56" width="100" height="52" rx="1" fill="#8a5228"/>
+    <!-- pieds -->
+    <rect x="16" y="113" width="15" height="13" rx="1" fill="url(#deskWood)"/><rect x="289" y="113" width="15" height="13" rx="1" fill="url(#deskWood)"/>
+    <!-- 3 tiroirs par caisson -->
+    ${tiroir(16, 58, 80, 15)}${tiroir(16, 76, 80, 15)}${tiroir(16, 94, 80, 15)}
+    ${tiroir(224, 58, 80, 15)}${tiroir(224, 76, 80, 15)}${tiroir(224, 94, 80, 15)}
     <!-- plateau du bureau (déborde légèrement) + chant sombre -->
     <rect x="0" y="43" width="320" height="10" rx="2.5" fill="url(#deskTop)"/>
     <rect x="0" y="43.5" width="320" height="1.8" rx="1" fill="#f2d2a4" opacity=".85"/>
@@ -379,7 +382,7 @@ function objetsMatiere(id) {
   }
 }
 function paillasseSVG(id) {
-  return `<svg class="paillasse" viewBox="0 0 320 96" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${meubleSVG()}${objetsMatiere(id)}</svg>`;
+  return `<svg class="paillasse" viewBox="0 0 320 128" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${meubleSVG()}${objetsMatiere(id)}</svg>`;
 }
 // Décor de la salle de cours, dans l'esprit de la salle commune (classe de
 // sciences chaleureuse) : néons au plafond, portraits de savants, poster de la
