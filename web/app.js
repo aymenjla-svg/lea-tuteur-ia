@@ -202,9 +202,14 @@ function ecoleHallSVG() {
     // portraits de savants
     '<rect x="60" y="34" width="26" height="30" rx="2" fill="#caa25a"/><rect x="63" y="37" width="20" height="24" fill="#9fb0b8"/><circle cx="73" cy="46" r="5" fill="#e9d6bf"/><path d="M66 61 q7 -8 14 0 z" fill="#6a4a30"/>' +
     '<rect x="92" y="34" width="26" height="30" rx="2" fill="#caa25a"/><rect x="95" y="37" width="20" height="24" fill="#9fb0b8"/><circle cx="105" cy="46" r="5" fill="#e9d6bf"/><path d="M98 61 q7 -8 14 0 z" fill="#8a6a4a"/>' +
-    // poster graphique (barres)
+    // poster graphique (barres) — axes, lignes de niveau, barres arrondies + courbe
     '<rect x="60" y="74" width="58" height="46" rx="2" fill="#f9f2e2" stroke="#caa25a" stroke-width="2"/>' +
-    '<g><rect x="66" y="100" width="7" height="14" fill="#e0a83e"/><rect x="76" y="92" width="7" height="22" fill="#4a90d9"/><rect x="86" y="104" width="7" height="10" fill="#d0553f"/><rect x="96" y="96" width="7" height="18" fill="#3fae8f"/><rect x="106" y="88" width="7" height="26" fill="#b06ab3"/></g>' +
+    '<line x1="64" y1="80" x2="90" y2="80" stroke="#caa25a" stroke-width="2" stroke-linecap="round"/>' + // titre
+    '<g stroke="#e6d8ba" stroke-width="1"><line x1="67" y1="98" x2="113" y2="98"/><line x1="67" y1="106" x2="113" y2="106"/></g>' + // niveaux
+    '<g><rect x="68" y="102" width="7" height="12" rx="1.5" fill="#e0a83e"/><rect x="78" y="94" width="7" height="20" rx="1.5" fill="#4a90d9"/><rect x="88" y="106" width="7" height="8" rx="1.5" fill="#d0553f"/><rect x="98" y="98" width="7" height="16" rx="1.5" fill="#3fae8f"/><rect x="108" y="90" width="7" height="24" rx="1.5" fill="#b06ab3"/></g>' +
+    '<path d="M65 88 V114 H115" fill="none" stroke="#b89a6a" stroke-width="1.5" stroke-linecap="round"/>' + // axes
+    '<polyline points="71,100 81,92 91,105 101,97 111,89" fill="none" stroke="#8a5a3b" stroke-width="1.3" opacity=".55" stroke-linecap="round" stroke-linejoin="round"/>' + // tendance
+    '<g fill="#8a5a3b" opacity=".7"><circle cx="71" cy="100" r="1.4"/><circle cx="81" cy="92" r="1.4"/><circle cx="91" cy="105" r="1.4"/><circle cx="101" cy="97" r="1.4"/><circle cx="111" cy="89" r="1.4"/></g>' +
     // TABLEAU vert central + craies + molécule + schéma pendule + aimant
     '<rect x="128" y="40" width="150" height="98" rx="4" fill="url(#spWood)"/>' +
     '<rect x="134" y="46" width="138" height="86" rx="2" fill="url(#spBoard)"/>' +
@@ -213,7 +218,13 @@ function ecoleHallSVG() {
     '<g stroke="#eef5ec" stroke-width="1.4" fill="none" opacity=".85"><circle cx="228" cy="72" r="5"/><circle cx="250" cy="66" r="5"/><circle cx="248" cy="92" r="5"/><line x1="233" y1="70" x2="245" y2="67"/><line x1="230" y1="77" x2="246" y2="88"/></g>' +
     '<g stroke="#eef5ec" stroke-width="1.4" fill="#eef5ec" opacity=".85"><line x1="222" y1="104" x2="246" y2="104"/><line x1="234" y1="104" x2="228" y2="122"/><circle cx="227" cy="124" r="3"/></g>' +
     '<rect x="132" y="132" width="142" height="5" rx="1" fill="#8a4e2a"/><rect x="150" y="133" width="12" height="3" rx="1.5" fill="#f4e9c9"/><rect x="166" y="133" width="10" height="3" rx="1.5" fill="#e6a0a0"/>' +
-    '<g transform="translate(196,120)"><path d="M0 16 V6 a8 8 0 0 1 16 0 V16 h-5 V6 a3 3 0 0 0 -6 0 V16 Z" fill="#d0553f"/><rect x="0" y="16" width="5" height="4" fill="#cfd3d8"/><rect x="11" y="16" width="5" height="4" fill="#cfd3d8"/></g>' +
+    '<g transform="translate(196,104)">' +
+      '<path d="M1 24 V12 A9 9 0 0 1 19 12 V24 H12.5 V12 A2.5 2.5 0 0 0 7.5 12 V24 Z" fill="#d0553f"/>' +
+      '<path d="M1 24 V12 A9 9 0 0 1 3.4 6 A9 9 0 0 0 1.2 12 V24 Z" fill="#a83f2b" opacity=".45"/>' +
+      '<path d="M2.6 9 A8 8 0 0 1 17.4 9" fill="none" stroke="#ec8168" stroke-width="1.6" stroke-linecap="round" opacity=".8"/>' +
+      '<rect x="0.6" y="23.5" width="6.6" height="5" rx="1" fill="#c6cdd6"/><rect x="12.4" y="23.5" width="6.6" height="5" rx="1" fill="#c6cdd6"/>' +
+      '<rect x="0.6" y="23.5" width="6.6" height="1.6" rx=".8" fill="#eef2f6"/><rect x="12.4" y="23.5" width="6.6" height="1.6" rx=".8" fill="#eef2f6"/>' +
+    '</g>' +
     // horloge
     '<circle cx="356" cy="52" r="13" fill="#f9f2e2" stroke="#a9663e" stroke-width="2.5"/><circle cx="356" cy="52" r="1.6" fill="#3a4048"/><line x1="356" y1="52" x2="356" y2="44" stroke="#3a4048" stroke-width="1.6"/><line x1="356" y1="52" x2="362" y2="52" stroke="#3a4048" stroke-width="1.6"/>' +
     // BIBLIOTHÈQUE (reliures + microscope + verrerie)
@@ -233,8 +244,8 @@ function ecoleHallSVG() {
     '</g>' +
     '<g fill="#3a4048"><rect x="316" y="138" width="18" height="4" rx="1"/><rect x="320" y="118" width="4" height="20"/><path d="M322 120 q12 -2 12 8 l-4 1 q0 -6 -8 -5 z"/><circle cx="333" cy="130" r="3.5" fill="#7d8798"/></g>' +
     '<path d="M348 122 l-4 16 h12 l-4 -16 z" fill="#a7d8c8" opacity=".75" stroke="#7fb8a8"/><rect x="340" y="126" width="4" height="12" fill="#bcd8e8" opacity=".7"/>' +
-    // plante en pot (devant, à droite) — feuillage à vraies feuilles + pot évasé
-    '<g>' +
+    // plante en pot POSÉE sur la bibliothèque (calée, ne flotte plus)
+    '<g transform="translate(199,-20) scale(0.46)">' +
       // feuilles (2 verts pour le relief) + nervures
       '<g fill="#4fb069">' +
         '<path d="M297 178 C278 170 270 144 283 126 C292 146 300 162 297 178 Z"/>' +
