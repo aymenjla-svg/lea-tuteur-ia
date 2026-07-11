@@ -301,30 +301,34 @@ const DECOR_SALLE = {
 // Rendu soigné : dégradés (relief), tiroirs biseautés, poignées chromées, plan
 // de travail brillant à arête.
 function meubleSVG() {
+  // Un tiroir de bureau en bois, avec poignée métal.
   const tiroir = (x, y, w, h) =>
-    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" fill="url(#drw)" stroke="#c3ccda" stroke-width="1"/>` +
-    `<rect x="${x + 1.5}" y="${y + 1.5}" width="${w - 3}" height="2" rx="1" fill="#ffffff" opacity=".85"/>` +
-    `<rect x="${x}" y="${y + h - 2}" width="${w}" height="2" fill="#00000012"/>` +
-    `<rect x="${x + w / 2 - 11}" y="${y + h / 2 - 2}" width="22" height="4" rx="2" fill="url(#hdl)"/>`;
+    `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="2" fill="url(#deskDrw)" stroke="#6e4322" stroke-width="1"/>` +
+    `<rect x="${x + 1.5}" y="${y + 1.5}" width="${w - 3}" height="1.6" rx="1" fill="#ffffff" opacity=".22"/>` +
+    `<rect x="${x + w / 2 - 10}" y="${y + h / 2 - 2}" width="20" height="4" rx="2" fill="url(#metal)"/>`;
   return `
     <defs>
-      <linearGradient id="cptr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#86abd2"/><stop offset="1" stop-color="#4d6d95"/></linearGradient>
-      <linearGradient id="cab" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6f8fc"/><stop offset="1" stop-color="#cdd6e4"/></linearGradient>
-      <linearGradient id="drw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#dde4ef"/></linearGradient>
-      <linearGradient id="hdl" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f2f5f9"/><stop offset=".5" stop-color="#9aa6b8"/><stop offset="1" stop-color="#69748a"/></linearGradient>
+      <linearGradient id="deskTop" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#c98a4f"/><stop offset="1" stop-color="#a1652f"/></linearGradient>
+      <linearGradient id="deskWood" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a5652f"/><stop offset="1" stop-color="#7d4a24"/></linearGradient>
+      <linearGradient id="deskDrw" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bd7a44"/><stop offset="1" stop-color="#9a5c2c"/></linearGradient>
       <linearGradient id="glass" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ffffff" stop-opacity=".06"/><stop offset=".3" stop-color="#ffffff" stop-opacity=".55"/><stop offset=".55" stop-color="#ffffff" stop-opacity=".12"/><stop offset="1" stop-color="#bcd6ea" stop-opacity=".24"/></linearGradient>
       <linearGradient id="metal" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eaeff5"/><stop offset=".5" stop-color="#aab4c2"/><stop offset="1" stop-color="#7d8798"/></linearGradient>
       <radialGradient id="glow" cx="50%" cy="42%" r="60%"><stop offset="0" stop-color="#fff6c8"/><stop offset="55%" stop-color="#ffd54a"/><stop offset="100%" stop-color="#f0a800"/></radialGradient>
     </defs>
-    <rect x="8" y="94" width="304" height="2" rx="1" fill="#00000026"/>
-    <rect x="4" y="55" width="312" height="40" rx="4" fill="url(#cab)"/>
-    <rect x="4" y="55" width="312" height="2" rx="2" fill="#ffffff" opacity=".6"/>
-    ${tiroir(14, 61, 88, 14)}${tiroir(14, 78, 88, 13)}
-    <rect x="112" y="61" width="96" height="30" rx="3" fill="url(#drw)" stroke="#c3ccda" stroke-width="1"/><rect x="113.5" y="62.5" width="93" height="2" rx="1" fill="#ffffff" opacity=".85"/><circle cx="160" cy="76" r="3.2" fill="url(#hdl)"/>
-    ${tiroir(218, 61, 88, 14)}${tiroir(218, 78, 88, 13)}
-    <rect x="0" y="47" width="320" height="7" rx="2" fill="url(#cptr)"/>
-    <rect x="0" y="47" width="320" height="1.6" rx="1" fill="#c2dcf7" opacity=".75"/>
-    <rect x="0" y="53" width="320" height="3" fill="#39567a"/>`;
+    <!-- ombre au sol + pieds -->
+    <ellipse cx="160" cy="94" rx="150" ry="3.2" fill="#00000026"/>
+    <rect x="16" y="84" width="13" height="11" rx="1" fill="url(#deskWood)"/><rect x="291" y="84" width="13" height="11" rx="1" fill="url(#deskWood)"/>
+    <!-- caissons à tiroirs (gauche + droite) et espace jambes (knee-hole) au centre -->
+    <rect x="8" y="54" width="96" height="32" rx="2" fill="url(#deskWood)"/>
+    <rect x="216" y="54" width="96" height="32" rx="2" fill="url(#deskWood)"/>
+    <rect x="104" y="55" width="112" height="30" fill="#6e4322"/>
+    <rect x="110" y="57" width="100" height="26" rx="1" fill="#8a5228"/>
+    ${tiroir(16, 58, 80, 12)}${tiroir(16, 72, 80, 12)}
+    ${tiroir(224, 58, 80, 12)}${tiroir(224, 72, 80, 12)}
+    <!-- plateau du bureau (déborde légèrement) + chant sombre -->
+    <rect x="0" y="43" width="320" height="10" rx="2.5" fill="url(#deskTop)"/>
+    <rect x="0" y="43.5" width="320" height="1.8" rx="1" fill="#f2d2a4" opacity=".85"/>
+    <rect x="0" y="50.6" width="320" height="2.6" fill="#5f3a1c"/>`;
 }
 // Matériel posé sur le comptoir, PROPRE À CHAQUE MATIÈRE (bas des objets ≈ y48).
 // Même finition que l'établi : verre brillant (url(#glass) + reflets), ampoules
