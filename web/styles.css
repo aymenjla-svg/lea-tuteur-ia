@@ -498,30 +498,13 @@ body::after {
 
 /* Prof manga en séance : le portrait EST le prof (buste encadré, coin bas-droit),
    avec un flottement « vivant » et un rebond quand il parle. */
-.av-wrap { position: relative; display: inline-block; }
-/* Prof FIXE en séance : seule la bouche bouge (sinon la bouche superposée
-   se désaligne du corps qui se balance). */
+/* Prof en séance : image fixe, la bouche est animée par échange de frames
+   (bouche fermée ⇄ ouverte) piloté en JS quand il parle. */
 .avatar-host img.av-portrait {
   width: auto; height: 262px; object-fit: contain; object-position: 50% 0;
   filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.34));
 }
 @media (max-width: 480px) { .avatar-host img.av-portrait { height: 214px; } }
-
-/* Bouche animée superposée : cachée au repos (la bouche dessinée reste),
-   elle s'ouvre/ferme quand le prof parle. */
-.av-bouche {
-  position: absolute; transform: translate(-50%, -50%);
-  width: 13px; height: 2px; overflow: hidden;
-  border-radius: 3px 3px 7px 7px;
-  /* haut = dents (clair), milieu = intérieur (sombre), bas = langue/lèvre */
-  background: linear-gradient(#f4ebe4 0 28%, #7a2f28 28% 72%, #c96b61 72% 100%);
-  box-shadow: 0 0 0 1px rgba(60, 20, 18, 0.55);
-  opacity: 0; pointer-events: none;
-}
-.avatar-host.parle .av-bouche { opacity: 1; animation: parleBouche 0.24s ease-in-out infinite; }
-@keyframes parleBouche { 0%, 100% { height: 2px; } 50% { height: 10px; } }
-@media (max-width: 480px) { .av-bouche { width: 11px; } }
-@media (prefers-reduced-motion: reduce) { .avatar-host.parle .av-bouche { animation: none; height: 6px; } }
 
 /* ---- Cours : tableau animé (lecteur de scènes) ---- */
 .cours-titre { font-family: var(--round); font-weight: 700; font-size: clamp(1.05rem, 3.6vw, 1.4rem); color: #eafff8; padding-right: 120px; }

@@ -656,12 +656,10 @@ function ouvrirModule(m) {
   $('#scene').style.setProperty('--c', m.couleur);
   $('#salleDeco').innerHTML = decorSalle(m.id);
   theme(m.couleur);
-  // Le prof (portrait si dispo, sinon SVG). Avec un portrait, on superpose une
-  // petite bouche animée pile sur la bouche dessinée → elle s'ouvre quand il parle.
-  const bouche = (persona.portrait && persona.bouche)
-    ? `<span class="av-bouche" style="left:${persona.bouche.x}%;top:${persona.bouche.y}%"></span>`
-    : '';
-  $('#avatarHost').innerHTML = `<span class="av-wrap">${visuelProf(persona, '', { entier: true })}${bouche}</span>`;
+  // Le prof (portrait si dispo, sinon SVG). Deux frames par prof (bouche fermée
+  // = repos, bouche ouverte = parle) qu'on alterne pendant qu'il parle.
+  $('#avatarHost').innerHTML = visuelProf(persona, '', { entier: true });
+  if (persona.portraitParle) { const i = new Image(); i.src = persona.portraitParle; } // précharge
   $('#hudTitre').textContent = `${persona.nom} · ${m.titre}`;
   $('#accueil').hidden = true;
   $('#lecon').hidden = false;
@@ -1482,6 +1480,8 @@ function ecouterMic() {
 
 let prochainClignement = 1500;
 let debutClignement = 0;
+let profFrameOuvert = false; // frame courante de la bouche du prof (image)
+let profFrameSwap = 0;       // dernier changement de frame (ms)
 
 function animer(t) {
   const parle = t < parleJusqua && !reduireMouvement;
@@ -1490,10 +1490,21 @@ function animer(t) {
   }
   const cfg = EXPR[expression] ?? EXPR.idle;
 
-  // Portrait manga : rebond léger quand le prof parle (l'animation SVG ci-dessous
-  // ne s'applique qu'à l'avatar vectoriel, sans effet sur une image).
-  const av = $('#avatarHost');
-  if (av) av.classList.toggle('parle', parle);
+  // Bouche du prof (image) : on alterne frame fermée/ouverte pendant qu'il parle.
+  const avImg = $('#avatarHost img.av-portrait');
+  if (avImg && persona?.portraitParle) {
+    if (parle) {
+      if (t - profFrameSwap > 130) {
+        profFrameOuvert = !profFrameOuvert;
+        profFrameSwap = t;
+        const src = profFrameOuvert ? persona.portraitParle : persona.portrait;
+        if (!avImg.getAttribute('src').endsWith(src)) avImg.setAttribute('src', src);
+      }
+    } else if (profFrameOuvert) {
+      profFrameOuvert = false;
+      avImg.setAttribute('src', persona.portrait);
+    }
+  }
 
   const corps = $('#corps');
   if (corps && !reduireMouvement) {
