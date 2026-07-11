@@ -419,13 +419,14 @@ body::after {
 .scene {
   --c: var(--accent);
   position: relative; min-height: 320px;
-  /* Salle de sciences : plafond terracotta + néons, mur crème teinté par la
-     matière (pour distinguer les salles), sol gris. */
+  /* Salle de sciences : plafond terracotta + néons (constants), MUR coloré
+     selon la matière (chaque salle a sa teinte), sol gris. */
   background:
-    radial-gradient(140% 80% at 50% 60%, color-mix(in srgb, var(--c) 16%, transparent), transparent 60%),
+    radial-gradient(120% 70% at 50% 62%, rgba(255, 255, 255, 0.14), transparent 60%),
     linear-gradient(180deg,
       #cf7b62 0, #cf7b62 18px, #af5f3e 18px, #af5f3e 22px,
-      #f3e8d3 22px, #ecdec3 100%);
+      color-mix(in srgb, var(--c) 26%, #f1e6cf) 22px,
+      color-mix(in srgb, var(--c) 32%, #e2d2b4) 100%);
   border: 2px solid rgba(120, 90, 50, 0.28);
   border-radius: var(--rad-lg);
   padding: 62px 26px 104px;
