@@ -613,13 +613,16 @@ body::after {
 .bilan-note { margin-top: 10px; font-size: 0.86rem; color: var(--txt2); line-height: 1.4; }
 
 /* QCM de cours (questions conceptuelles) */
-.qcm-zone { display: flex; flex-direction: column; gap: 10px; max-width: 420px; margin: 12px auto 0; }
-.qcm-opt { font-family: var(--round); font-weight: 600; font-size: 1rem; text-align: left; padding: 14px 16px; border-radius: 14px; border: 1.5px solid var(--border); background: rgba(10, 26, 42, 0.55); backdrop-filter: blur(10px); color: #fff; cursor: pointer; transition: transform 0.1s ease, background 0.15s ease, border-color 0.15s ease; }
-.qcm-opt:hover:not(:disabled) { background: rgba(30, 52, 74, 0.7); }
+.qcm-zone { display: flex; flex-direction: column; gap: 10px; max-width: 420px; margin: 12px auto 0; counter-reset: qcm; }
+.qcm-opt { display: flex; align-items: center; gap: 12px; font-family: var(--round); font-weight: 600; font-size: 1rem; text-align: left; padding: 13px 16px; border-radius: 14px; border: 1.5px solid var(--border); background: rgba(10, 26, 42, 0.55); backdrop-filter: blur(10px); color: #fff; cursor: pointer; transition: transform 0.12s ease, background 0.15s ease, border-color 0.15s ease; }
+.qcm-opt::before { counter-increment: qcm; content: counter(qcm, upper-alpha); flex: 0 0 auto; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 8px; font-weight: 800; font-size: 0.82rem; color: #06121f; background: color-mix(in srgb, var(--neon, #6bd0ff) 78%, #ffffff); }
+.qcm-opt:hover:not(:disabled) { background: rgba(30, 52, 74, 0.7); border-color: color-mix(in srgb, var(--neon, #6bd0ff) 55%, transparent); transform: translateY(-1px); }
 .qcm-opt:active:not(:disabled) { transform: scale(0.98); }
 .qcm-opt:disabled { cursor: default; }
 .qcm-opt.juste { background: rgba(52, 226, 168, 0.22); border-color: var(--ok); color: #eafff6; }
+.qcm-opt.juste::before { background: var(--ok); color: #06231a; }
 .qcm-opt.faux { border-color: #ff8a8a; animation: qcmShake 0.3s ease; }
+.qcm-opt.faux::before { background: #ff8a8a; color: #3a0d0d; }
 @keyframes qcmShake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-5px); } 75% { transform: translateX(5px); } }
 
 /* Accessibilité & avis : bouton + modales */

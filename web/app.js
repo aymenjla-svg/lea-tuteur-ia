@@ -710,6 +710,7 @@ function appliquerMode() {
   $('#tableauFormule').hidden = cours;
   $('#coursNav').hidden = !cours;
   $('#perdu').hidden = cours;
+  $('#perdu').textContent = genrer('Je suis perdu·e', lireProfil()?.sexe); // accord élève
   $('#leverMain').hidden = false; // « lever la main » : cours ET exercices
   // Micro « toujours prêt » : présent pendant le COURS si la voix est dispo
   // (et masqué tant que le panneau de saisie est ouvert, pour ne pas se chevaucher).
