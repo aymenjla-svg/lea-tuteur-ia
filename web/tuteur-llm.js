@@ -19,6 +19,13 @@ function eleveRef() {
   } catch { return SESSION_ID; }
 }
 
+// Centres d'intérêt de l'élève (posés par interets.js) — passés au tuteur pour
+// personnaliser ses exemples. Lecture directe (aucune dépendance de module).
+function lireInterets() {
+  try { const a = JSON.parse(localStorage.getItem('lea.interets.v1') ?? '[]'); return Array.isArray(a) ? a.slice(0, 8) : []; }
+  catch { return []; }
+}
+
 function lireConfig() {
   const meta = (n) => document.querySelector(`meta[name="${n}"]`)?.content?.trim() || '';
   let url = '';
@@ -96,7 +103,7 @@ export async function poserQuestion(question, contexte = {}, historique = []) {
       headers,
       body: JSON.stringify({
         question: q,
-        contexte: { ...contexte, session_id: SESSION_ID, eleve_ref: eleveRef() },
+        contexte: { ...contexte, interets: lireInterets(), session_id: SESSION_ID, eleve_ref: eleveRef() },
         historique: hist,
       }),
     });
