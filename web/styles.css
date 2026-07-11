@@ -499,14 +499,13 @@ body::after {
 /* Prof manga en séance : le portrait EST le prof (buste encadré, coin bas-droit),
    avec un flottement « vivant » et un rebond quand il parle. */
 .av-wrap { position: relative; display: inline-block; }
+/* Prof FIXE en séance : seule la bouche bouge (sinon la bouche superposée
+   se désaligne du corps qui se balance). */
 .avatar-host img.av-portrait {
   width: auto; height: 262px; object-fit: contain; object-position: 50% 0;
   filter: drop-shadow(0 8px 6px rgba(0, 0, 0, 0.34));
-  transform-origin: 50% 100%;
-  animation: profIdle 4.6s ease-in-out infinite;
 }
 @media (max-width: 480px) { .avatar-host img.av-portrait { height: 214px; } }
-@media (prefers-reduced-motion: reduce) { .avatar-host img.av-portrait { animation: none; } }
 
 /* Bouche animée superposée : cachée au repos (la bouche dessinée reste),
    elle s'ouvre/ferme quand le prof parle. */
