@@ -48,6 +48,10 @@
       .soul-prof .dot { width: 13px; height: 13px; border-radius: 50%; }
       .soul-prof .perso { color: #ffd98a; }
       .soul-zone { width: 100%; margin-top: 12px; min-height: 150px; line-height: 1.5; }
+      .pv-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+      .pv-tab { font-family: var(--round); font-weight: 700; font-size: 0.9rem; padding: 9px 16px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--panel); color: var(--txt2); cursor: pointer; }
+      .pv-tab.actif { color: #fff; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, var(--panel)); }
+      .pv-panneau[hidden] { display: none; }
     </style>
   </head>
   <body>
@@ -77,27 +81,33 @@
       </section>
 
       <section class="bloc">
-        <h2>Personnalité des profs (« soul »)</h2>
-        <p class="db-sub" style="margin-bottom: 12px">Choisis un prof et modifie sa personnalité : elle influence sa façon de répondre (ton, humour, images…). Enregistré sur cet appareil. « Copier pour tous » te donne le bloc à coller dans <code>web/config.js</code> pour l’appliquer à tous les testeurs.</p>
-        <div class="soul-profs" id="soulProfs"></div>
-        <textarea id="soulTexte" class="fb-zone soul-zone" rows="7" placeholder="Décris la personnalité du prof…"></textarea>
-        <p id="soulEtat" class="note"></p>
-        <div class="db-actions" style="margin-top: 8px">
-          <button id="soulSave" class="db-btn" type="button">Enregistrer</button>
-          <button id="soulReset" class="db-btn" type="button">Revenir au défaut</button>
-          <button id="soulExport" class="db-btn" type="button">Copier pour tous</button>
-        </div>
-      </section>
+        <h2>Personnalité &amp; valeurs</h2>
+        <p class="db-sub" style="margin-bottom: 12px">La <strong>charte</strong> définit les valeurs communes à tous les profs ; le <strong>soul</strong> donne à chaque prof sa personnalité. Les deux s’ajoutent dans les réponses du tuteur. Enregistré sur cet appareil ; « Copier pour tous » → à coller dans <code>web/config.js</code>. Les garde-fous durs (programme, sécurité mineurs, format) restent verrouillés côté serveur.</p>
 
-      <section class="bloc">
-        <h2>Charte / éthique de l’école (tous les profs)</h2>
-        <p class="db-sub" style="margin-bottom: 12px">Les valeurs communes à <strong>tous</strong> les profs (bienveillance, sécurité, rester dans le programme et recadrer le hors-sujet en douceur…). Elles s’ajoutent au « soul » de chaque prof. Les garde-fous durs (périmètre programme, filet de sécurité mineurs, format) restent verrouillés côté serveur.</p>
-        <textarea id="charteTexte" class="fb-zone soul-zone" rows="9" placeholder="Les valeurs de l’école…"></textarea>
-        <p id="charteEtat" class="note"></p>
-        <div class="db-actions" style="margin-top: 8px">
-          <button id="charteSave" class="db-btn" type="button">Enregistrer</button>
-          <button id="charteReset" class="db-btn" type="button">Revenir au défaut</button>
-          <button id="charteExport" class="db-btn" type="button">Copier pour tous</button>
+        <div class="pv-tabs">
+          <button type="button" class="pv-tab actif" data-cible="pvCharte">🏫 Charte de l’école</button>
+          <button type="button" class="pv-tab" data-cible="pvSoul">🎭 Soul des profs</button>
+        </div>
+
+        <div id="pvCharte" class="pv-panneau">
+          <textarea id="charteTexte" class="fb-zone soul-zone" rows="9" placeholder="Les valeurs de l’école…"></textarea>
+          <p id="charteEtat" class="note"></p>
+          <div class="db-actions" style="margin-top: 8px">
+            <button id="charteSave" class="db-btn" type="button">Enregistrer</button>
+            <button id="charteReset" class="db-btn" type="button">Revenir au défaut</button>
+            <button id="charteExport" class="db-btn" type="button">Copier pour tous</button>
+          </div>
+        </div>
+
+        <div id="pvSoul" class="pv-panneau" hidden>
+          <div class="soul-profs" id="soulProfs"></div>
+          <textarea id="soulTexte" class="fb-zone soul-zone" rows="7" placeholder="Décris la personnalité du prof…"></textarea>
+          <p id="soulEtat" class="note"></p>
+          <div class="db-actions" style="margin-top: 8px">
+            <button id="soulSave" class="db-btn" type="button">Enregistrer</button>
+            <button id="soulReset" class="db-btn" type="button">Revenir au défaut</button>
+            <button id="soulExport" class="db-btn" type="button">Copier pour tous</button>
+          </div>
         </div>
       </section>
 

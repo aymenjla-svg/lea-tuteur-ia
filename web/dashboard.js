@@ -152,6 +152,14 @@ $('#soulExport').addEventListener('click', async () => {
 
 chargerSoul();
 
+/* --- Onglet « Personnalité & valeurs » : bascule Charte / Soul ------------ */
+for (const t of document.querySelectorAll('.pv-tab')) {
+  t.addEventListener('click', () => {
+    for (const x of document.querySelectorAll('.pv-tab')) x.classList.toggle('actif', x === t);
+    for (const pn of document.querySelectorAll('.pv-panneau')) pn.hidden = pn.id !== t.dataset.cible;
+  });
+}
+
 /* --- Charte / valeurs de l'école (tous les profs) ------------------------- */
 
 function chargerCharte() {
