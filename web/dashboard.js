@@ -9,6 +9,7 @@ import { appliquerA11y } from './accessibilite.js';
 import { PERSONAS } from './personas.js';
 import { soulEffectif, definirSoul, reinitialiserSoul, soulPersonnalise, exporterSouls } from './souls.js';
 import { charteEffective, definirCharte, reinitialiserCharte, chartePersonnalisee, exporterCharte } from './charte.js';
+import { poserQuestion } from './tuteur-llm.js';
 
 appliquerA11y();
 
@@ -130,6 +131,8 @@ function chargerSoul() {
   $('#soulEtat').textContent = soulPersonnalise(soulSel)
     ? `✎ Personnalité personnalisée pour ${p.nom} (sur cet appareil).`
     : `Personnalité par défaut de ${p.nom}.`;
+  const ap = $('#apercuProf');
+  if (ap) ap.textContent = p.nom;
   rendreSoulProfs();
 }
 
@@ -174,6 +177,50 @@ $('#charteSave').addEventListener('click', () => {
   setTimeout(chargerCharte, 900);
 });
 $('#charteReset').addEventListener('click', () => { reinitialiserCharte(); chargerCharte(); });
+
+/* --- Tout réinitialiser (soul de tous les profs + charte) ----------------- */
+$('#pvResetTout').addEventListener('click', () => {
+  if (!confirm('Revenir aux réglages d’origine (personnalités de tous les profs + charte de l’école) sur cet appareil ?')) return;
+  for (const p of PERSONAS) reinitialiserSoul(p.id);
+  reinitialiserCharte();
+  chargerSoul();
+  chargerCharte();
+});
+
+/* --- Aperçu : envoie une question au tuteur avec soul + charte réglés ------ */
+$('#apercuGo').addEventListener('click', async () => {
+  const p = PERSONAS.find((x) => x.id === soulSel);
+  const q = $('#apercuQ').value.trim();
+  const rep = $('#apercuRep');
+  const btn = $('#apercuGo');
+  if (!q) { rep.hidden = false; rep.textContent = 'Écris d’abord une question à tester.'; return; }
+  btn.disabled = true;
+  const libelle = btn.textContent;
+  btn.textContent = '…';
+  rep.hidden = false;
+  rep.textContent = `${p.nom} réfléchit…`;
+  try {
+    const data = await poserQuestion(q, {
+      prof: { nom: p.nom, style: p.style, tagline: p.tagline, sexe: p.sexe, soul: soulEffectif(p.id) },
+      charte: charteEffective(),
+    });
+    const src = data.source === 'llm' ? 'tuteur en ligne'
+      : data.source === 'hors-ligne' ? 'hors-ligne (aucun tuteur branché — réponse générique)'
+      : data.source === 'erreur' ? `erreur : ${data.erreur ?? 'injoignable'}`
+      : data.source;
+    rep.innerHTML = '';
+    rep.append(document.createTextNode(data.reponse || '(réponse vide)'));
+    const s = document.createElement('span');
+    s.className = 'src';
+    s.textContent = `— source : ${src}`;
+    rep.append(s);
+  } catch (e) {
+    rep.textContent = 'Impossible d’obtenir une réponse : ' + String(e?.message ?? e);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = libelle;
+  }
+});
 $('#charteExport').addEventListener('click', async () => {
   const bloc = exporterCharte();
   try {

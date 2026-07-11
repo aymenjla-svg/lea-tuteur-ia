@@ -52,6 +52,14 @@
       .pv-tab { font-family: var(--round); font-weight: 700; font-size: 0.9rem; padding: 9px 16px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--panel); color: var(--txt2); cursor: pointer; }
       .pv-tab.actif { color: #fff; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, var(--panel)); }
       .pv-panneau[hidden] { display: none; }
+
+      .apercu { margin-top: 20px; padding-top: 16px; border-top: 1.5px dashed var(--border); }
+      .apercu h3 { font-family: var(--round); font-size: 0.98rem; color: #fff; margin: 0 0 6px; }
+      .apercu-ligne { display: flex; gap: 8px; flex-wrap: wrap; }
+      .apercu-ligne input { flex: 1 1 240px; min-width: 200px; padding: 10px 14px; border-radius: 12px; }
+      .apercu-rep { margin-top: 12px; background: var(--panel); border: 1.5px solid var(--border); border-radius: var(--rad); padding: 14px 16px; color: var(--txt); line-height: 1.5; white-space: pre-wrap; }
+      .apercu-rep[hidden] { display: none; }
+      .apercu-rep .src { display: block; margin-top: 8px; font-size: 0.78rem; color: var(--txt2); }
     </style>
   </head>
   <body>
@@ -81,8 +89,11 @@
       </section>
 
       <section class="bloc">
-        <h2>Personnalité &amp; valeurs</h2>
-        <p class="db-sub" style="margin-bottom: 12px">La <strong>charte</strong> définit les valeurs communes à tous les profs ; le <strong>soul</strong> donne à chaque prof sa personnalité. Les deux s’ajoutent dans les réponses du tuteur. Enregistré sur cet appareil ; « Copier pour tous » → à coller dans <code>web/config.js</code>. Les garde-fous durs (programme, sécurité mineurs, format) restent verrouillés côté serveur.</p>
+        <div class="db-tete" style="margin: 26px 0 6px">
+          <h2 style="margin: 0">Personnalité &amp; valeurs</h2>
+          <button id="pvResetTout" class="db-btn" type="button">Tout réinitialiser</button>
+        </div>
+        <p class="db-sub" style="margin-bottom: 12px"><strong>Personnalise la personnalité des profs et les valeurs de l’école, puis retourne dans l’appli pour voir l’effet.</strong> Tes changements ne valent que sur cet appareil. <span style="opacity:.75">(dev : « Copier pour tous » génère le bloc à coller dans <code>web/config.js</code> pour l’appliquer à tous ; les garde-fous durs — programme, sécurité mineurs, format — restent verrouillés côté serveur.)</span></p>
 
         <div class="pv-tabs">
           <button type="button" class="pv-tab actif" data-cible="pvCharte">🏫 Charte de l’école</button>
@@ -108,6 +119,16 @@
             <button id="soulReset" class="db-btn" type="button">Revenir au défaut</button>
             <button id="soulExport" class="db-btn" type="button">Copier pour tous</button>
           </div>
+        </div>
+
+        <div class="apercu">
+          <h3>Aperçu</h3>
+          <p class="db-sub" style="margin: 0 0 10px">Envoie une question au tuteur avec la charte et le soul de <strong id="apercuProf">Léa</strong> tels qu’ils sont réglés ci-dessus (enregistre d’abord tes modifs).</p>
+          <div class="apercu-ligne">
+            <input id="apercuQ" class="fb-zone" type="text" value="Pourquoi le ciel est bleu ?" placeholder="Une question à tester…" />
+            <button id="apercuGo" class="db-btn" type="button">Tester la réponse</button>
+          </div>
+          <div id="apercuRep" class="apercu-rep" hidden></div>
         </div>
       </section>
 
