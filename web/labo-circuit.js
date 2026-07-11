@@ -216,7 +216,7 @@ const MISSIONS = [
 ];
 
 const labo = creerLabo({
-  key: 'lea.labo.circuit.v1', titre: '⚡ Labo circuit — monte ton circuit',
+  key: 'lea.labo.circuit.v1', titre: '⚡ Labo circuit — monte ton circuit', couleur: '#14c8d4',
   badges: { premier: '🔌 Premier montage', final: '⚡ Ingénieur électricien' },
   scene, missions: MISSIONS,
 });

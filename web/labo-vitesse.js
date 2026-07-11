@@ -158,7 +158,7 @@ const MISSIONS = [
 ];
 
 const labo = creerLabo({
-  key: 'lea.labo.vitesse.v1', titre: '🏃 Labo vitesse — la course',
+  key: 'lea.labo.vitesse.v1', titre: '🏃 Labo vitesse — la course', couleur: '#e05fa8',
   badges: { premier: '🏁 Premier départ', final: '🏃 Maître de la vitesse' },
   scene, missions: MISSIONS,
 });

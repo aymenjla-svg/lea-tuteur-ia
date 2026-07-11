@@ -210,7 +210,7 @@ const MISSIONS = [
 ];
 
 const labo = creerLabo({
-  key: 'lea.labo.densite.v1', titre: '🌊 Labo densité — flotte ou coule ?',
+  key: 'lea.labo.densite.v1', titre: '🌊 Labo densité — flotte ou coule ?', couleur: '#2aa6e0',
   badges: { premier: '🛟 Premier plongeon', final: '🌊 Maître de la flottaison' },
   scene, missions: MISSIONS,
 });

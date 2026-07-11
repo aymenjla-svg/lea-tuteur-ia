@@ -252,7 +252,7 @@ const MISSIONS = [
 ];
 
 const labo = creerLabo({
-  key: 'lea.labo.v1', titre: '🚀 Labo gravité — Odyssée',
+  key: 'lea.labo.v1', titre: '🚀 Labo gravité — Odyssée', couleur: '#a463e6',
   badges: { premier: '🛰️ Décollage', final: '🚀 Explorateur du système solaire' },
   scene, missions: MISSIONS,
 });

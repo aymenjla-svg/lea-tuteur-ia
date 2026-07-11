@@ -21,62 +21,66 @@ function injecterStyles() {
   stylesInjectes = true;
   const st = document.createElement('style'); st.id = 'lk-style';
   st.textContent = `
-  .lk-modale{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(4,6,16,.72);backdrop-filter:blur(4px)}
+  /* ==== Intérieur d'un labo : même langage que la SÉANCE de cours ==== */
+  .lk-modale{position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;padding:12px;background:rgba(4,10,24,.66);backdrop-filter:blur(5px)}
   .lk-modale[hidden]{display:none}
-  .lk-wrap{width:min(560px,97vw);max-height:95vh;overflow:auto;background:#0e1424;border:1.5px solid #ffffff24;border-radius:22px}
-  .lk-top{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:14px 16px 8px}
-  .lk-top h2{font-family:var(--round,sans-serif);font-size:1.15rem;margin:0;color:#fff}
-  .lk-x{background:none;border:0;color:#cbd5e8;font-size:1.6rem;line-height:1;cursor:pointer}
-  .lk-xp{padding:0 16px 8px}
-  .lk-xpbar{height:9px;border-radius:999px;background:#ffffff18;overflow:hidden}
-  .lk-xpbar>span{display:block;height:100%;background:linear-gradient(90deg,#14c8d4,#ffd24a);transition:width .5s}
-  .lk-xpline{display:flex;justify-content:space-between;font-size:.76rem;color:#9fb0cc;margin-top:4px;font-family:var(--round,sans-serif);font-weight:600}
-  .lk-badges{display:flex;gap:6px;flex-wrap:wrap;padding:0 14px 6px}
-  .lk-badge{font-size:.76rem;background:#ffd24a1c;border:1.5px solid #ffd24a66;color:#ffe6a0;border-radius:999px;padding:4px 10px;font-weight:600}
-  canvas.lk-cv{display:block;width:100%;height:220px;border-top:1px solid #ffffff14;border-bottom:1px solid #ffffff14;background:#05060f}
-  .lk-read{display:flex;gap:8px;padding:10px 12px;justify-content:center;flex-wrap:wrap}
-  .lk-read div{background:#ffffff10;border:1.5px solid #ffffff1e;border-radius:12px;padding:7px 12px;text-align:center;min-width:78px}
-  .lk-read .k{font-size:.68rem;color:#9fb0cc;text-transform:uppercase;letter-spacing:.06em}
+  .lk-wrap{--c:#14c8d4;width:min(560px,97vw);max-height:95vh;overflow:auto;padding:16px 16px 20px;box-sizing:border-box;
+    background:var(--panel-2,#0b1a2fdd);border:1.5px solid var(--border,#ffffff26);border-radius:22px;backdrop-filter:blur(12px);box-shadow:0 22px 60px rgba(4,12,30,.55)}
+  .lk-wrap .hud{margin-bottom:4px}
+  .lk-wrap .hud-barre{background:var(--c);box-shadow:0 0 10px var(--c)}
+  .lk-wrap .hud-pct{color:#ffd98a}
+  .lk-x{cursor:pointer}
+  .lk-fig{margin:10px 2px 8px}
+  .lk-badges{display:flex;gap:6px;flex-wrap:wrap;padding:0 2px 6px}
+  .lk-badge{font-size:.74rem;background:color-mix(in srgb,var(--or,#ffd24a) 14%,transparent);border:1.5px solid color-mix(in srgb,var(--or,#ffd24a) 45%,transparent);color:#ffe6a0;border-radius:999px;padding:4px 10px;font-weight:600;font-family:var(--round,sans-serif)}
+  /* le simulateur = « l'écran de la salle », encadré comme le tableau de classe */
+  canvas.lk-cv{display:block;width:100%;box-sizing:border-box;height:220px;border-radius:14px;border:5px solid #a9663e;
+    background:#0a1428;box-shadow:0 10px 24px rgba(0,0,0,.35),inset 0 0 0 1px rgba(0,0,0,.2)}
+  .lk-read{display:flex;gap:8px;padding:12px 2px 8px;justify-content:center;flex-wrap:wrap}
+  .lk-read div{background:var(--panel,#ffffff14);border:1.5px solid var(--border,#ffffff26);border-radius:14px;padding:8px 14px;text-align:center;min-width:84px;backdrop-filter:blur(8px)}
+  .lk-read .k{font-size:.66rem;color:var(--txt2,#9fb0cc);text-transform:uppercase;letter-spacing:.06em}
   .lk-read .v{font-family:var(--round,sans-serif);font-weight:700;font-size:1.12rem}
-  .lk-read .v.a{color:#14c8d4}.lk-read .v.b{color:#7fe0a8}.lk-read .v.c{color:#ffd24a}
-  .lk-ctrl{padding:4px 14px 12px}
-  .lk-line{font-family:var(--round,sans-serif);font-weight:600;font-size:.82rem;color:#dfe4ff;margin:6px 0 6px}
+  .lk-read .v.a{color:var(--c)}.lk-read .v.b{color:var(--ok,#34e2a8)}.lk-read .v.c{color:var(--or,#ffd24a)}
+  .lk-ctrl{padding:2px 2px 4px}
+  .lk-line{font-family:var(--round,sans-serif);font-weight:600;font-size:.82rem;color:var(--txt,#e7edf7);margin:8px 0 6px}
   .lk-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px;justify-content:center}
-  .lk-chip{display:flex;align-items:center;gap:5px;font-family:var(--round,sans-serif);font-weight:600;font-size:.8rem;padding:6px 11px;border-radius:12px;border:1.5px solid #ffffff20;background:#ffffff0e;color:#fff;cursor:pointer}
-  .lk-chip .mk{font-size:.68rem;color:#9fb0cc}
-  .lk-chip.on{border-color:#14c8d4;background:#14c8d422}
-  .lk-chip:hover{filter:brightness(1.1)}
+  .lk-chip{display:flex;align-items:center;gap:5px;font-family:var(--round,sans-serif);font-weight:600;font-size:.8rem;padding:7px 12px;border-radius:999px;border:1.5px solid var(--border,#ffffff26);background:var(--panel,#ffffff12);color:var(--txt,#fff);cursor:pointer;backdrop-filter:blur(8px)}
+  .lk-chip .mk{font-size:.68rem;color:var(--txt2,#9fb0cc)}
+  .lk-chip.on{border-color:var(--c);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 45%,transparent)}
+  .lk-chip:hover{background:var(--panel-2,#ffffff1f)}
   .lk-slide{display:flex;align-items:center;gap:10px;margin:6px 0 8px}
-  .lk-slide label{font-family:var(--round,sans-serif);font-weight:600;font-size:.82rem;color:#dfe4ff;white-space:nowrap}
-  .lk-slide input[type=range]{flex:1;accent-color:#14c8d4}
-  .lk-slide .val{font-family:var(--round,sans-serif);font-weight:700;color:#14c8d4;min-width:56px;text-align:right}
-  .lk-note{text-align:center;font-size:.86rem;color:#dfe4ff;background:#ffffff0d;border:1px solid #ffffff16;border-radius:12px;padding:7px 10px;margin:6px 0 2px;line-height:1.35}
+  .lk-slide label{font-family:var(--round,sans-serif);font-weight:600;font-size:.82rem;color:var(--txt,#dfe4ff);white-space:nowrap}
+  .lk-slide input[type=range]{flex:1;accent-color:var(--c)}
+  .lk-slide .val{font-family:var(--round,sans-serif);font-weight:700;color:var(--c);min-width:56px;text-align:right}
+  .lk-note{text-align:center;font-size:.86rem;color:var(--txt,#dfe4ff);background:var(--panel,#ffffff12);border:1.5px solid var(--border,#ffffff26);border-radius:14px;padding:9px 12px;margin:8px 0 2px;line-height:1.4;backdrop-filter:blur(8px)}
   .lk-note b{color:#ffd98a}
-  .lk-act{text-align:center;margin-top:8px}
-  .lk-btn{font-family:var(--round,sans-serif);font-weight:700;font-size:.9rem;padding:9px 16px;border-radius:999px;border:1.5px solid #ffffff2e;background:#ffffff16;color:#fff;cursor:pointer}
-  .lk-btn.gold{background:#ffd24a;color:#3a2400;border-color:transparent}
-  .lk-btn:hover{filter:brightness(1.08)}
-  .lk-fait{text-align:center;font-size:.82rem;color:#bcae86;padding:2px 14px 10px}
-  .lk-miss{margin:6px 12px 14px;background:#12203c;border:1.5px solid #ffffff20;border-radius:16px;padding:14px}
-  .lk-miss .tag{font-family:var(--round,sans-serif);font-weight:700;font-size:.72rem;color:#7fe0a8;text-transform:uppercase;letter-spacing:.08em}
+  .lk-act{text-align:center;margin-top:10px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .lk-btn{font-family:var(--round,sans-serif);font-weight:700;font-size:.9rem;padding:10px 18px;border-radius:var(--rad,14px);border:1.5px solid var(--border,#ffffff2e);background:var(--panel,#ffffff16);color:#fff;cursor:pointer}
+  .lk-btn:hover{background:var(--panel-2,#ffffff22)}
+  .lk-btn.gold{border:none;background:linear-gradient(120deg,var(--or,#ffd24a),#ffd166);color:#4a2f00;box-shadow:0 6px 18px rgba(255,194,60,.4)}
+  .lk-fait{text-align:center;font-size:.82rem;color:var(--txt2,#bcae86);padding:6px 2px 2px}
+  /* mission = consigne façon « soustitre » de la séance */
+  .lk-miss{margin:12px 0 4px;background:var(--panel-2,#ffffff1a);border:1.5px solid var(--border,#ffffff26);border-radius:var(--rad,16px);padding:14px 16px;backdrop-filter:blur(10px)}
+  .lk-miss .tag{font-family:var(--round,sans-serif);font-weight:700;font-size:.72rem;color:var(--ok,#7fe0a8);text-transform:uppercase;letter-spacing:.08em}
   .lk-miss h4{font-family:var(--round,sans-serif);margin:2px 0 8px;color:#fff;font-size:1.05rem}
-  .lk-miss .q{color:#dfe4ff;font-size:.92rem;line-height:1.45;margin:0 0 10px}
+  .lk-miss .q{color:var(--txt,#dfe4ff);font-size:.95rem;line-height:1.45;margin:0 0 10px}
   .lk-miss .q b{color:#ffd98a}
   .lk-choix{display:flex;flex-direction:column;gap:7px}
-  .lk-choix button{text-align:left;padding:10px 13px;border-radius:12px;border:1.5px solid #ffffff22;background:#ffffff10;color:#fff;cursor:pointer;font-size:.92rem}
-  .lk-choix button.sel{border-color:#14c8d4;background:#14c8d422}
-  .lk-numin{width:120px;padding:9px 12px;border-radius:10px;border:1.5px solid #ffffff2a;background:#0a1120;color:#fff;font-size:1rem}
-  .lk-hint{color:#9fb0cc;font-size:.84rem;margin:0}
-  .lk-fb{margin-top:10px;padding:10px 12px;border-radius:12px;font-size:.9rem;line-height:1.4;display:none}
+  .lk-choix button{text-align:left;padding:11px 14px;border-radius:12px;border:1.5px solid var(--border,#ffffff26);background:var(--panel,#ffffff10);color:#fff;cursor:pointer;font-size:.92rem}
+  .lk-choix button:hover{background:var(--panel-2,#ffffff1f)}
+  .lk-choix button.sel{border-color:var(--c);box-shadow:inset 0 0 0 1.5px color-mix(in srgb,var(--c) 40%,transparent)}
+  .lk-numin{width:130px;padding:11px 14px;border-radius:12px;border:1.5px solid var(--border,#ffffff2a);background:rgba(0,0,0,.22);color:#fff;font-size:1rem;font-family:var(--round,sans-serif)}
+  .lk-hint{color:var(--txt2,#9fb0cc);font-size:.84rem;margin:0}
+  .lk-fb{margin-top:10px;padding:11px 14px;border-radius:12px;font-size:.9rem;line-height:1.45;display:none}
   .lk-fb.show{display:block}
-  .lk-fb.good{background:#14c8d41f;border:1.5px solid #14c8d4aa;color:#c9fff6}
+  .lk-fb.good{background:color-mix(in srgb,var(--ok,#34e2a8) 16%,transparent);border:1.5px solid color-mix(in srgb,var(--ok,#34e2a8) 60%,transparent);color:#d6fff0}
   .lk-fb.bad{background:#ff8f8f1c;border:1.5px solid #ff8f8f88;color:#ffd9d9}
-  .lk-fb .sol{display:block;margin-top:6px;color:#dfe4ff}
-  .lk-next{margin-top:10px;display:flex;gap:8px;justify-content:flex-end}
-  .lk-fin{text-align:center;padding:6px 14px 16px}
+  .lk-fb .sol{display:block;margin-top:6px;color:var(--txt,#dfe4ff)}
+  .lk-next{margin-top:12px;display:flex;gap:8px;justify-content:flex-end}
+  .lk-fin{text-align:center;padding:8px 2px 6px}
   .lk-fin .big{font-size:2.6rem}
   .lk-fin h4{font-family:var(--round,sans-serif);color:#fff;margin:6px 0 4px}
-  .lk-fin p{color:#dfe4ff;font-size:.9rem;margin:0 0 10px}
+  .lk-fin p{color:var(--txt,#dfe4ff);font-size:.9rem;margin:0 0 10px}
 
   .lk-card{margin:14px 0 6px;border-radius:var(--rad,18px);padding:16px;color:#fff;position:relative;overflow:hidden;border:1.5px solid #ffffff2e}
   .lk-card h3{font-family:var(--round,sans-serif);margin:0 0 4px;font-size:1.08rem}
@@ -138,12 +142,16 @@ export function creerLabo(o) {
     if (modale) return;
     modale = document.createElement('div'); modale.className = 'lk-modale'; modale.hidden = true;
     modale.innerHTML = `
-    <div class="lk-wrap" role="dialog" aria-modal="true" aria-label="${o.titre}">
-      <div class="lk-top"><h2>${o.titre}</h2><button class="lk-x" aria-label="Fermer">×</button></div>
-      <div class="lk-xp">
-        <div class="lk-xpbar"><span class="lk-fill" style="width:0"></span></div>
-        <div class="lk-xpline"><span class="lk-niv">Niveau 1</span><span class="lk-xptxt">0 XP</span></div>
-      </div>
+    <div class="lk-wrap" role="dialog" aria-modal="true" aria-label="${o.titre}" style="--c:${o.couleur || '#14c8d4'}">
+      <header class="hud">
+        <button class="hud-retour lk-x" aria-label="Retour au sommaire">←</button>
+        <div class="hud-centre">
+          <div class="hud-titre">${o.titre}</div>
+          <div class="hud-barre-fond"><div class="hud-barre lk-fill" style="width:0"></div></div>
+        </div>
+        <span class="hud-pct lk-stars">⭐ 0/${o.missions.length}</span>
+      </header>
+      <div class="fig-label lk-fig">◦ Salle d’expérience — en direct</div>
       <div class="lk-badges"></div>
       <div class="lk-stage"></div>
       <div class="lk-miss"></div>
@@ -158,9 +166,11 @@ export function creerLabo(o) {
 
   function majXP() {
     const d = store.lire();
-    q('.lk-fill').style.width = (d.xp % 100) + '%';
-    q('.lk-niv').textContent = 'Niveau ' + niveau(d.xp);
-    q('.lk-xptxt').textContent = d.xp + ' XP';
+    const total = o.missions.length;
+    const faites = o.missions.filter((m) => d.missions[m.id]).length;
+    q('.lk-fill').style.width = (total ? (faites / total) * 100 : 0) + '%';
+    q('.lk-stars').textContent = `⭐ ${faites}/${total}`;
+    const fig = q('.lk-fig'); if (fig) fig.textContent = `◦ Salle d’expérience — en direct · niveau ${niveau(d.xp)}`;
     q('.lk-badges').innerHTML = (d.badges || []).map((b) => `<span class="lk-badge">${b}</span>`).join('');
   }
 
