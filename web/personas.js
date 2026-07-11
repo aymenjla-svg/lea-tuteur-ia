@@ -219,12 +219,26 @@ export function avatarSVG(p, uid = '', opts = {}) {
     : '';
   // Bas du corps (uniquement en mode « entier ») : debout, blouse + pantalon +
   // chaussures, pour voir le prof en pied.
+  // Une chaussure propre (corps + semelle claire + lacet + reflet), orientée
+  // vers l'extérieur (flip pour le pied gauche).
+  const chaussure = (cx, flip) =>
+    `<g transform="translate(${cx} 0) scale(${flip ? -1 : 1} 1)">` +
+      `<ellipse cx="1" cy="461" rx="17" ry="4" fill="#00000026"/>` +
+      `<path d="M-8 443 Q-16 444 -17 452 Q-17 459 -8 460 L12 460 Q19 459 18 451 Q16 444 5 443 Q-2 442 -8 443 Z" fill="#2b2f38"/>` +
+      `<path d="M-18 458 L18 458 Q19 462 13 462 L-14 462 Q-19 462 -18 458 Z" fill="#e9e6df"/>` +
+      `<path d="M-8 447 Q2 445 12 448" stroke="#00000033" stroke-width="1.2" fill="none"/>` +
+      `<ellipse cx="0" cy="450" rx="6" ry="2.4" fill="#ffffff" opacity=".12"/>` +
+    `</g>`;
   const basCorps = entier ? `
     <g id="jambes${s}">
-      <path d="M78 346 L74 432 Q74 446 88 446 L95 446 Q100 446 100 433 L100 368 L100 433 Q100 446 105 446 L112 446 Q126 446 126 432 L122 346 Z" fill="#2b3a56"/>
-      <ellipse cx="87" cy="450" rx="18" ry="9" fill="#20242c"/>
-      <ellipse cx="113" cy="450" rx="18" ry="9" fill="#20242c"/>
-      <ellipse cx="100" cy="459" rx="48" ry="8" fill="#00000030"/>
+      <!-- deux jambes distinctes avec un écart net -->
+      <path d="M79 344 L76 442 Q76 449 84 449 L94 449 Q98 449 98 441 L98 344 Z" fill="#2b3a56"/>
+      <path d="M102 344 L102 441 Q102 449 106 449 L116 449 Q124 449 124 442 L121 344 Z" fill="#2b3a56"/>
+      <!-- reflet clair sur le devant + ourlet -->
+      <rect x="82" y="352" width="3.5" height="88" rx="1.75" fill="#ffffff" opacity=".08"/>
+      <rect x="108" y="352" width="3.5" height="88" rx="1.75" fill="#ffffff" opacity=".08"/>
+      <path d="M76 445 H98 M102 445 H124" stroke="#1c2740" stroke-width="1.8"/>
+      ${chaussure(86, true)}${chaussure(114, false)}
     </g>
     <path d="M34 240 Q32 322 56 366 Q100 382 144 366 Q168 322 166 240 Z" fill="url(#coat${s})"/>
     <path d="M84 238 Q84 274 100 282 Q116 274 116 238 Z" fill="${p.tenue}"/>

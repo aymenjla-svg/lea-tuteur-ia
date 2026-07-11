@@ -328,10 +328,11 @@ function meubleSVG() {
     <!-- 3 tiroirs par caisson -->
     ${tiroir(16, 58, 80, 15)}${tiroir(16, 76, 80, 15)}${tiroir(16, 94, 80, 15)}
     ${tiroir(224, 58, 80, 15)}${tiroir(224, 76, 80, 15)}${tiroir(224, 94, 80, 15)}
-    <!-- plateau du bureau (déborde légèrement) + chant sombre -->
-    <rect x="0" y="43" width="320" height="10" rx="2.5" fill="url(#deskTop)"/>
-    <rect x="0" y="43.5" width="320" height="1.8" rx="1" fill="#f2d2a4" opacity=".85"/>
-    <rect x="0" y="50.6" width="320" height="2.6" fill="#5f3a1c"/>`;
+    <!-- plateau du bureau (déborde légèrement) + chant sombre. Surface ≈ y47 :
+         c'est LÀ que les objets sont posés (bas des objets ≈ y48). -->
+    <rect x="0" y="45" width="320" height="11" rx="2.5" fill="url(#deskTop)"/>
+    <rect x="0" y="45.5" width="320" height="1.8" rx="1" fill="#f2d2a4" opacity=".85"/>
+    <rect x="0" y="53.4" width="320" height="2.6" fill="#5f3a1c"/>`;
 }
 // Matériel posé sur le comptoir, PROPRE À CHAQUE MATIÈRE (bas des objets ≈ y48).
 // Même finition que l'établi : verre brillant (url(#glass) + reflets), ampoules
@@ -357,17 +358,17 @@ function objetsMatiere(id) {
       <circle cx="72" cy="34" r="7" fill="#f5b400" stroke="#c8902c" stroke-width="1.4"/><circle cx="69.5" cy="31.5" r="2.4" fill="#fff" opacity=".7"/>
       <circle cx="154" cy="34" r="12" fill="#0d2740" stroke="url(#metal)" stroke-width="2"/><rect x="150" y="18" width="8" height="4" rx="1" fill="url(#metal)"/><line x1="154" y1="34" x2="154" y2="26" stroke="#a855f7" stroke-width="2"/><circle cx="154" cy="34" r="1.6" fill="#a855f7"/>
       <rect x="196" y="40" width="100" height="8" rx="1" fill="#ffd24a" stroke="#c9a52f" stroke-width="1"/><rect x="196" y="40.6" width="100" height="1.6" fill="#fff" opacity=".5"/><g stroke="#c9a52f" stroke-width="1">${Array.from({ length: 10 }, (_, i) => `<line x1="${202 + i * 10}" y1="40" x2="${202 + i * 10}" y2="44"/>`).join('')}</g>` : `
-      <rect x="30" y="30" width="12" height="18" rx="2" fill="url(#metal)"/><path d="M42 32 L54 25 V53 L42 46 Z" fill="url(#metal)"/><path d="M31 31 v16" stroke="#fff" stroke-width="1.4" opacity=".5"/><g stroke="#ffd54a" stroke-width="1.4" fill="none" opacity=".9"><path d="M60 34 q6 6 0 12"/><path d="M65 30 q10 10 0 20"/></g>
+      <rect x="30" y="30" width="12" height="18" rx="2" fill="url(#metal)"/><path d="M42 32 L54 25 V48 L42 46 Z" fill="url(#metal)"/><path d="M31 31 v16" stroke="#fff" stroke-width="1.4" opacity=".5"/><g stroke="#ffd54a" stroke-width="1.4" fill="none" opacity=".9"><path d="M60 34 q6 6 0 12"/><path d="M65 30 q10 10 0 20"/></g>
       <path d="M110 48 V34 M110 34 q0 -14 -8 -14 M110 34 q0 -14 8 -14" fill="none" stroke="url(#metal)" stroke-width="2.6"/>
       <path d="M168 48 L182 24 L196 48 Z" fill="url(#glass)" stroke="#bcd4e6"/><path d="M172 46 L182 30 L184 44 Z" fill="#fff" opacity=".18"/><path d="M150 40 l22 -5" stroke="#fff" stroke-width="1.4" opacity=".7"/><g stroke-width="1.5" fill="none"><path d="M198 34 l16 -6" stroke="#ff5d7d"/><path d="M198 39 l18 0" stroke="#ffd24a"/><path d="M198 44 l16 6" stroke="#43c463"/></g>
       <rect x="242" y="24" width="44" height="24" rx="3" fill="#0d2740" stroke="url(#metal)" stroke-width="1.4"/><path d="M247 37 q5 -7 10 0 t10 0 t10 0" fill="none" stroke="#37e0ff" stroke-width="1.4"/>`;
     case 'poids': return `
       <line x1="72" y1="20" x2="72" y2="48" stroke="url(#metal)" stroke-width="3.2"/><line x1="42" y1="22" x2="102" y2="22" stroke="url(#metal)" stroke-width="2.6"/>
-      <path d="M42 22 l-9 13 h18 z" fill="url(#glass)" stroke="#8a939f" stroke-width="1.4"/><path d="M102 22 l-9 13 h18 z" fill="url(#glass)" stroke="#8a939f" stroke-width="1.4"/><rect x="60" y="46" width="24" height="4" rx="1" fill="url(#metal)"/>
+      <path d="M42 22 l-9 13 h18 z" fill="url(#glass)" stroke="#8a939f" stroke-width="1.4"/><path d="M102 22 l-9 13 h18 z" fill="url(#glass)" stroke="#8a939f" stroke-width="1.4"/><rect x="60" y="44" width="24" height="4" rx="1" fill="url(#metal)"/>
       <path d="M150 34 h22 l3 14 h-28 z" fill="url(#metal)" stroke="#5f6772" stroke-width="1.2"/><path d="M155 24 h12 l2 10 h-16 z" fill="url(#metal)" stroke="#5f6772" stroke-width="1.2"/><path d="M152 35 h18" stroke="#fff" stroke-width="1" opacity=".5"/>
-      <rect x="212" y="18" width="13" height="30" rx="3" fill="url(#glass)" stroke="#bcd4e6" stroke-width="1"/><rect x="213.4" y="20" width="2.4" height="26" rx="1.2" fill="#fff" opacity=".55"/><path d="M212 44 h13" stroke="#7fb5df" stroke-width="1.2" opacity=".6"/><path d="M218 18 v-4 M218 48 v4" stroke="url(#metal)" stroke-width="1.4"/><g stroke="#c9a52f" stroke-width="1"><path d="M215 26 h7"/><path d="M215 31 h7"/><path d="M215 36 h7"/></g>`;
+      <rect x="212" y="18" width="13" height="30" rx="3" fill="url(#glass)" stroke="#bcd4e6" stroke-width="1"/><rect x="213.4" y="20" width="2.4" height="26" rx="1.2" fill="#fff" opacity=".55"/><path d="M212 44 h13" stroke="#7fb5df" stroke-width="1.2" opacity=".6"/><path d="M218 18 v-4" stroke="url(#metal)" stroke-width="1.4"/><g stroke="#c9a52f" stroke-width="1"><path d="M215 26 h7"/><path d="M215 31 h7"/><path d="M215 36 h7"/></g>`;
     default: return `
-      <g stroke="#bcd4e6" stroke-width="1">
+      <g transform="translate(0,-4)" stroke="#bcd4e6" stroke-width="1">
         <path d="M34 26 L48 26 L50 50 L32 50 Z" fill="url(#glass)"/><path d="M33 38 L49 38 L50 49 L32 49 Z" fill="#58d38b" stroke="none"/><path d="M33.5 38 L48.5 38" stroke="#eafff2" stroke-width="1" opacity=".7"/><rect x="35" y="28" width="2.4" height="20" rx="1.2" fill="#fff" stroke="none" opacity=".5"/>
         <path d="M74 26 L80 26 L80 32 L91 50 L63 50 L74 32 Z" fill="url(#glass)"/><path d="M75 40 L79 40 L87 49 L67 49 Z" fill="#ff6fae" stroke="none"/><path d="M67 49 L87 49" stroke="#ffdcec" stroke-width="1" opacity=".7"/><rect x="76" y="28" width="2" height="16" rx="1" fill="#fff" stroke="none" opacity=".5"/>
         <line x1="120" y1="14" x2="120" y2="50" stroke="url(#metal)" stroke-width="2"/><rect x="110" y="49" width="36" height="3" fill="url(#metal)" stroke="none"/>
