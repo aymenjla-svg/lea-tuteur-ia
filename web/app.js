@@ -219,11 +219,38 @@ function ecoleHallSVG() {
     // BIBLIOTHÈQUE (reliures + microscope + verrerie)
     '<rect x="300" y="72" width="72" height="128" rx="2" fill="#8a4e2a"/><rect x="304" y="76" width="64" height="120" fill="url(#spWood)"/>' +
     '<g fill="#8a4e2a"><rect x="304" y="108" width="64" height="4"/><rect x="304" y="146" width="64" height="4"/></g>' +
-    '<g><rect x="310" y="82" width="8" height="26" fill="#3fae8f"/><rect x="319" y="82" width="8" height="26" fill="#e0a83e"/><rect x="328" y="82" width="8" height="26" fill="#d0553f"/><rect x="337" y="82" width="8" height="26" fill="#4a90d9"/><rect x="347" y="86" width="16" height="22" fill="#b06ab3"/></g>' +
+    '<g>' +
+      // reliures debout (hauteurs variées, base au ras de l'étagère y108) + filet clair en tête
+      '<rect x="309" y="84" width="7" height="24" rx="1" fill="#3fae8f"/><rect x="309" y="87" width="7" height="2" fill="#ffffff" opacity=".35"/>' +
+      '<rect x="317" y="80" width="7" height="28" rx="1" fill="#e0a83e"/><rect x="317" y="83" width="7" height="2" fill="#ffffff" opacity=".35"/>' +
+      '<rect x="325" y="88" width="6" height="20" rx="1" fill="#d0553f"/>' +
+      '<rect x="332" y="82" width="7" height="26" rx="1" fill="#4a90d9"/><rect x="332" y="85" width="7" height="2" fill="#ffffff" opacity=".35"/>' +
+      // livre penché
+      '<g transform="rotate(11 344 108)"><rect x="340" y="85" width="7" height="23" rx="1" fill="#b06ab3"/></g>' +
+      // 2 livres couchés (petite pile) à droite
+      '<rect x="350" y="100" width="16" height="4" rx="1" fill="#c98a4a"/>' +
+      '<rect x="351" y="104" width="15" height="4" rx="1" fill="#5aa0d0"/>' +
+    '</g>' +
     '<g fill="#3a4048"><rect x="316" y="138" width="18" height="4" rx="1"/><rect x="320" y="118" width="4" height="20"/><path d="M322 120 q12 -2 12 8 l-4 1 q0 -6 -8 -5 z"/><circle cx="333" cy="130" r="3.5" fill="#7d8798"/></g>' +
     '<path d="M348 122 l-4 16 h12 l-4 -16 z" fill="#a7d8c8" opacity=".75" stroke="#7fb8a8"/><rect x="340" y="126" width="4" height="12" fill="#bcd8e8" opacity=".7"/>' +
-    // plante en pot (devant, à droite)
-    '<g><rect x="286" y="176" width="22" height="22" rx="2" fill="#c9723f"/><path d="M297 176 q-16 -22 -4 -38 M297 176 q16 -20 6 -38 M297 176 q-2 -26 3 -42" fill="none" stroke="#3f9e5a" stroke-width="5" stroke-linecap="round"/></g>' +
+    // plante en pot (devant, à droite) — feuillage à vraies feuilles + pot évasé
+    '<g>' +
+      // feuilles (2 verts pour le relief) + nervures
+      '<g fill="#4fb069">' +
+        '<path d="M297 178 C278 170 270 144 283 126 C292 146 300 162 297 178 Z"/>' +
+        '<path d="M297 178 C316 170 324 144 311 126 C302 146 294 162 297 178 Z"/>' +
+      '</g>' +
+      '<g fill="#3f9e5a">' +
+        '<path d="M297 178 C286 176 279 154 288 134 C296 152 300 164 297 178 Z"/>' +
+        '<path d="M297 178 C308 176 315 154 306 134 C298 152 294 164 297 178 Z"/>' +
+        '<path d="M297 178 C297 154 294 132 297 120 C300 132 297 154 297 178 Z"/>' +
+      '</g>' +
+      '<g stroke="#2f7d46" stroke-width="1" fill="none" opacity=".6"><path d="M297 176 C292 158 286 142 284 130"/><path d="M297 176 C302 158 308 142 310 130"/><path d="M297 176 V124"/></g>' +
+      // pot évasé + rebord + reflet
+      '<path d="M287 179 H307 L304 199 H290 Z" fill="#c9723f"/>' +
+      '<rect x="284" y="174" width="26" height="7" rx="2" fill="#d98452"/>' +
+      '<path d="M289 181 L291 197" stroke="#e6a074" stroke-width="1.5" opacity=".6"/>' +
+    '</g>' +
   '</svg>';
 }
 
