@@ -380,15 +380,27 @@ function paillasseSVG(id) {
 // Décor de la salle de cours, dans l'esprit de la salle commune (classe de
 // sciences chaleureuse) : néons au plafond, portraits de savants, poster de la
 // matière, horloge — autour du tableau — puis la paillasse sous le tableau.
+// Poster mural PROPRE À LA MATIÈRE (pour que chaque salle soit différente).
+function posterMatiere(id) {
+  const w = (inner) => `<svg class="poster-svg" viewBox="0 0 40 30" aria-hidden="true">${inner}</svg>`;
+  switch (id) {
+    case 'mouvement': return w('<path d="M5 4 V26 H37" fill="none" stroke="#9aa2ad" stroke-width="1.4"/><polyline points="6,24 15,18 24,13 36,6" fill="none" stroke="#4a90d9" stroke-width="2.4"/><circle cx="36" cy="6" r="2.2" fill="#e0533a"/>');
+    case 'poids': return w('<line x1="20" y1="5" x2="20" y2="12" stroke="#8a939f" stroke-width="2"/><line x1="8" y1="9" x2="32" y2="9" stroke="#8a939f" stroke-width="2"/><path d="M8 9 l-3.5 6 h7 z" fill="#cdd3db"/><path d="M32 9 l-3.5 6 h7 z" fill="#cdd3db"/><rect x="16" y="22" width="8" height="3" fill="#8a939f"/><rect x="18.5" y="12" width="3" height="10" fill="#b0b7c0"/>');
+    case 'electricite': return w('<circle cx="14" cy="14" r="6" fill="#ffd54a" stroke="#e0a800" stroke-width="1.4"/><rect x="11" y="20" width="6" height="4" fill="#9aa2ad"/><path d="M29 5 l-5 9 h5 l-5 10" fill="none" stroke="#e0a83e" stroke-width="2.4"/>');
+    case 'matiere': return w('<circle cx="13" cy="12" r="4" fill="#4a90d9"/><circle cx="26" cy="9" r="4" fill="#e0533a"/><circle cx="24" cy="22" r="4" fill="#3fae8f"/><g stroke="#8a939f" stroke-width="1.6"><line x1="16" y1="13" x2="23" y2="10"/><line x1="15" y1="15" x2="22" y2="20"/></g>');
+    case 'energie': return w('<rect x="6" y="10" width="20" height="12" rx="2" fill="#3fae8f"/><rect x="26" y="13" width="3" height="6" fill="#3fae8f"/><path d="M17 6 l-5 9 h5 l-5 10" fill="none" stroke="#ffd54a" stroke-width="2.4"/>');
+    case 'signaux': return w('<g fill="none" stroke-width="2.2"><path d="M5 16 h6" stroke="#e0533a"/><path d="M13 16 q3 -8 6 0 t6 0" stroke="#4a90d9"/></g><g fill="none" stroke-width="1.6"><path d="M28 9 a11 11 0 0 1 0 14" stroke="#e0a83e"/><path d="M32 6 a15 15 0 0 1 0 20" stroke="#3fae8f"/></g>');
+    default: return w('<rect x="4" y="16" width="5" height="10" fill="#e0a83e"/><rect x="11" y="9" width="5" height="17" fill="#4a90d9"/><rect x="18" y="18" width="5" height="8" fill="#d0553f"/><rect x="25" y="12" width="5" height="14" fill="#3fae8f"/><rect x="32" y="6" width="5" height="20" fill="#b06ab3"/></svg>');
+  }
+}
+
 function decorSalle(id) {
-  const poster =
-    '<svg class="poster-svg" viewBox="0 0 40 30" preserveAspectRatio="none" aria-hidden="true">' +
-    '<rect x="4" y="16" width="5" height="10" fill="#e0a83e"/><rect x="11" y="9" width="5" height="17" fill="#4a90d9"/>' +
-    '<rect x="18" y="18" width="5" height="8" fill="#d0553f"/><rect x="25" y="12" width="5" height="14" fill="#3fae8f"/>' +
-    '<rect x="32" y="6" width="5" height="20" fill="#b06ab3"/></svg>';
+  const objs = DECOR_SALLE[id] ?? [];
   return `<span class="mur-neon n1"></span><span class="mur-neon n2"></span>` +
     `<span class="obj portrait p1"></span><span class="obj portrait p2"></span>` +
-    `<span class="obj poster">${poster}</span>` +
+    `<span class="obj poster">${posterMatiere(id)}</span>` +
+    (objs[0] ? `<span class="obj mur-obj o1">${objs[0]}</span>` : '') +
+    (objs[1] ? `<span class="obj mur-obj o2">${objs[1]}</span>` : '') +
     `<span class="obj horloge">🕐</span>` +
     paillasseSVG(id);
 }

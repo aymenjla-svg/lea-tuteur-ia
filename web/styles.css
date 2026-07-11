@@ -419,8 +419,10 @@ body::after {
 .scene {
   --c: var(--accent);
   position: relative; min-height: 320px;
-  /* Salle de sciences : plafond terracotta + néons, mur crème, sol gris. */
+  /* Salle de sciences : plafond terracotta + néons, mur crème teinté par la
+     matière (pour distinguer les salles), sol gris. */
   background:
+    radial-gradient(140% 80% at 50% 60%, color-mix(in srgb, var(--c) 16%, transparent), transparent 60%),
     linear-gradient(180deg,
       #cf7b62 0, #cf7b62 18px, #af5f3e 18px, #af5f3e 22px,
       #f3e8d3 22px, #ecdec3 100%);
@@ -456,6 +458,8 @@ body::after {
 .salle-deco .p1 { left: 14px; } .salle-deco .p2 { left: 44px; }
 .salle-deco .poster { top: 24px; left: 50%; transform: translateX(-20px); width: 42px; height: 32px; border: 3px solid #caa25a; border-radius: 3px; background: #ffffff; display: grid; place-items: center; color: var(--c); }
 .salle-deco .poster .poster-svg { width: 32px; height: 24px; }
+.salle-deco .mur-obj { top: 30px; font-size: 1.15rem; }
+.salle-deco .mur-obj.o1 { left: 80px; } .salle-deco .mur-obj.o2 { right: 52px; }
 .salle-deco .horloge { top: 22px; right: 14px; font-size: 1.5rem; }
 /* La paillasse est posée sur le sol, sous le tableau ; le prof la jouxte à droite. */
 .salle-deco .paillasse { position: absolute; left: 8px; right: 62px; bottom: 4px; height: 92px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35)); }
