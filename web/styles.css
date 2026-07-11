@@ -419,43 +419,47 @@ body::after {
 .scene {
   --c: var(--accent);
   position: relative; min-height: 320px;
+  /* Salle de sciences : plafond terracotta + néons, mur crème, sol gris. */
   background:
-    radial-gradient(120% 70% at 50% 118%, color-mix(in srgb, var(--c) 20%, transparent), transparent 62%),
-    linear-gradient(180deg, #1a2a46, #131f38);
-  border: 2px solid var(--border);
+    linear-gradient(180deg,
+      #cf7b62 0, #cf7b62 18px, #af5f3e 18px, #af5f3e 22px,
+      #f3e8d3 22px, #ecdec3 100%);
+  border: 2px solid rgba(120, 90, 50, 0.28);
   border-radius: var(--rad-lg);
-  padding: 44px 26px 104px;
+  padding: 62px 26px 104px;
   overflow: hidden;
   box-shadow: 0 14px 40px rgba(6, 20, 48, 0.35);
 }
-/* Sol carrelé de la salle (bas), où se tient le prof / la paillasse. */
+/* Sol carrelé gris de la salle (bas), où se tient le prof / la paillasse. */
 .scene::after {
-  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 46px; z-index: 0;
-  background:
-    repeating-linear-gradient(45deg, color-mix(in srgb, var(--c) 9%, #0b1626) 0 11px, color-mix(in srgb, var(--c) 17%, #0b1626) 11px 22px);
-  border-top: 1px solid color-mix(in srgb, var(--c) 35%, transparent);
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 52px; z-index: 0;
+  background: repeating-linear-gradient(45deg, #c6cad0 0 12px, #b4b9c0 12px 24px);
+  border-top: 2px solid #9aa0a8;
 }
 .tableau {
   position: relative; z-index: 2; height: 100%; min-height: 176px;
   display: flex; flex-direction: column;
-  background: linear-gradient(180deg, #14483f, #103a35);
-  border: 3px solid rgba(255, 255, 255, 0.85);
+  background: linear-gradient(180deg, #4a7a5c, #3b6349);
+  border: 5px solid #a9663e; /* cadre bois du tableau */
   border-radius: var(--rad);
   padding: 14px 14px 10px;
-  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(0, 0, 0, 0.15);
 }
-/* Déco de salle : cadres + horloge sur le mur (haut), paillasse SOUS le tableau */
+/* Déco de salle (esprit salle commune) : néons + portraits + poster + horloge
+   sur le mur (haut), paillasse SOUS le tableau. */
 .salle-deco { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
-.salle-deco .fanion { position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--c), transparent); opacity: 0.6; }
-.salle-deco .obj { position: absolute; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.4)); }
-.salle-deco .horloge { top: 8px; right: 16px; font-size: 1.5rem; }
-.salle-deco .cadre { position: absolute; top: 12px; width: 28px; height: 21px; border: 2px solid color-mix(in srgb, var(--c) 55%, #caa46a);
-  background: color-mix(in srgb, var(--c) 22%, rgba(10, 26, 42, 0.5)); border-radius: 3px; }
-.salle-deco .c1 { left: 14px; transform: rotate(-4deg); }
-.salle-deco .c2 { left: 48px; transform: rotate(3deg); }
+.salle-deco .obj { position: absolute; filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.3)); }
+.salle-deco .mur-neon { position: absolute; top: 6px; height: 7px; border-radius: 2px; background: #f9f2e2; opacity: 0.92; }
+.salle-deco .n1 { left: 24%; width: 74px; } .salle-deco .n2 { right: 24%; width: 74px; }
+.salle-deco .portrait { top: 26px; width: 24px; height: 28px; border: 3px solid #caa25a; border-radius: 2px; background: #9fb0b8; }
+.salle-deco .portrait::after { content: ""; position: absolute; left: 50%; top: 6px; transform: translateX(-50%); width: 8px; height: 8px; border-radius: 50%; background: #e9d6bf; box-shadow: 0 7px 0 -1px #6a4a30; }
+.salle-deco .p1 { left: 14px; } .salle-deco .p2 { left: 44px; }
+.salle-deco .poster { top: 24px; left: 50%; transform: translateX(-20px); width: 42px; height: 32px; border: 3px solid #caa25a; border-radius: 3px; background: #ffffff; display: grid; place-items: center; color: var(--c); }
+.salle-deco .poster .poster-svg { width: 32px; height: 24px; }
+.salle-deco .horloge { top: 22px; right: 14px; font-size: 1.5rem; }
 /* La paillasse est posée sur le sol, sous le tableau ; le prof la jouxte à droite. */
-.salle-deco .paillasse { position: absolute; left: 8px; right: 62px; bottom: 4px; height: 92px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4)); }
-@media (max-width: 480px) { .scene { padding: 42px 14px 100px; } .salle-deco .paillasse { right: 52px; } .salle-deco .c2 { display: none; } }
+.salle-deco .paillasse { position: absolute; left: 8px; right: 62px; bottom: 4px; height: 92px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35)); }
+@media (max-width: 480px) { .scene { padding: 58px 14px 100px; } .salle-deco .paillasse { right: 52px; } }
 .tableau-formule { align-self: flex-end; color: #a8f0da; font-family: var(--round); font-size: 1rem; }
 .tableau-formule:empty { display: none; }
 .tableau-texte {

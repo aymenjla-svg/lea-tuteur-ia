@@ -377,9 +377,18 @@ function objetsMatiere(id) {
 function paillasseSVG(id) {
   return `<svg class="paillasse" viewBox="0 0 320 96" preserveAspectRatio="xMidYMax meet" aria-hidden="true">${meubleSVG()}${objetsMatiere(id)}</svg>`;
 }
+// Décor de la salle de cours, dans l'esprit de la salle commune (classe de
+// sciences chaleureuse) : néons au plafond, portraits de savants, poster de la
+// matière, horloge — autour du tableau — puis la paillasse sous le tableau.
 function decorSalle(id) {
-  return `<span class="fanion"></span>` +
-    `<span class="cadre c1"></span><span class="cadre c2"></span>` +
+  const poster =
+    '<svg class="poster-svg" viewBox="0 0 40 30" preserveAspectRatio="none" aria-hidden="true">' +
+    '<rect x="4" y="16" width="5" height="10" fill="#e0a83e"/><rect x="11" y="9" width="5" height="17" fill="#4a90d9"/>' +
+    '<rect x="18" y="18" width="5" height="8" fill="#d0553f"/><rect x="25" y="12" width="5" height="14" fill="#3fae8f"/>' +
+    '<rect x="32" y="6" width="5" height="20" fill="#b06ab3"/></svg>';
+  return `<span class="mur-neon n1"></span><span class="mur-neon n2"></span>` +
+    `<span class="obj portrait p1"></span><span class="obj portrait p2"></span>` +
+    `<span class="obj poster">${poster}</span>` +
     `<span class="obj horloge">🕐</span>` +
     paillasseSVG(id);
 }
