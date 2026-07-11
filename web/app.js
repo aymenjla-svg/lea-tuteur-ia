@@ -656,7 +656,12 @@ function ouvrirModule(m) {
   $('#scene').style.setProperty('--c', m.couleur);
   $('#salleDeco').innerHTML = decorSalle(m.id);
   theme(m.couleur);
-  $('#avatarHost').innerHTML = visuelProf(persona, '', { entier: true }); // le prof (portrait manga si dispo, sinon SVG)
+  // Le prof (portrait si dispo, sinon SVG). Avec un portrait, on superpose une
+  // petite bouche animée pile sur la bouche dessinée → elle s'ouvre quand il parle.
+  const bouche = (persona.portrait && persona.bouche)
+    ? `<span class="av-bouche" style="left:${persona.bouche.x}%;top:${persona.bouche.y}%"></span>`
+    : '';
+  $('#avatarHost').innerHTML = `<span class="av-wrap">${visuelProf(persona, '', { entier: true })}${bouche}</span>`;
   $('#hudTitre').textContent = `${persona.nom} · ${m.titre}`;
   $('#accueil').hidden = true;
   $('#lecon').hidden = false;
