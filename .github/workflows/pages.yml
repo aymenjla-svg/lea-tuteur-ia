@@ -39,6 +39,7 @@ jobs:
         run: |
           mkdir -p _site
           cp web/*.html web/*.css web/*.js _site/
+          cp -r web/avatars _site/avatars
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
