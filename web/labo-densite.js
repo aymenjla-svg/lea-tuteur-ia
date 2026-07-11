@@ -3,7 +3,7 @@
 // flotteurs surnagent, les autres coulent au fond), puis un PLONGEUR vient tout
 // ramasser. Objets dessinés proprement. 100 % ADDITIF, s'appuie sur labo-kit.js.
 
-import { creerLabo } from './labo-kit.js';
+import { creerLabo, porteLabo, niveau } from './labo-kit.js';
 
 // ρ en kg/L (= g/cm³) ; eau = 1. m en kg, V en L. kind = dessin.
 const OBJETS = [
@@ -216,19 +216,12 @@ const labo = creerLabo({
 });
 
 function injecterCarte() {
-  const accueil = $('#accueil'); if (!accueil || $('#ld-card')) return;
   const d = labo.etat(); const faites = MISSIONS.filter((m) => d.missions[m.id]).length;
-  const card = document.createElement('div');
-  card.className = 'lk-card'; card.id = 'ld-card';
-  card.style.background = 'linear-gradient(135deg,#0b2a4a,#125a8a 60%,#0e7a9a)';
-  card.innerHTML =
-    '<h3>🌊 Labo densité — flotte ou coule&nbsp;?</h3>' +
-    '<p>Jette pierre, glaçon, balle… dans l’eau : les flotteurs surnagent, les autres coulent au fond, et un plongeur vient tout ramasser. Le secret : ρ = m ÷ V.</p>' +
-    `<button class="lk-cta" id="ld-open">🎮 Jouer${faites ? ' — continuer' : ''}</button>` +
-    (faites ? `<span class="lk-mini">⭐ ${faites}/${MISSIONS.length}</span>` : '');
-  const ancre = accueil.querySelector('#lc-card') || accueil.querySelector('#lab-card') || accueil.querySelector('p.note');
-  if (ancre) accueil.insertBefore(card, ancre); else accueil.appendChild(card);
-  $('#ld-open').addEventListener('click', labo.ouvrir);
+  porteLabo({
+    id: 'porte-densite', ordre: 3, icone: '🌊', couleur: '#2aa6e0',
+    titre: 'Labo densité', sousTitre: 'Flotte ou coule ? Jette des objets, un plongeur nettoie.',
+    faites, total: MISSIONS.length, niv: niveau(d.xp), ouvrir: labo.ouvrir,
+  });
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injecterCarte);

@@ -3,7 +3,7 @@
 // course et voit qui gagne, chrono à l'appui. Conversions km/h ↔ m/s vécues.
 // 100 % ADDITIF, s'appuie sur labo-kit.js. « improvise » → mode course à 2.
 
-import { creerLabo } from './labo-kit.js';
+import { creerLabo, porteLabo, niveau } from './labo-kit.js';
 
 const MOBILES = [
   { emoji: '🐌', nom: 'Escargot', v: 3 },
@@ -164,19 +164,12 @@ const labo = creerLabo({
 });
 
 function injecterCarte() {
-  const accueil = $('#accueil'); if (!accueil || $('#lv-card')) return;
   const d = labo.etat(); const faites = MISSIONS.filter((m) => d.missions[m.id]).length;
-  const card = document.createElement('div');
-  card.className = 'lk-card'; card.id = 'lv-card';
-  card.style.background = 'linear-gradient(135deg,#3a1a5e,#6a2b8a 60%,#a02b7e)';
-  card.innerHTML =
-    '<h3>🏃 Labo vitesse — lance la course</h3>' +
-    '<p>Fais s’affronter un escargot, un vélo, une voiture ou un TGV sur 100 m, chrono en main. Tu ressens v = d ÷ t et les conversions km/h ↔ m/s.</p>' +
-    `<button class="lk-cta" id="lv-open">🎮 Jouer${faites ? ' — continuer' : ''}</button>` +
-    (faites ? `<span class="lk-mini">⭐ ${faites}/${MISSIONS.length}</span>` : '');
-  const ancre = accueil.querySelector('#ld-card') || accueil.querySelector('#lc-card') || accueil.querySelector('#lab-card') || accueil.querySelector('p.note');
-  if (ancre) accueil.insertBefore(card, ancre); else accueil.appendChild(card);
-  $('#lv-open').addEventListener('click', labo.ouvrir);
+  porteLabo({
+    id: 'porte-vitesse', ordre: 4, icone: '🏃', couleur: '#e05fa8',
+    titre: 'Labo vitesse', sousTitre: 'Lance la course sur 100 m : v = d ÷ t, km/h ↔ m/s.',
+    faites, total: MISSIONS.length, niv: niveau(d.xp), ouvrir: labo.ouvrir,
+  });
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injecterCarte);

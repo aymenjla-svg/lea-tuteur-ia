@@ -4,7 +4,7 @@
 // et un ROBOT vient tout nettoyer. On comprend que le poids change d'un astre à
 // l'autre… mais pas la masse. 100 % ADDITIF, s'appuie sur labo-kit.js.
 
-import { creerLabo } from './labo-kit.js';
+import { creerLabo, porteLabo, niveau } from './labo-kit.js';
 
 const ASTRES = [
   { id: 'soleil',  nom: 'Soleil',  emoji: '☀️', g: 274,  r: 44, coul: '#ffd24a', ciel: ['#4a2a00', '#ff9a1e'], sol: '#ff7a1e', fait: 'Écrasant : 274 N/kg. Le pèse-personne explose 💥.' },
@@ -258,19 +258,12 @@ const labo = creerLabo({
 });
 
 function injecterCarte() {
-  const accueil = $('#accueil'); if (!accueil || $('#lab-card')) return;
   const d = labo.etat(); const faites = MISSIONS.filter((m) => d.missions[m.id]).length;
-  const card = document.createElement('div');
-  card.className = 'lk-card'; card.id = 'lab-card';
-  card.style.background = 'linear-gradient(135deg,#132a5e,#4b2b7a 60%,#7a2b6e)';
-  card.innerHTML =
-    '<h3>🚀 Labo gravité — voyage dans le système solaire</h3>' +
-    '<p>Clique une planète pour t’y poser, jette tes affaires au sol et regarde leur poids changer de la Terre au Soleil. Un robot nettoie derrière toi. La masse, elle, ne bouge jamais.</p>' +
-    `<button class="lk-cta" id="lab-open">🎮 Jouer${faites ? ' — continuer' : ''}</button>` +
-    (faites ? `<span class="lk-mini">⭐ ${faites}/${MISSIONS.length}</span>` : '');
-  const ancre = accueil.querySelector('#rev-card') || accueil.querySelector('p.note');
-  if (ancre) accueil.insertBefore(card, ancre); else accueil.appendChild(card);
-  $('#lab-open').addEventListener('click', labo.ouvrir);
+  porteLabo({
+    id: 'porte-gravite', ordre: 1, icone: '🚀', couleur: '#a463e6',
+    titre: 'Labo gravité', sousTitre: 'Voyage dans le système solaire : la masse ne change pas, le poids si.',
+    faites, total: MISSIONS.length, niv: niveau(d.xp), ouvrir: labo.ouvrir,
+  });
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injecterCarte);

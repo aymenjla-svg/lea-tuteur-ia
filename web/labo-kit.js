@@ -84,6 +84,35 @@ function injecterStyles() {
   .lk-cta{font-family:var(--round,sans-serif);font-weight:700;font-size:.95rem;padding:11px 18px;border-radius:999px;border:0;background:#ffd24a;color:#3a2400;cursor:pointer;box-shadow:0 4px 14px #0004}
   .lk-cta:hover{filter:brightness(1.06)}
   .lk-mini{display:inline-block;margin-left:10px;font-size:.82rem;color:#ffe9a8}
+
+  /* ---- Portes des LABOS : sas techniques à hublot (≠ portes de classe) ---- */
+  .labos-head{margin-top:30px}
+  .labos-grille{display:grid;grid-template-columns:repeat(auto-fill,minmax(215px,1fr));gap:15px;align-items:start}
+  .porte-labo{--c:#14c8d4;position:relative;border:1.5px solid #ffffff1f;cursor:pointer;color:inherit;font-family:var(--sans,sans-serif);text-align:left;padding:0;border-radius:18px;overflow:hidden;
+    background:linear-gradient(160deg,#0f1a32,#0a1020);box-shadow:0 10px 26px #00000055;transition:transform .18s,box-shadow .18s,border-color .18s}
+  .porte-labo:hover{transform:translateY(-6px);border-color:color-mix(in srgb,var(--c) 60%,var(--border,#ffffff40));box-shadow:0 20px 44px color-mix(in srgb,var(--c) 34%,#00000099)}
+  .porte-labo:focus-visible{outline:none;border-color:var(--or,#ffd24a);box-shadow:0 0 0 3px color-mix(in srgb,var(--or,#ffd24a) 55%,transparent)}
+  .pl-top{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid #ffffff16;
+    background:repeating-linear-gradient(45deg,transparent 0 9px,color-mix(in srgb,var(--c) 12%,transparent) 9px 18px)}
+  .pl-tag{font-family:var(--round,sans-serif);font-weight:700;font-size:.6rem;letter-spacing:.16em;color:var(--c);border:1.5px solid color-mix(in srgb,var(--c) 50%,transparent);border-radius:999px;padding:2px 8px}
+  .pl-led{width:9px;height:9px;border-radius:50%;background:var(--c);box-shadow:0 0 9px var(--c);animation:pl-blink 2.6s ease-in-out infinite}
+  @keyframes pl-blink{0%,100%{opacity:1}50%{opacity:.35}}
+  .pl-hublot{position:relative;height:104px;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 50% 44%,color-mix(in srgb,var(--c) 42%,transparent),transparent 60%)}
+  .pl-verre{position:relative;width:80px;height:80px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+    background:radial-gradient(circle at 36% 30%,#ffffff26,#060b16 78%);border:3px solid #ffffff2a;box-shadow:inset 0 0 20px #000a,0 0 0 6px #ffffff0d}
+  .pl-verre::after{content:"";position:absolute;top:9px;left:14px;width:22px;height:14px;border-radius:50%;background:#ffffff30;transform:rotate(-24deg)}
+  .pl-ico{font-size:2.05rem;filter:drop-shadow(0 2px 5px #000a);z-index:1}
+  .pl-boulon{position:absolute;width:6px;height:6px;border-radius:50%;background:#c7ccd6;box-shadow:inset 0 0 0 1px #0006}
+  .pl-boulon.a{top:20px;left:calc(50% - 52px)}.pl-boulon.b{top:20px;left:calc(50% + 46px)}
+  .pl-boulon.c{bottom:16px;left:calc(50% - 52px)}.pl-boulon.d{bottom:16px;left:calc(50% + 46px)}
+  .pl-body{padding:10px 14px 13px}
+  .pl-nom{font-family:var(--round,sans-serif);font-weight:700;font-size:1.02rem;color:#fff;line-height:1.15}
+  .pl-sub{color:var(--txt2,#9fb0cc);font-size:.79rem;margin:3px 0 10px;line-height:1.32}
+  .pl-foot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+  .pl-stars{font-family:var(--round,sans-serif);font-weight:700;font-size:.76rem;color:#ffd98a}
+  .pl-stars.vierge{color:var(--txt2,#9fb0cc)}
+  .pl-go{font-family:var(--round,sans-serif);font-weight:700;font-size:.75rem;color:#04121e;background:var(--c);border-radius:999px;padding:5px 12px;white-space:nowrap}
   `;
   document.head.appendChild(st);
 }
@@ -207,6 +236,53 @@ export function creerLabo(o) {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && modale && !modale.hidden) fermer(); });
 
   return { ouvrir, etat: () => store.lire(), nbMissions: o.missions.length, niveau };
+}
+
+/* Garantit la section « Les labos » dans l'accueil (créée si absente) et
+ * renvoie la grille où déposer les portes. */
+function assurerLabosGrille() {
+  const accueil = document.querySelector('#accueil'); if (!accueil) return null;
+  let grille = accueil.querySelector('#labosGrille');
+  if (grille) return grille;
+  // Repli : l'HTML ne contient pas encore la section → on la crée après les cours.
+  const head = document.createElement('div');
+  head.className = 'sec-head labos-head';
+  head.innerHTML = '<span class="eyebrow">🔬 Les labos — expérimente et joue</span><span class="sec-count" id="labosCount"></span>';
+  grille = document.createElement('div'); grille.className = 'labos-grille'; grille.id = 'labosGrille';
+  const mods = accueil.querySelector('#modulesGrille');
+  if (mods && mods.parentElement === accueil) { mods.after(grille); accueil.insertBefore(head, grille); }
+  else { const note = accueil.querySelector('p.note'); if (note) { accueil.insertBefore(head, note); accueil.insertBefore(grille, note); } else { accueil.append(head, grille); } }
+  return grille;
+}
+
+/**
+ * Dépose une « porte de labo » (sas technique à hublot) dans la section Labos,
+ * insérée selon `ordre`. Design volontairement distinct des portes de cours.
+ * @param {object} o { id, ordre, icone, couleur, titre, sousTitre, faites, total, niv, ouvrir }
+ */
+export function porteLabo(o) {
+  injecterStyles();
+  const grille = assurerLabosGrille(); if (!grille || grille.querySelector('#' + o.id)) return;
+  const b = document.createElement('button');
+  b.type = 'button'; b.className = 'porte-labo'; b.id = o.id;
+  b.style.setProperty('--c', o.couleur || '#14c8d4');
+  b.dataset.ordre = o.ordre || 0;
+  b.setAttribute('aria-label', `${o.titre} — labo (${o.faites || 0}/${o.total || 0} missions)`);
+  const stars = (o.faites ? `⭐ ${o.faites}/${o.total} · Niv ${o.niv || 1}` : `${o.total} missions à découvrir`);
+  b.innerHTML =
+    '<div class="pl-top"><span class="pl-tag">LABO</span><span class="pl-led"></span></div>' +
+    '<div class="pl-hublot"><span class="pl-boulon a"></span><span class="pl-boulon b"></span><span class="pl-boulon c"></span><span class="pl-boulon d"></span>' +
+      `<span class="pl-verre"><span class="pl-ico">${o.icone}</span></span></div>` +
+    '<div class="pl-body">' +
+      `<div class="pl-nom">${o.titre}</div>` +
+      `<div class="pl-sub">${o.sousTitre || ''}</div>` +
+      `<div class="pl-foot"><span class="pl-stars${o.faites ? '' : ' vierge'}">${stars}</span><span class="pl-go">Entrer →</span></div>` +
+    '</div>';
+  b.addEventListener('click', o.ouvrir);
+  // insertion triée par `ordre`
+  const suivant = Array.from(grille.children).find((c) => Number(c.dataset.ordre) > Number(b.dataset.ordre));
+  if (suivant) grille.insertBefore(b, suivant); else grille.appendChild(b);
+  const cnt = document.querySelector('#labosCount'); if (cnt) cnt.textContent = `${grille.children.length} labos · joue et comprends`;
 }
 
 export { niveau };

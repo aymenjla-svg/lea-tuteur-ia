@@ -3,7 +3,7 @@
 // fil) sur une boucle et VOIT le courant passer… ou pas. Il comprend en
 // construisant et en cassant. 100 % ADDITIF, s'appuie sur labo-kit.js.
 
-import { creerLabo } from './labo-kit.js';
+import { creerLabo, porteLabo, niveau } from './labo-kit.js';
 
 // Composants disponibles dans la palette.
 const PALETTE = [
@@ -222,19 +222,12 @@ const labo = creerLabo({
 });
 
 function injecterCarte() {
-  const accueil = $('#accueil'); if (!accueil || $('#lc-card')) return;
   const d = labo.etat(); const faites = MISSIONS.filter((m) => d.missions[m.id]).length;
-  const card = document.createElement('div');
-  card.className = 'lk-card'; card.id = 'lc-card';
-  card.style.background = 'linear-gradient(135deg,#0b3a4a,#116a7a 60%,#0e8a6a)';
-  card.innerHTML =
-    '<h3>⚡ Labo circuit — monte ton circuit électrique</h3>' +
-    '<p>Pose toi-même la pile, l’ampoule, l’interrupteur… clique pour brancher, allume, éteins, fais briller plus fort. Tu construis, donc tu comprends.</p>' +
-    `<button class="lk-cta" id="lc-open">🎮 Jouer${faites ? ' — continuer' : ''}</button>` +
-    (faites ? `<span class="lk-mini">⭐ ${faites}/${MISSIONS.length}</span>` : '');
-  const ancre = accueil.querySelector('#lab-card') || accueil.querySelector('#rev-card') || accueil.querySelector('p.note');
-  if (ancre) accueil.insertBefore(card, ancre); else accueil.appendChild(card);
-  $('#lc-open').addEventListener('click', labo.ouvrir);
+  porteLabo({
+    id: 'porte-circuit', ordre: 2, icone: '⚡', couleur: '#14c8d4',
+    titre: 'Labo circuit', sousTitre: 'Monte ton propre circuit, allume l’ampoule… ou fais-la griller.',
+    faites, total: MISSIONS.length, niv: niveau(d.xp), ouvrir: labo.ouvrir,
+  });
 }
 
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injecterCarte);
