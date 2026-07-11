@@ -229,10 +229,11 @@ function ecoleHallSVG() {
 
 // Salle commune : TOUS les profs sont présents pour accueillir l'élève. Le prof
 // choisi s'avance (mis en avant) ; cliquer sur un prof le sélectionne.
-// Visuel STATIQUE d'un prof : portrait illustré (si fourni) sinon avatar SVG.
-// L'avatar animé de la séance (#avatarHost) reste toujours en SVG pour vivre
-// (clignement, bouche qui parle). Ici on privilégie la belle image quand elle
-// existe (écran de choix, chips, onboarding, porte).
+// Visuel d'un prof : portrait manga illustré (si fourni) sinon avatar SVG
+// animé. Quand un portrait existe, c'est LUI le prof partout (choix, chips,
+// onboarding, porte ET séance) ; l'image reçoit une légère animation « vivante »
+// (flottement + rebond quand le prof parle). Sans portrait, on retombe sur le
+// SVG animé (clignement, bouche).
 function visuelProf(p, uid = '', opts = {}) {
   if (p.portrait) {
     return `<img class="av-portrait" src="${p.portrait}" alt="Portrait de ${p.nom}" loading="lazy" draggable="false">`;
@@ -655,7 +656,7 @@ function ouvrirModule(m) {
   $('#scene').style.setProperty('--c', m.couleur);
   $('#salleDeco').innerHTML = decorSalle(m.id);
   theme(m.couleur);
-  $('#avatarHost').innerHTML = avatarSVG(persona, '', { entier: true }); // prof en pied
+  $('#avatarHost').innerHTML = visuelProf(persona, '', { entier: true }); // le prof (portrait manga si dispo, sinon SVG)
   $('#hudTitre').textContent = `${persona.nom} · ${m.titre}`;
   $('#accueil').hidden = true;
   $('#lecon').hidden = false;
@@ -1483,6 +1484,11 @@ function animer(t) {
     expression = 'listening';
   }
   const cfg = EXPR[expression] ?? EXPR.idle;
+
+  // Portrait manga : rebond léger quand le prof parle (l'animation SVG ci-dessous
+  // ne s'applique qu'à l'avatar vectoriel, sans effet sur une image).
+  const av = $('#avatarHost');
+  if (av) av.classList.toggle('parle', parle);
 
   const corps = $('#corps');
   if (corps && !reduireMouvement) {

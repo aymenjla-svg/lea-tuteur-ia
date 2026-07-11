@@ -499,6 +499,22 @@ body::after {
 @media (max-width: 480px) { .visage-entier { height: 216px; } }
 @media (prefers-reduced-motion: reduce) { .visage-entier { animation: none; } }
 
+/* Prof manga en séance : le portrait EST le prof (buste encadré, coin bas-droit),
+   avec un flottement « vivant » et un rebond quand il parle. */
+.avatar-host img.av-portrait {
+  width: auto; height: 232px; aspect-ratio: 1 / 1;
+  object-fit: cover; object-position: 50% 14%;
+  border-radius: 20px 20px 18px 18px;
+  border: 3px solid rgba(255, 255, 255, 0.92);
+  box-shadow: 0 10px 22px rgba(0, 0, 0, 0.32);
+  transform-origin: 50% 100%;
+  animation: profIdle 4.6s ease-in-out infinite;
+}
+.avatar-host.parle img.av-portrait { animation: profParle 0.34s ease-in-out infinite; }
+@keyframes profParle { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-2px) scale(1.012); } }
+@media (max-width: 480px) { .avatar-host img.av-portrait { height: 196px; } }
+@media (prefers-reduced-motion: reduce) { .avatar-host img.av-portrait { animation: none; } }
+
 /* ---- Cours : tableau animé (lecteur de scènes) ---- */
 .cours-titre { font-family: var(--round); font-weight: 700; font-size: clamp(1.05rem, 3.6vw, 1.4rem); color: #eafff8; padding-right: 120px; }
 .figure-host { flex: 1; display: flex; align-items: center; justify-content: center; padding: 4px 116px 2px 0; min-height: 96px; }
