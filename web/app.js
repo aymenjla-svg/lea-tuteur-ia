@@ -229,6 +229,17 @@ function ecoleHallSVG() {
 
 // Salle commune : TOUS les profs sont présents pour accueillir l'élève. Le prof
 // choisi s'avance (mis en avant) ; cliquer sur un prof le sélectionne.
+// Visuel STATIQUE d'un prof : portrait illustré (si fourni) sinon avatar SVG.
+// L'avatar animé de la séance (#avatarHost) reste toujours en SVG pour vivre
+// (clignement, bouche qui parle). Ici on privilégie la belle image quand elle
+// existe (écran de choix, chips, onboarding, porte).
+function visuelProf(p, uid = '', opts = {}) {
+  if (p.portrait) {
+    return `<img class="av-portrait" src="${p.portrait}" alt="Portrait de ${p.nom}" loading="lazy" draggable="false">`;
+  }
+  return avatarSVG(p, uid, opts);
+}
+
 function construireHero() {
   const box = $('#salleProfs');
   if (!box) return;
@@ -240,7 +251,7 @@ function construireHero() {
     '<div class="sp-rang">' +
     PERSONAS.map((p) =>
       `<button type="button" class="sp-prof${p.id === persona.id ? ' actif' : ''}" data-id="${p.id}" style="--accent:${p.accent}" aria-pressed="${p.id === persona.id}" title="${p.nom} — ${p.style}">` +
-        `<span class="sp-av">${avatarSVG(p, 'salle-' + p.id, { entier: true })}</span>` +
+        `<span class="sp-av">${visuelProf(p, 'salle-' + p.id, { entier: true })}</span>` +
         `<span class="sp-nom">${p.nom}</span>` +
       '</button>').join('') +
     '</div>';
@@ -259,7 +270,7 @@ function construireProfChips() {
     chip.style.setProperty('--accent', p.accent);
     chip.setAttribute('aria-pressed', String(p.id === persona.id));
     chip.innerHTML =
-      `<span class="pc-avatar">${avatarSVG(p, 'chip-' + p.id)}</span>` +
+      `<span class="pc-avatar">${visuelProf(p, 'chip-' + p.id)}</span>` +
       `<span class="pc-nom">${p.nom}</span>` +
       `<span class="pc-style">${p.style}</span>`;
     chip.addEventListener('click', () => choisirProf(p.id));
@@ -448,7 +459,7 @@ function construireModules() {
       `<div class="porte-flammes">${[0, 1, 2].map((k) => `<span${k < et ? ' class="on"' : ''}>🔥</span>`).join('')}</div>`;
     // Le guide qui t'accueille devant SA porte.
     const profHtml = m.id === cibleId
-      ? `<div class="porte-prof"><span class="porte-bulle">${prenom ? `Par ici, ${prenom} !` : 'On y va ?'}</span><span class="porte-prof-av">${avatarSVG(persona, 'cour-' + m.id)}</span></div>`
+      ? `<div class="porte-prof"><span class="porte-bulle">${prenom ? `Par ici, ${prenom} !` : 'On y va ?'}</span><span class="porte-prof-av">${visuelProf(persona, 'cour-' + m.id)}</span></div>`
       : '';
     carte.innerHTML =
       `<div class="porte-cadre">
@@ -559,7 +570,7 @@ function onbEtapes() {
 
 function onbRender() {
   const e = onbEtapes()[onbStep];
-  $('#onbAvatar').innerHTML = avatarSVG(persona);
+  $('#onbAvatar').innerHTML = visuelProf(persona);
   onbDire(e.msg);
   $('#onbZone').innerHTML = e.zone();
   $('#onbNext').textContent = e.next;
