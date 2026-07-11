@@ -113,6 +113,19 @@ function injecterStyles() {
   .pl-stars{font-family:var(--round,sans-serif);font-weight:700;font-size:.76rem;color:#ffd98a}
   .pl-stars.vierge{color:var(--txt2,#9fb0cc)}
   .pl-go{font-family:var(--round,sans-serif);font-weight:700;font-size:.75rem;color:#04121e;background:var(--c);border-radius:999px;padding:5px 12px;white-space:nowrap}
+  /* ---- Animation d'ouverture du sas au clic ---- */
+  .pl-onde{position:absolute;width:80px;height:80px;border-radius:50%;border:2px solid var(--c);opacity:0;pointer-events:none;z-index:2}
+  .porte-labo.pl-ouvre{animation:pl-lift .46s ease}
+  .porte-labo.pl-ouvre .pl-onde{animation:pl-onde .46s ease-out}
+  .porte-labo.pl-ouvre .pl-verre{animation:pl-pop .46s ease-out}
+  .porte-labo.pl-ouvre .pl-ico{animation:pl-icon .46s ease-out}
+  .porte-labo.pl-ouvre .pl-led{animation:pl-burst .11s linear 4}
+  @keyframes pl-onde{0%{opacity:.85;transform:scale(.55)}100%{opacity:0;transform:scale(2.7)}}
+  @keyframes pl-pop{0%{transform:scale(1);filter:brightness(1)}42%{transform:scale(1.15);filter:brightness(1.7);box-shadow:inset 0 0 24px var(--c),0 0 26px var(--c)}100%{transform:scale(1);filter:brightness(1)}}
+  @keyframes pl-icon{0%{transform:scale(1)}42%{transform:scale(1.35)}100%{transform:scale(1)}}
+  @keyframes pl-lift{0%{transform:translateY(0)}30%{transform:translateY(-9px)}100%{transform:translateY(0)}}
+  @keyframes pl-burst{0%,100%{opacity:1}50%{opacity:.2}}
+  @media (prefers-reduced-motion: reduce){.porte-labo.pl-ouvre,.porte-labo.pl-ouvre *{animation:none !important}}
   `;
   document.head.appendChild(st);
 }
@@ -272,13 +285,19 @@ export function porteLabo(o) {
   b.innerHTML =
     '<div class="pl-top"><span class="pl-tag">LABO</span><span class="pl-led"></span></div>' +
     '<div class="pl-hublot"><span class="pl-boulon a"></span><span class="pl-boulon b"></span><span class="pl-boulon c"></span><span class="pl-boulon d"></span>' +
-      `<span class="pl-verre"><span class="pl-ico">${o.icone}</span></span></div>` +
+      `<span class="pl-onde"></span><span class="pl-verre"><span class="pl-ico">${o.icone}</span></span></div>` +
     '<div class="pl-body">' +
       `<div class="pl-nom">${o.titre}</div>` +
       `<div class="pl-sub">${o.sousTitre || ''}</div>` +
       `<div class="pl-foot"><span class="pl-stars${o.faites ? '' : ' vierge'}">${stars}</span><span class="pl-go">Entrer →</span></div>` +
     '</div>';
-  b.addEventListener('click', o.ouvrir);
+  b.addEventListener('click', () => {
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    if (reduce) { o.ouvrir(); return; }
+    if (b.classList.contains('pl-ouvre')) return; // anim déjà en cours
+    b.classList.add('pl-ouvre');
+    setTimeout(() => { b.classList.remove('pl-ouvre'); o.ouvrir(); }, 440);
+  });
   // insertion triée par `ordre`
   const suivant = Array.from(grille.children).find((c) => Number(c.dataset.ordre) > Number(b.dataset.ordre));
   if (suivant) grille.insertBefore(b, suivant); else grille.appendChild(b);
