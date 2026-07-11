@@ -16,7 +16,7 @@ export const PERSONAS = [
   {
     id: 'persona-lea', nom: 'Léa', style: 'Douce & patiente', emoji: '🌸',
     tagline: 'Explique calmement, te laisse tout le temps qu’il faut.',
-    portrait: 'avatars/persona-lea.jpg',
+    portrait: 'avatars/persona-lea.png',
     peau: '#ffdcc0', cheveux: '#8a5a3b', cheveux2: '#6f4529',
     tenue: '#e0a83e', tenue2: '#c8902c', iris: '#5a9e6f', accent: '#e0a83e',
     coiffe: 'longs', sexe: 'f', voix: { pitch: 1.14, rate: 0.98 }, voixN: { lecture: 1.05, openai: 'shimmer' },
@@ -25,7 +25,7 @@ export const PERSONAS = [
   {
     id: 'persona-mila', nom: 'Mila', style: 'Créative & imagée', emoji: '🎨',
     tagline: 'Fait comprendre avec des images et des exemples concrets.',
-    portrait: 'avatars/persona-mila.jpg',
+    portrait: 'avatars/persona-mila.png',
     peau: '#ffd9c2', cheveux: '#c86fa6', cheveux2: '#a8558a',
     tenue: '#b06ab3', tenue2: '#98549b', iris: '#8e5bd0', accent: '#b06ab3',
     coiffe: 'queue', sexe: 'f', voix: { pitch: 1.22, rate: 1.0 }, voixN: { lecture: 1.12, openai: 'nova' },
@@ -34,7 +34,7 @@ export const PERSONAS = [
   {
     id: 'persona-theo', nom: 'Théo', style: 'Malin & taquin', emoji: '😄',
     tagline: 'Glisse une pointe d’humour pour que ça reste en tête.',
-    portrait: 'avatars/persona-theo.jpg',
+    portrait: 'avatars/persona-theo.png',
     peau: '#f0c49a', cheveux: '#4a2f1e', cheveux2: '#33200f',
     tenue: '#e06d5a', tenue2: '#c4543f', iris: '#6a4a2a', accent: '#e06d5a',
     coiffe: 'boucles', sexe: 'h', voix: { pitch: 0.82, rate: 1.05 }, voixN: { lecture: 0.8, openai: 'ballad' },
@@ -43,7 +43,7 @@ export const PERSONAS = [
   {
     id: 'persona-sami', nom: 'Sami', style: 'Complice & rassurant', emoji: '🤝',
     tagline: 'Comme un grand frère : jamais tu ne restes bloqué·e seul·e.',
-    portrait: 'avatars/persona-sami.jpg',
+    portrait: 'avatars/persona-sami.png',
     peau: '#e0a878', cheveux: '#161619', cheveux2: '#0b0b0d',
     tenue: '#4a90d9', tenue2: '#3a72ad', iris: '#3a3f4c', accent: '#4a90d9',
     coiffe: 'ondules', sexe: 'h', voix: { pitch: 0.78, rate: 0.99 }, voixN: { lecture: 0.77, openai: 'verse' },
