@@ -6,6 +6,7 @@
 // est imposée par le déterministe (A1).
 
 import { PERSONAS, MATIERE, personaParId, avatarSVG } from './personas.js';
+import { soulEffectif } from './souls.js';
 import { voix } from './voix.js';
 import { MODULES, chargerProgress, majProgress, progressModule } from './modules.js';
 import { COURS, verifierCheckpoint } from './cours.js';
@@ -1736,7 +1737,7 @@ function identiteTuteur() {
   return {
     prenom: p?.prenom && p.prenom !== 'toi' ? p.prenom : '',
     sexe: p?.sexe || '',
-    prof: persona ? { nom: persona.nom, style: persona.style, tagline: persona.tagline, sexe: persona.sexe } : undefined,
+    prof: persona ? { nom: persona.nom, style: persona.style, tagline: persona.tagline, sexe: persona.sexe, soul: soulEffectif(persona.id) } : undefined,
   };
 }
 

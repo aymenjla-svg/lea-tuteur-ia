@@ -6,6 +6,8 @@ import { MODULES, progressModule } from './modules.js';
 import { lireSuivi, ERREUR_LIB, effacerSuivi } from './suivi.js';
 import { serie } from './jeu.js';
 import { appliquerA11y } from './accessibilite.js';
+import { PERSONAS } from './personas.js';
+import { soulEffectif, definirSoul, reinitialiserSoul, soulPersonnalise, exporterSouls } from './souls.js';
 
 appliquerA11y();
 
@@ -106,3 +108,45 @@ $('#reset').addEventListener('click', () => {
   }
 });
 charger();
+
+/* --- Personnalité (« soul ») des profs ------------------------------------ */
+
+let soulSel = PERSONAS[0].id;
+
+function rendreSoulProfs() {
+  $('#soulProfs').innerHTML = PERSONAS.map((p) =>
+    `<button type="button" class="soul-prof${p.id === soulSel ? ' actif' : ''}" data-id="${p.id}" style="--accent:${p.accent}">` +
+      `<span class="dot" style="background:${p.accent}"></span>${p.nom}${soulPersonnalise(p.id) ? ' <span class="perso" title="Personnalisé">✎</span>' : ''}` +
+    '</button>').join('');
+  for (const b of $('#soulProfs').querySelectorAll('.soul-prof')) {
+    b.addEventListener('click', () => { soulSel = b.dataset.id; chargerSoul(); });
+  }
+}
+
+function chargerSoul() {
+  const p = PERSONAS.find((x) => x.id === soulSel);
+  $('#soulTexte').value = soulEffectif(soulSel);
+  $('#soulEtat').textContent = soulPersonnalise(soulSel)
+    ? `✎ Personnalité personnalisée pour ${p.nom} (sur cet appareil).`
+    : `Personnalité par défaut de ${p.nom}.`;
+  rendreSoulProfs();
+}
+
+$('#soulSave').addEventListener('click', () => {
+  definirSoul(soulSel, $('#soulTexte').value);
+  $('#soulEtat').textContent = 'Enregistré ✓';
+  setTimeout(chargerSoul, 900);
+});
+$('#soulReset').addEventListener('click', () => { reinitialiserSoul(soulSel); chargerSoul(); });
+$('#soulExport').addEventListener('click', async () => {
+  const bloc = exporterSouls();
+  try {
+    await navigator.clipboard.writeText(bloc);
+    $('#soulEtat').textContent = 'Copié ✓ — colle ce bloc dans web/config.js pour l’appliquer à tous les testeurs.';
+  } catch {
+    $('#soulTexte').value = bloc;
+    $('#soulEtat').textContent = 'Copie auto impossible : sélectionne le texte ci-dessus et copie-le manuellement.';
+  }
+});
+
+chargerSoul();

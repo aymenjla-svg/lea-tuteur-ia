@@ -41,6 +41,13 @@
       .ligne .nom { flex: 0 0 210px; }
       .ligne .n { flex: 0 0 40px; text-align: right; color: var(--txt2); font-size: 0.82rem; }
       .vide { color: var(--txt2); font-size: 0.9rem; }
+
+      .soul-profs { display: flex; gap: 8px; flex-wrap: wrap; }
+      .soul-prof { display: flex; align-items: center; gap: 7px; font-family: var(--round); font-weight: 600; font-size: 0.9rem; padding: 8px 13px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--panel); color: #fff; cursor: pointer; }
+      .soul-prof.actif { border-color: var(--accent); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+      .soul-prof .dot { width: 13px; height: 13px; border-radius: 50%; }
+      .soul-prof .perso { color: #ffd98a; }
+      .soul-zone { width: 100%; margin-top: 12px; min-height: 150px; line-height: 1.5; }
     </style>
   </head>
   <body>
@@ -67,6 +74,19 @@
       <section class="bloc">
         <h2>Erreurs les plus fréquentes</h2>
         <div class="liste" id="erreurs"></div>
+      </section>
+
+      <section class="bloc">
+        <h2>Personnalité des profs (« soul »)</h2>
+        <p class="db-sub" style="margin-bottom: 12px">Choisis un prof et modifie sa personnalité : elle influence sa façon de répondre (ton, humour, images…). Enregistré sur cet appareil. « Copier pour tous » te donne le bloc à coller dans <code>web/config.js</code> pour l’appliquer à tous les testeurs.</p>
+        <div class="soul-profs" id="soulProfs"></div>
+        <textarea id="soulTexte" class="fb-zone soul-zone" rows="7" placeholder="Décris la personnalité du prof…"></textarea>
+        <p id="soulEtat" class="note"></p>
+        <div class="db-actions" style="margin-top: 8px">
+          <button id="soulSave" class="db-btn" type="button">Enregistrer</button>
+          <button id="soulReset" class="db-btn" type="button">Revenir au défaut</button>
+          <button id="soulExport" class="db-btn" type="button">Copier pour tous</button>
+        </div>
       </section>
 
       <p class="note">v1 mono-appareil · le suivi par classe (comptes élèves) viendra avec le backend.</p>

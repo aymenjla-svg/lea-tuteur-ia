@@ -19,3 +19,9 @@ window.LEA_TUTEUR_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYm
 // remplacer la voix robotique du navigateur. Vide = voix du navigateur.
 window.LEA_TTS_URL = 'https://wncsqdxtqfhwjkmeqpgt.supabase.co/functions/v1/voix';
 window.LEA_TTS_KEY = window.LEA_TUTEUR_KEY; // même clé anon (publique) si Verify JWT activé
+
+// Personnalité (« soul ») des profs, PARTAGÉE pour tous les testeurs.
+// Édite-les dans l'admin (Tableau de bord → « Personnalité des profs »), puis
+// « Copier pour tous » et colle le bloc généré ICI (remplace la ligne ci-dessous).
+// Vide/absent = chaque prof garde sa personnalité par défaut (personas.js).
+// window.LEA_SOULS = { 'persona-lea': '…', 'persona-mila': '…', 'persona-theo': '…', 'persona-sami': '…' };
