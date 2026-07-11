@@ -202,8 +202,8 @@ body::after {
 }
 .sp-prof:not(.actif) { opacity: 0.92; }
 .sp-prof:not(.actif) .sp-av svg { filter: saturate(0.82) brightness(0.86); }
-.sp-prof:hover { transform: translateY(-3px); }
-.sp-prof.actif { transform: translateY(-8px); }
+.sp-prof:hover .sp-av { transform: scale(1.03); transform-origin: 50% 100%; } /* survol : grossit depuis le sol, pieds fixes */
+.sp-prof.actif { transform: none; } /* pas de « pop » : les pieds restent au sol (avatars en pied) */
 .sp-prof.actif .sp-av svg { max-height: clamp(132px, 33vw, 194px); }
 .sp-prof.actif::before {
   content: ""; position: absolute; left: 50%; bottom: 24px; transform: translateX(-50%);
