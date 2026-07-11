@@ -218,7 +218,7 @@ body::after {
 .av-portrait { display: block; object-fit: cover; object-position: 50% 14%; user-select: none; }
 /* Écran de choix : debout dans la salle des profs, avec ombre au sol (::after) */
 .sp-av img.av-portrait {
-  width: 100%; height: auto; object-fit: contain;
+  width: auto; height: clamp(150px, 33vw, 205px); margin: 0 auto; object-fit: contain;
   filter: drop-shadow(0 5px 5px rgba(0, 0, 0, 0.30));
 }
 .sp-prof.actif .sp-av img.av-portrait { transform: scale(1.06); transform-origin: 50% 100%; }
