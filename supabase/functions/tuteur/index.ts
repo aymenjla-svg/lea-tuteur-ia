@@ -41,6 +41,7 @@ interface Contexte {
   prenom?: string;        // prénom de l'élève (adresse personnalisée)
   sexe?: string;          // 'h' | 'f' (accord des phrases adressées à l'élève)
   prof?: Prof;            // persona du prof (fait varier le ton du LLM)
+  charte?: string;        // valeurs/éthique de l'école (éditable admin, tous profs)
   session_id?: string;    // identité pseudonyme (journal safety_alerts)
   eleve_ref?: string;     // idem
 }
@@ -235,6 +236,16 @@ function adresseEleve(ctx: Contexte): string {
   return bits.length ? `\n\n${bits.join(' ')}` : '';
 }
 
+// Charte/valeurs de l'école — défaut de repli si le client n'en envoie pas.
+// (La charte réelle vient du client, éditable dans l'admin ; voir web/charte.js.)
+const CHARTE_DEFAUT = `À l'École de Léa, on croit que chaque élève peut réussir. Nos valeurs :
+- Bienveillance avant tout : on encourage, on ne juge jamais, on ne se moque jamais. L'erreur est une étape normale de l'apprentissage.
+- On corrige les idées fausses avec douceur, sans jamais valider une erreur.
+- On explique clairement et concrètement : phrases courtes, exemples de la vie quotidienne, on va à l'essentiel (2 à 5 phrases).
+- On respecte le rythme de l'élève et on valorise ses efforts.
+- Sécurité : jamais d'expérience dangereuse ; on n'expérimente qu'avec des piles et sous la supervision d'un adulte.
+- On reste dans le programme de physique : si la question sort du sujet, on le dit gentiment et on ramène au cours.`;
+
 function systeme(ctx: Contexte, extraits: string[] = []): string {
   const rag = extraits.length
     ? `\n\nExtraits du cours (source de vérité — appuie-toi dessus en priorité) :\n"""\n${extraits.join('\n---\n')}\n"""`
@@ -246,17 +257,20 @@ function systeme(ctx: Contexte, extraits: string[] = []): string {
   const spoiler = ctx.en_exercice
     ? `\n\nL’élève est EN EXERCICE${ctx.enonce ? ` sur l’énoncé : « ${ctx.enonce} »` : ''}. Ne donne JAMAIS le résultat numérique final ni la valeur de l’inconnue. Explique la méthode, la notion, l’étape qui bloque (quelle relation, quelle conversion), et invite l’élève à finir le calcul lui-même.`
     : '';
+  const charte = (ctx.charte ?? '').trim().slice(0, 2000) || CHARTE_DEFAUT;
   return `${identiteProf(ctx.prof)}${adresseEleve(ctx)}
 
 ${PROGRAMME}
 
-Règles :
-- Souviens-toi de ce qui vient d'être dit dans la conversation (les messages précédents) : si l'élève renvoie à « la réponse d'avant » ou « ce que tu viens de dire », reprends-le fidèlement.
-- Tu peux aller loin : approfondir, relier les notions entre elles, donner des analogies et des exemples réels — MAIS uniquement dans le programme ci-dessus. Si la question sort du programme, dis-le gentiment et ramène au cours (mets alors "dans_programme": false).
-- Ne jamais valider une idée fausse ; corrige avec douceur.
-- Ne jamais humilier ni juger. Encourage toujours.
-- Sécurité : jamais d’expérience dangereuse (secteur 230 V, produits chimiques, feu…). Rappelle qu’on n’expérimente qu’avec des piles et sous la supervision d’un adulte.
-- Reste bref : 2 à 5 phrases. Pas de pavé.${rag}${ancrage}${spoiler}
+Charte de l'École de Léa — les valeurs à respecter dans CHAQUE réponse :
+"""
+${charte}
+"""
+
+Cadre (non négociable, quelles que soient la charte et la personnalité) :
+- Souviens-toi des messages précédents de la conversation : si l'élève renvoie à « la réponse d'avant » ou « ce que tu viens de dire », reprends-le fidèlement.
+- Tu peux approfondir et relier les notions, MAIS uniquement dans le programme ci-dessus. Si la question sort du programme, dis-le gentiment et ramène au cours (mets alors "dans_programme": false).
+- Ne jamais humilier ni juger, ne jamais valider une idée fausse, jamais d'expérience dangereuse. Reste bref (2 à 5 phrases).${rag}${ancrage}${spoiler}
 
 Tu PEUX dessiner au tableau pour illustrer, en renvoyant des commandes de dessin. Le tableau est un repère SVG de 320 (largeur) × 200 (hauteur), origine en haut à gauche. Primitives autorisées :
 - {"type":"fleche","d":"M x1 y1 L x2 y2","len":<longueur approx>}

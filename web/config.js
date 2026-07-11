@@ -25,3 +25,9 @@ window.LEA_TTS_KEY = window.LEA_TUTEUR_KEY; // même clé anon (publique) si Ver
 // « Copier pour tous » et colle le bloc généré ICI (remplace la ligne ci-dessous).
 // Vide/absent = chaque prof garde sa personnalité par défaut (personas.js).
 // window.LEA_SOULS = { 'persona-lea': '…', 'persona-mila': '…', 'persona-theo': '…', 'persona-sami': '…' };
+
+// Charte / éthique de l'école, PARTAGÉE (valeurs communes à tous les profs).
+// Idem : édite dans l'admin, « Copier pour tous », colle le bloc ici.
+// Vide/absent = charte par défaut (web/charte.js). Les garde-fous durs
+// (programme, sécurité) restent verrouillés côté serveur quoi qu'il arrive.
+// window.LEA_CHARTE = "…";

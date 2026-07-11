@@ -8,6 +8,7 @@ import { serie } from './jeu.js';
 import { appliquerA11y } from './accessibilite.js';
 import { PERSONAS } from './personas.js';
 import { soulEffectif, definirSoul, reinitialiserSoul, soulPersonnalise, exporterSouls } from './souls.js';
+import { charteEffective, definirCharte, reinitialiserCharte, chartePersonnalisee, exporterCharte } from './charte.js';
 
 appliquerA11y();
 
@@ -150,3 +151,29 @@ $('#soulExport').addEventListener('click', async () => {
 });
 
 chargerSoul();
+
+/* --- Charte / valeurs de l'école (tous les profs) ------------------------- */
+
+function chargerCharte() {
+  $('#charteTexte').value = charteEffective();
+  $('#charteEtat').textContent = chartePersonnalisee()
+    ? '✎ Charte personnalisée sur cet appareil.'
+    : 'Charte par défaut de l’école.';
+}
+$('#charteSave').addEventListener('click', () => {
+  definirCharte($('#charteTexte').value);
+  $('#charteEtat').textContent = 'Enregistré ✓';
+  setTimeout(chargerCharte, 900);
+});
+$('#charteReset').addEventListener('click', () => { reinitialiserCharte(); chargerCharte(); });
+$('#charteExport').addEventListener('click', async () => {
+  const bloc = exporterCharte();
+  try {
+    await navigator.clipboard.writeText(bloc);
+    $('#charteEtat').textContent = 'Copié ✓ — colle ce bloc dans web/config.js pour l’appliquer à tous les testeurs.';
+  } catch {
+    $('#charteTexte').value = bloc;
+    $('#charteEtat').textContent = 'Copie auto impossible : sélectionne le texte ci-dessus et copie-le manuellement.';
+  }
+});
+chargerCharte();

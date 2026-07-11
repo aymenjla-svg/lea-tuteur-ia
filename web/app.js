@@ -7,6 +7,7 @@
 
 import { PERSONAS, MATIERE, personaParId, avatarSVG } from './personas.js';
 import { soulEffectif } from './souls.js';
+import { charteEffective } from './charte.js';
 import { voix } from './voix.js';
 import { MODULES, chargerProgress, majProgress, progressModule } from './modules.js';
 import { COURS, verifierCheckpoint } from './cours.js';
@@ -1738,6 +1739,7 @@ function identiteTuteur() {
     prenom: p?.prenom && p.prenom !== 'toi' ? p.prenom : '',
     sexe: p?.sexe || '',
     prof: persona ? { nom: persona.nom, style: persona.style, tagline: persona.tagline, sexe: persona.sexe, soul: soulEffectif(persona.id) } : undefined,
+    charte: charteEffective(), // valeurs/éthique communes à tous les profs (admin)
   };
 }
 
