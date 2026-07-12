@@ -21,7 +21,7 @@ const rho = () => st.m / Math.max(st.V, 0.001);
 const flotte = () => rho() < 1;
 
 const $ = (s, r = document) => r.querySelector(s);
-let cv, ctx, W, H, raf = 0, api, waterTop = 62;
+let cv, ctx, W, H, raf = 0, api, waterTop = 62, bulles = [];
 
 function initCanvas(canvas) {
   cv = canvas;
@@ -30,7 +30,9 @@ function initCanvas(canvas) {
   W = r.width || 520; H = 220;
   cv.width = W * dpr; cv.height = H * dpr;
   ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  bulles = Array.from({ length: 16 }, (_, i) => ({ x: ((i * 61) % 100) / 100 * W, y: waterTop + ((i * 37) % 100) / 100 * (H - waterTop), sp: 0.3 + (i % 4) * 0.18, r: 1 + (i % 3) * 0.7, w: i }));
 }
+const surfaceY = (x) => waterTop + Math.sin(x * 0.05 + (st.tick || 0) * 0.06) * 2.6;
 
 /* --------------------------- Dessins des objets --------------------------- */
 function dessineObjet(kind, x, y, s) {
@@ -91,15 +93,28 @@ function dessineDiver(x, y) {
 
 function dessiner() {
   if (!ctx) return;
-  ctx.fillStyle = '#0a1020'; ctx.fillRect(0, 0, W, H);
-  // eau
-  const g = ctx.createLinearGradient(0, waterTop, 0, H); g.addColorStop(0, '#1a6ea8cc'); g.addColorStop(1, '#0b3a66');
-  ctx.fillStyle = g; ctx.fillRect(0, waterTop, W, H - waterTop);
-  ctx.strokeStyle = '#7fd8ff'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0, waterTop); ctx.lineTo(W, waterTop); ctx.stroke();
-  ctx.fillStyle = '#7fd8ff'; ctx.font = '700 11px Fredoka, sans-serif'; ctx.textAlign = 'left'; ctx.fillText('surface (ρ = 1)', 8, waterTop - 6);
-  ctx.strokeStyle = '#ffffff33'; ctx.lineWidth = 3; ctx.strokeRect(4, 34, W - 8, H - 40);
+  const ph = (st.tick || 0) * 0.06;
+  ctx.fillStyle = '#081020'; ctx.fillRect(0, 0, W, H);
+  // ciel léger au-dessus de l'eau
+  ctx.fillStyle = '#12314f'; ctx.fillRect(0, 34, W, waterTop - 34);
+  // eau à surface ondulée
+  const g = ctx.createLinearGradient(0, waterTop, 0, H); g.addColorStop(0, '#2a8fc8cc'); g.addColorStop(1, '#0a355f');
+  ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(0, H);
+  for (let x = 0; x <= W; x += 8) ctx.lineTo(x, surfaceY(x)); ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+  // caustiques (reflets ondulants)
+  ctx.strokeStyle = '#bfeaff1c'; ctx.lineWidth = 5;
+  for (let j = 0; j < 3; j++) { ctx.beginPath(); const yy = waterTop + 22 + j * 34; for (let x = 0; x <= W; x += 10) { const o = Math.sin(x * 0.045 + ph * (1 + j * 0.3)) * 4; x === 0 ? ctx.moveTo(x, yy + o) : ctx.lineTo(x, yy + o); } ctx.stroke(); }
+  // bulles ambiantes
+  ctx.fillStyle = '#ffffff33'; for (const bu of bulles) { ctx.beginPath(); ctx.arc(bu.x + Math.sin(ph + bu.w) * 2, bu.y, bu.r, 0, 7); ctx.fill(); }
+  // ligne de surface
+  ctx.strokeStyle = '#9be6ff'; ctx.lineWidth = 2; ctx.beginPath();
+  for (let x = 0; x <= W; x += 8) { const yy = surfaceY(x); x === 0 ? ctx.moveTo(0, yy) : ctx.lineTo(x, yy); } ctx.stroke();
+  ctx.fillStyle = '#9be6ff'; ctx.font = '700 11px Fredoka, sans-serif'; ctx.textAlign = 'left'; ctx.fillText('surface (ρ = 1)', 8, waterTop - 7);
+  ctx.strokeStyle = '#ffffff2e'; ctx.lineWidth = 3; ctx.strokeRect(4, 34, W - 8, H - 40);
 
   for (const it of st.items) dessineObjet(it.kind, it.x, it.y, it.size);
+  // éclaboussure
+  if (st.splash) { const e = (performance.now() - st.splash.start) / 380; if (e < 1) { ctx.fillStyle = `rgba(180,235,255,${1 - e})`; for (let k = 0; k < 7; k++) { const a = -Math.PI + k / 6 * Math.PI, r = e * 22; ctx.beginPath(); ctx.arc(st.splash.x + Math.cos(a) * r, surfaceY(st.splash.x) - Math.abs(Math.sin(a)) * r * 1.2 + e * e * 20, 2 - e * 1.4, 0, 7); ctx.fill(); } } else st.splash = null; }
   if (st.diver) dessineDiver(st.diver.x, st.diver.y);
 }
 
@@ -121,7 +136,8 @@ function majItems(t) {
     if (it.rho < 1) { const frac = Math.max(0.12, Math.min(0.95, it.rho)); target = waterTop - half + frac * it.size; }
     else { const row = sunkIdx % 6; target = tankBottom() - half - Math.floor(sunkIdx / 6) * (it.size * 0.5); it._rowx = 34 + row * ((W - 90) / 6); sunkIdx++; }
     if (!it.settled) {
-      it.vy += 0.55; it.y += it.vy;
+      const prev = it.y; it.vy += 0.55; it.y += it.vy;
+      if (prev < waterTop && it.y >= waterTop) st.splash = { x: it.x, start: performance.now() };
       if (it.y >= target) { it.y = target; it.settled = true; it.vy = 0; }
     } else if (it.rho < 1) { it.y = target + Math.sin(t / 500 + it.x) * 1.6; } // flotteurs : houle légère
     else { it.y = target; }
@@ -130,6 +146,8 @@ function majItems(t) {
 
 function boucle(now) {
   if (!api._open) { raf = 0; return; }
+  st.tick = (st.tick || 0) + 1;
+  for (const bu of bulles) { bu.y -= bu.sp; if (bu.y < waterTop + 2) { bu.y = H - 6; bu.x = (bu.x * 7 + 53) % Math.max(1, W); } }
   majItems(now || 0);
   if (st.diver) {
     st.diver.x += 3.4;
