@@ -44,18 +44,16 @@ function injecterStyles() {
   st.textContent = `
   .lv-overlay{position:fixed;inset:0;z-index:6000;display:none}
   .lv-overlay.on{display:block}
-  .lv-hole{position:absolute;border-radius:18px;box-shadow:0 0 0 9999px rgba(6,10,22,.74);
-    outline:2px solid rgba(255,220,120,.9);outline-offset:2px;
-    transition:top .55s cubic-bezier(.34,1.1,.4,1),left .55s cubic-bezier(.34,1.1,.4,1),
-      width .55s cubic-bezier(.34,1.1,.4,1),height .55s cubic-bezier(.34,1.1,.4,1),opacity .3s ease;
+  .lv-hole{position:absolute;border-radius:16px;
+    box-shadow:0 0 0 9999px rgba(8,12,24,.72),0 0 0 3px rgba(255,206,92,.85),0 0 24px 5px rgba(255,206,92,.28);
+    transition:top .5s cubic-bezier(.34,1.1,.4,1),left .5s cubic-bezier(.34,1.1,.4,1),
+      width .5s cubic-bezier(.34,1.1,.4,1),height .5s cubic-bezier(.34,1.1,.4,1),opacity .3s ease;
     pointer-events:none}
-  .lv-hole::after{content:"";position:absolute;inset:-2px;border-radius:18px;
-    box-shadow:0 0 26px 4px rgba(255,206,92,.55);pointer-events:none}
   .lv-caravane{position:absolute;left:50%;top:60%;display:flex;gap:10px;align-items:flex-start;
     width:min(342px,calc(100vw - 24px));
     transition:top .6s cubic-bezier(.34,1.15,.4,1),left .6s cubic-bezier(.34,1.15,.4,1);
     will-change:top,left}
-  .lv-tete{flex:0 0 auto;width:74px;height:74px;border-radius:50%;object-fit:cover;
+  .lv-tete{flex:0 0 auto;width:74px;height:74px;border-radius:50%;object-fit:cover;object-position:50% 6%;
     border:3px solid #ffce5c;background:#17203a;
     box-shadow:0 8px 22px rgba(0,0,0,.5),0 0 0 4px rgba(255,206,92,.18);
     animation:lv-flott 3.2s ease-in-out infinite}
@@ -99,12 +97,13 @@ function injecterStyles() {
   .lv-later{margin-top:10px;background:none;border:0;color:#9fb0cc;font-family:var(--round,"Lexend",sans-serif);
     font-size:.86rem;cursor:pointer}
   .lv-later:hover{color:#eaf0ff}
-  /* Bouton « revoir la visite » (accueil) */
-  .lv-replay{display:inline-flex;align-items:center;gap:7px;margin:2px auto 6px;
-    background:rgba(255,206,92,.12);border:1.5px solid rgba(255,206,92,.4);border-radius:999px;
-    padding:8px 15px;font-family:var(--round,"Lexend",sans-serif);font-weight:600;font-size:.88rem;
-    color:#ffce5c;cursor:pointer}
-  .lv-replay:hover{background:rgba(255,206,92,.2)}
+  /* Bouton « visite guidée » (haut de l'accueil, dans le héros) */
+  .lv-replay{display:inline-flex;align-items:center;gap:8px;align-self:flex-start;margin:14px 0 0;
+    background:linear-gradient(180deg,#ffd873,#ffb638);border:0;border-radius:13px;
+    padding:11px 18px;font-family:var(--round,"Lexend",sans-serif);font-weight:700;font-size:.95rem;
+    color:#3a2600;cursor:pointer;box-shadow:0 8px 20px rgba(255,182,56,.32)}
+  .lv-replay:hover{filter:brightness(1.05)}
+  .lv-replay:active{transform:translateY(1px)}
   @media (max-width:430px){.lv-caravane{flex-direction:column;align-items:center;width:min(300px,calc(100vw - 20px))}
     .lv-bulle::before{display:none}.lv-tete,.lv-emoji{width:64px;height:64px}}
   @media (prefers-reduced-motion:reduce){.lv-tete,.lv-tete.parle{animation:none}
@@ -190,7 +189,9 @@ function placer() {
   const cible = cibleDe(etp);
   const hole = $('.lv-hole', sur), car = $('.lv-caravane', sur);
   if (!cible) { hole.style.opacity = '0'; centrer(car); return; }
-  cible.scrollIntoView({ block: 'center', behavior: 'smooth' });
+  // Défilement INSTANTANÉ (pas 'smooth') : sinon on mesure la position pendant
+  // que la page bouge encore et la bulle atterrit hors de l'écran.
+  cible.scrollIntoView({ block: 'center', behavior: 'auto' });
   clearTimeout(poseTimer);
   poseTimer = setTimeout(() => {
     const r = cible.getBoundingClientRect(), pad = 10;
@@ -200,16 +201,19 @@ function placer() {
     hole.style.top = (r.top - pad) + 'px';
     hole.style.width = (r.width + pad * 2) + 'px';
     hole.style.height = (r.height + pad * 2) + 'px';
-    // La caravane (tête + bulle) se pose sous la zone, sinon au-dessus.
+    // La caravane (tête + bulle) se pose sous la zone, sinon au-dessus —
+    // et TOUJOURS bornée à l'écran pour que la bulle reste visible.
     const carW = Math.min(342, vw - 24);
-    let left = Math.max(12, Math.min(r.left + r.width / 2 - carW / 2, vw - carW - 12));
+    const left = Math.max(12, Math.min(r.left + r.width / 2 - carW / 2, vw - carW - 12));
     car.style.transform = 'none';
     car.style.width = carW + 'px';
     car.style.left = left + 'px';
-    const estH = car.offsetHeight || 190;
-    const bas = r.bottom + pad + 16;
-    car.style.top = (bas + estH < vh - 12 ? bas : Math.max(12, r.top - pad - 16 - estH)) + 'px';
-  }, 360);
+    const carH = car.offsetHeight || 190;
+    const bas = r.bottom + pad + 14;
+    let top = (bas + carH < vh - 12) ? bas : (r.top - pad - 14 - carH);
+    top = Math.max(12, Math.min(top, vh - carH - 12));
+    car.style.top = top + 'px';
+  }, 130);
 }
 
 function centrer(car) {
@@ -264,13 +268,16 @@ export function lancerVisite() {
 
 /* ----------------------------- intégration ----------------------------- */
 function injecterBouton() {
-  const accueil = $('#accueil'); if (!accueil || $('#lv-replay')) return;
+  if ($('#lv-replay')) return;
+  const accueil = $('#accueil'); if (!accueil) return;
   const btn = document.createElement('button');
   btn.id = 'lv-replay'; btn.className = 'lv-replay'; btn.type = 'button';
-  btn.innerHTML = '🧭 Revoir la visite guidée';
+  btn.innerHTML = '🧭 Visite guidée';
   btn.addEventListener('click', lancerVisite);
-  const note = accueil.querySelector('p.note');
-  if (note) note.insertAdjacentElement('afterend', btn); else accueil.appendChild(btn);
+  // En HAUT : dans le héros, juste sous le sélecteur de niveau.
+  const seg = accueil.querySelector('#niveauSeg');
+  if (seg) seg.insertAdjacentElement('afterend', btn);
+  else accueil.insertBefore(btn, accueil.querySelector('.sec-titre'));
 }
 
 // Auto-lancement au tout premier passage — mais seulement une fois l'onboarding

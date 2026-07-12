@@ -415,9 +415,19 @@ function objetsMatiere(id) {
       <path d="M168 48 L182 24 L196 48 Z" fill="url(#glass)" stroke="#bcd4e6"/><path d="M172 46 L182 30 L184 44 Z" fill="#fff" opacity=".18"/><path d="M150 40 l22 -5" stroke="#fff" stroke-width="1.4" opacity=".7"/><g stroke-width="1.5" fill="none"><path d="M198 34 l16 -6" stroke="#ff5d7d"/><path d="M198 39 l18 0" stroke="#ffd24a"/><path d="M198 44 l16 6" stroke="#43c463"/></g>
       <rect x="242" y="24" width="44" height="24" rx="3" fill="#0d2740" stroke="url(#metal)" stroke-width="1.4"/><path d="M247 37 q5 -7 10 0 t10 0 t10 0" fill="none" stroke="#37e0ff" stroke-width="1.4"/>`;
     case 'poids': return `
-      <line x1="72" y1="20" x2="72" y2="48" stroke="url(#metal)" stroke-width="3.2"/><line x1="42" y1="22" x2="102" y2="22" stroke="url(#metal)" stroke-width="2.6"/>
-      <path d="M42 22 l-9 13 h18 z" fill="url(#glass)" stroke="#8a939f" stroke-width="1.4"/><path d="M102 22 l-9 13 h18 z" fill="url(#glass)" stroke="#8a939f" stroke-width="1.4"/><rect x="60" y="44" width="24" height="4" rx="1" fill="url(#metal)"/>
+      <!-- balance à fléau : socle PLEIN posé sur le comptoir (les plateaux ne
+           flottent plus, ils pendent d'un fléau clairement soutenu) -->
+      <path d="M58 48 L67 23 H77 L86 48 Z" fill="url(#metal)" stroke="#5f6772" stroke-width="1.2"/>
+      <path d="M61 47 L68 25 H71 L65 47 Z" fill="#fff" opacity=".14"/>
+      <rect x="40" y="19.6" width="64" height="3.4" rx="1.7" fill="url(#metal)"/><rect x="41" y="20" width="62" height="1" rx=".5" fill="#fff" opacity=".5"/>
+      <circle cx="72" cy="21.3" r="3.1" fill="#c6cdd6" stroke="#5f6772" stroke-width="1"/>
+      <line x1="44" y1="22" x2="44" y2="31" stroke="#8a939f" stroke-width="1"/><line x1="100" y1="22" x2="100" y2="31" stroke="#8a939f" stroke-width="1"/>
+      <path d="M36 31 h16 a8 8 0 0 1 -16 0 z" fill="url(#glass)" stroke="#8a939f" stroke-width="1.2"/>
+      <path d="M92 31 h16 a8 8 0 0 1 -16 0 z" fill="url(#glass)" stroke="#8a939f" stroke-width="1.2"/>
+      <rect x="95.5" y="25" width="9" height="6.5" rx="1.3" fill="url(#metal)" stroke="#5f6772" stroke-width=".8"/><path d="M97.5 25 q2.5 -3 5 0" fill="none" stroke="#5f6772" stroke-width="1"/>
+      <!-- enclume (masse) posée sur le comptoir -->
       <path d="M150 34 h22 l3 14 h-28 z" fill="url(#metal)" stroke="#5f6772" stroke-width="1.2"/><path d="M155 24 h12 l2 10 h-16 z" fill="url(#metal)" stroke="#5f6772" stroke-width="1.2"/><path d="M152 35 h18" stroke="#fff" stroke-width="1" opacity=".5"/>
+      <!-- éprouvette graduée posée sur le comptoir -->
       <rect x="212" y="18" width="13" height="30" rx="3" fill="url(#glass)" stroke="#bcd4e6" stroke-width="1"/><rect x="213.4" y="20" width="2.4" height="26" rx="1.2" fill="#fff" opacity=".55"/><path d="M212 44 h13" stroke="#7fb5df" stroke-width="1.2" opacity=".6"/><path d="M218 18 v-4" stroke="url(#metal)" stroke-width="1.4"/><g stroke="#c9a52f" stroke-width="1"><path d="M215 26 h7"/><path d="M215 31 h7"/><path d="M215 36 h7"/></g>`;
     default: return `
       <g transform="translate(0,-4)" stroke="#bcd4e6" stroke-width="1">
