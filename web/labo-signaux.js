@@ -58,7 +58,7 @@ function dessiner() {
   }
   // ligne + distance
   ctx.strokeStyle = '#ffffff22'; ctx.setLineDash([4, 5]); ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(cloudX(), H - 40); ctx.lineTo(obsX(), H - 40); ctx.stroke(); ctx.setLineDash([]);
-  ctx.fillStyle = '#9fb0cc'; ctx.font = '700 11px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(`d = ${st.d} m`, (cloudX() + obsX()) / 2, H - 44);
+  ctx.fillStyle = '#9fb0cc'; ctx.font = '700 11px Lexend, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(`d = ${st.d} m`, (cloudX() + obsX()) / 2, H - 44);
 
   // flash plein écran
   if (flash > 0) { ctx.fillStyle = `rgba(255,255,220,${flash * 0.5})`; ctx.fillRect(0, 0, W, H); }
@@ -68,8 +68,8 @@ function dessiner() {
   ctx.font = '30px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText('🧍', obsX(), obsY() + 10);
   // réaction
   const justHeard = st.heard && now - st.heard < 1400;
-  if (justHeard) { ctx.font = '20px serif'; ctx.fillText('🔊', obsX(), obsY() - 22); ctx.fillStyle = '#ffd24a'; ctx.font = '700 12px Fredoka, sans-serif'; ctx.fillText(`tonnerre après ${(st.d / VSON).toFixed(1)} s !`, obsX() - 4, obsY() - 40); }
-  else if (st.sound) { const e = (now - st.sound.start) / 1000; ctx.fillStyle = '#7fd8ff'; ctx.font = '700 12px Fredoka, sans-serif'; ctx.fillText(`⏱ ${e.toFixed(1)} s…`, obsX(), obsY() - 26); }
+  if (justHeard) { ctx.font = '20px serif'; ctx.fillText('🔊', obsX(), obsY() - 22); ctx.fillStyle = '#ffd24a'; ctx.font = '700 12px Lexend, sans-serif'; ctx.fillText(`tonnerre après ${(st.d / VSON).toFixed(1)} s !`, obsX() - 4, obsY() - 40); }
+  else if (st.sound) { const e = (now - st.sound.start) / 1000; ctx.fillStyle = '#7fd8ff'; ctx.font = '700 12px Lexend, sans-serif'; ctx.fillText(`⏱ ${e.toFixed(1)} s…`, obsX(), obsY() - 26); }
   ctx.textAlign = 'left';
 }
 

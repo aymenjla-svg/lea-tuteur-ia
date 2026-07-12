@@ -92,11 +92,11 @@ function dessineSysteme(sansHint) {
     const a = parAstre(p.id);
     if (a.id === 'soleil') dessineSoleil(p.x, p.y, p.r);
     else dessinePlanete(a, p.x, p.y, p.r, 1);
-    if (p.id !== 'lune' && p.id !== 'soleil') { ctx.fillStyle = '#cbd8ee'; ctx.font = '700 10px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(a.nom, p.x, p.y + p.r + 13); }
+    if (p.id !== 'lune' && p.id !== 'soleil') { ctx.fillStyle = '#cbd8ee'; ctx.font = '700 10px Lexend, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(a.nom, p.x, p.y + p.r + 13); }
   }
   const terre = bodyXY.find((b) => b.id === 'terre');
   if (terre) { ctx.strokeStyle = '#ffffff20'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(terre.x, terre.y, 17, 11, 0, 0, 7); ctx.stroke(); }
-  if (!sansHint) { ctx.fillStyle = '#ffd98a'; ctx.font = '700 12px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('👆 Clique une planète pour t’y poser', W / 2, 17); }
+  if (!sansHint) { ctx.fillStyle = '#ffd98a'; ctx.font = '700 12px Lexend, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('👆 Clique une planète pour t’y poser', W / 2, 17); }
   ctx.textAlign = 'left';
 }
 
@@ -151,7 +151,7 @@ function dessineSurface() {
   ctx.strokeStyle = p > fs * 1.02 ? '#ff6b6b' : '#ffd24a'; ctx.lineWidth = 3;
   ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + Math.cos(ang) * (gr - 4), gy - Math.sin(ang) * (gr - 4)); ctx.stroke();
   ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(gx, gy, 3, 0, 7); ctx.fill();
-  ctx.fillStyle = '#ffe9a8'; ctx.font = '700 11px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(`0–${fs} N`, gx, gy + 13);
+  ctx.fillStyle = '#ffe9a8'; ctx.font = '700 11px Lexend, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(`0–${fs} N`, gx, gy + 13);
 
   // objets posés (avec ombre au sol)
   for (const o of st.objets) {

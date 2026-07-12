@@ -51,8 +51,8 @@ function dessiner() {
   const ang = Math.PI - frac * Math.PI;
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx + Math.cos(ang) * (gr - 6), gy - Math.sin(ang) * (gr - 6)); ctx.stroke();
   ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(gx, gy, 4, 0, 7); ctx.fill();
-  ctx.fillStyle = '#ffcf8a'; ctx.font = '700 15px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(P + ' W', gx, gy - 14);
-  ctx.fillStyle = '#9a8f80'; ctx.font = '700 10px Fredoka, sans-serif'; ctx.fillText(`0 – ${fs} W`, gx, gy + 16);
+  ctx.fillStyle = '#ffcf8a'; ctx.font = '700 15px Lexend, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(P + ' W', gx, gy - 14);
+  ctx.fillStyle = '#9a8f80'; ctx.font = '700 10px Lexend, sans-serif'; ctx.fillText(`0 – ${fs} W`, gx, gy + 16);
 
   // compteur qui tourne (vitesse ∝ P)
   const cx = 42, cy = 60, cr = 22;
@@ -60,7 +60,7 @@ function dessiner() {
   const rot = st.tick * (0.02 + P / 8000);
   ctx.strokeStyle = '#ffb454'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(cx + Math.cos(rot) * (cr - 5), cy + Math.sin(rot) * (cr - 5)); ctx.stroke();
   ctx.fillStyle = '#ffb454'; ctx.beginPath(); ctx.arc(cx + Math.cos(rot) * (cr - 5), cy + Math.sin(rot) * (cr - 5), 2, 0, 7); ctx.fill();
-  ctx.fillStyle = '#8a8070'; ctx.font = '700 9px Fredoka, sans-serif'; ctx.fillText('compteur', cx, cy + cr + 12);
+  ctx.fillStyle = '#8a8070'; ctx.font = '700 9px Lexend, sans-serif'; ctx.fillText('compteur', cx, cy + cr + 12);
 
   // appareils allumés (rangée en bas, avec halo)
   const ids = [...st.on]; const n = Math.max(1, ids.length); const step = Math.min(60, (W - 40) / n); let ax = 24 + step / 2;
@@ -69,10 +69,10 @@ function dessiner() {
     const glow = 0.5 + 0.5 * Math.sin(st.tick * 0.15 + i);
     ctx.fillStyle = `rgba(255,200,90,${0.18 + glow * 0.25})`; ctx.beginPath(); ctx.arc(ax, H - 44, 20, 0, 7); ctx.fill();
     ctx.font = '24px serif'; ctx.fillText(APPAREILS[i].emoji, ax, H - 44);
-    ctx.fillStyle = '#ffcf8a'; ctx.font = '700 9px Fredoka, sans-serif'; ctx.textBaseline = 'alphabetic'; ctx.fillText(APPAREILS[i].w + ' W', ax, H - 20); ctx.textBaseline = 'middle';
+    ctx.fillStyle = '#ffcf8a'; ctx.font = '700 9px Lexend, sans-serif'; ctx.textBaseline = 'alphabetic'; ctx.fillText(APPAREILS[i].w + ' W', ax, H - 20); ctx.textBaseline = 'middle';
     ax += step;
   }
-  if (!ids.length) { ctx.fillStyle = '#7a7060'; ctx.font = '700 12px Fredoka, sans-serif'; ctx.fillText('Allume des appareils 👇', W / 2, H - 40); }
+  if (!ids.length) { ctx.fillStyle = '#7a7060'; ctx.font = '700 12px Lexend, sans-serif'; ctx.fillText('Allume des appareils 👇', W / 2, H - 40); }
   ctx.textAlign = 'left'; ctx.textBaseline = 'alphabetic';
 }
 

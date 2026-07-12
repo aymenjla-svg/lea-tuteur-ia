@@ -62,7 +62,7 @@ function dessineLane(c, i, mL, mR) {
   ctx.save(); ctx.translate(x, y - 2 - bob); ctx.scale(-1, 1); ctx.font = '24px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(c.emoji, 0, 0); ctx.restore();
   ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
   // libellé
-  ctx.fillStyle = accent; ctx.font = '700 11px Fredoka, sans-serif';
+  ctx.fillStyle = accent; ctx.font = '700 11px Lexend, sans-serif';
   ctx.fillText(`${c.vkmh} km/h · ${c.d.toFixed(0)} m · ${c.t.toFixed(1)} s`, mL, y - 20);
 }
 
@@ -77,7 +77,7 @@ function dessiner() {
   ctx.fillStyle = '#ffffff30'; for (const n of nuages) { const nx = ((n.x + st.tick * 0.12) % (W + 60)) - 30; ctx.beginPath(); ctx.ellipse(nx, n.y, 16, 7, 0, 0, 7); ctx.ellipse(nx + 12, n.y + 2, 12, 6, 0, 0, 7); ctx.fill(); }
   // herbe en bas
   ctx.fillStyle = '#1e6a4a'; ctx.fillRect(0, H - 14, W, 14);
-  ctx.fillStyle = '#7fe0a8'; ctx.font = '700 11px Fredoka, sans-serif'; ctx.textAlign = 'right'; ctx.fillText('100 m 🏁', mR + 4, 12); ctx.textAlign = 'left';
+  ctx.fillStyle = '#7fe0a8'; ctx.font = '700 11px Lexend, sans-serif'; ctx.textAlign = 'right'; ctx.fillText('100 m 🏁', mR + 4, 12); ctx.textAlign = 'left';
   dessineLane(st.A, 0, mL, mR);
   dessineLane(st.B, 1, mL, mR);
   if (st.fini) dessineFini();
@@ -86,7 +86,7 @@ function dessiner() {
 function dessineFini() {
   for (let k = 0; k < 26; k++) { const cx = (k * 53) % W, cy = ((st.tick * 3 + k * 37) % (H + 20)) - 10; ctx.fillStyle = ['#ffd24a', '#7fd8ff', '#ff8fae', '#7fe0a8'][k % 4]; ctx.save(); ctx.translate(cx, cy); ctx.rotate(k); ctx.fillRect(-2, -3, 4, 6); ctx.restore(); }
   ctx.fillStyle = '#000000aa'; ctx.beginPath(); ctx.roundRect(W / 2 - 108, H / 2 - 21, 216, 42, 12); ctx.fill();
-  ctx.fillStyle = '#ffd24a'; ctx.font = '700 18px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(st.fini, W / 2, H / 2 + 6); ctx.textAlign = 'left';
+  ctx.fillStyle = '#ffd24a'; ctx.font = '700 18px Lexend, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(st.fini, W / 2, H / 2 + 6); ctx.textAlign = 'left';
 }
 
 function pas(c, dt) { if (c.d < PISTE) { c.t += dt; c.d = vms(c) * c.t; if (c.d >= PISTE) { c.d = PISTE; c.t = PISTE / vms(c); } } }

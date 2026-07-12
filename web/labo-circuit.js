@@ -77,7 +77,7 @@ function clicSlot(i) {
 function dessineComposant(x, y, s, on) {
   ctx.save(); ctx.translate(x, y);
   ctx.lineWidth = 3; ctx.strokeStyle = '#dfe6f5'; ctx.fillStyle = '#dfe6f5';
-  ctx.font = '700 11px Fredoka, sans-serif'; ctx.textAlign = 'center';
+  ctx.font = '700 11px Lexend, sans-serif'; ctx.textAlign = 'center';
   if (s.t === 'fil') {
     ctx.beginPath(); ctx.moveTo(-26, 0); ctx.lineTo(26, 0); ctx.stroke();
   } else if (s.t === 'vide') {

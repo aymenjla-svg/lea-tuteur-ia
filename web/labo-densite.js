@@ -109,7 +109,7 @@ function dessiner() {
   // ligne de surface
   ctx.strokeStyle = '#9be6ff'; ctx.lineWidth = 2; ctx.beginPath();
   for (let x = 0; x <= W; x += 8) { const yy = surfaceY(x); x === 0 ? ctx.moveTo(0, yy) : ctx.lineTo(x, yy); } ctx.stroke();
-  ctx.fillStyle = '#9be6ff'; ctx.font = '700 11px Fredoka, sans-serif'; ctx.textAlign = 'left'; ctx.fillText('surface (ρ = 1)', 8, waterTop - 7);
+  ctx.fillStyle = '#9be6ff'; ctx.font = '700 11px Lexend, sans-serif'; ctx.textAlign = 'left'; ctx.fillText('surface (ρ = 1)', 8, waterTop - 7);
   ctx.strokeStyle = '#ffffff2e'; ctx.lineWidth = 3; ctx.strokeRect(4, 34, W - 8, H - 40);
 
   for (const it of st.items) dessineObjet(it.kind, it.x, it.y, it.size);

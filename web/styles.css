@@ -14,8 +14,10 @@
   --or: #ffc23c;
   --ok: #34e2a8;
 
-  --round: "Fredoka", "Baloo 2", "Arial Rounded MT Bold", "Segoe UI", system-ui, sans-serif;
-  --sans: "Nunito", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  /* Lexend : police conçue pour la lisibilité (idéale pour la lecture des élèves). */
+  --round: "Lexend", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --sans: "Lexend", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --logo-font: "Fredoka", var(--round); /* la marque « LÉA » garde son grain rond */
 
   --fs: 16px;
   --rad: 20px;
@@ -95,7 +97,7 @@ body::after {
 /* =============================== HUD TOP ================================ */
 
 .hud-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 18px; }
-.logo { font-family: var(--round); font-size: 2rem; font-weight: 700; letter-spacing: 1px; display: flex; align-items: center; gap: 2px; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25); }
+.logo { font-family: var(--logo-font); font-size: 2rem; font-weight: 700; letter-spacing: 1px; display: flex; align-items: center; gap: 2px; text-shadow: 0 2px 12px rgba(0, 0, 0, 0.25); }
 .logo-tube { width: 30px; height: 30px; margin: -4px 0 0 2px; filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.3)); }
 .logo-tube .bub { animation: rise 2.6s ease-in infinite; opacity: 0; }
 .logo-tube .bb2 { animation-delay: 0.9s; }
