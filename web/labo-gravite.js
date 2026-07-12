@@ -71,7 +71,8 @@ function initCanvas(canvas) {
     const rect = cv.getBoundingClientRect(); const sx = W / rect.width;
     const mx = (e.clientX - rect.left) * sx, my = (e.clientY - rect.top) * (H / rect.height);
     let best = null, bd = 1e9;
-    for (const p of bodyXY) { const d = Math.hypot(mx - p.x, my - p.y); if (d < p.r + 10 && d < bd) { bd = d; best = p; } }
+    // cible tactile élargie (min 16 px) pour les petites planètes sur mobile
+    for (const p of bodyXY) { const d = Math.hypot(mx - p.x, my - p.y); if (d < Math.max(p.r + 12, 16) && d < bd) { bd = d; best = p; } }
     if (best) api.aller(best.id);
   };
 }
