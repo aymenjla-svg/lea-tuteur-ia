@@ -354,8 +354,11 @@ async function appelLLM(sys: string, user: string, hist: Tour[] = [], image?: st
     const base = (Deno.env.get('LLM_BASE_URL') ?? 'https://api.openai.com/v1').replace(/\/$/, '');
     const key = Deno.env.get('LLM_API_KEY') ?? Deno.env.get('OPENAI_API_KEY');
     if (!key) throw new Error('LLM_API_KEY / OPENAI_API_KEY manquant');
-    // Un modèle VISION est requis si une photo est jointe (gpt-4o-mini gère la vision).
-    const model = img ? (Deno.env.get('LLM_VISION_MODEL') ?? Deno.env.get('LLM_MODEL') ?? 'gpt-4o-mini') : (Deno.env.get('LLM_MODEL') ?? 'gpt-4o-mini');
+    // Un modèle VISION est requis si une photo est jointe. Auto-détection du
+    // provider : Groq → Llama 4 Scout (multimodal) ; sinon gpt-4o-mini (OpenAI).
+    // Surcharge possible via le secret LLM_VISION_MODEL.
+    const visionDefaut = /groq\.com/i.test(base) ? 'meta-llama/llama-4-scout-17b-16e-instruct' : 'gpt-4o-mini';
+    const model = img ? (Deno.env.get('LLM_VISION_MODEL') ?? visionDefaut) : (Deno.env.get('LLM_MODEL') ?? 'gpt-4o-mini');
     const userContent: unknown = img ? [{ type: 'text', text: user }, { type: 'image_url', image_url: { url: img } }] : user;
     const r = await fetch(`${base}/chat/completions`, {
       method: 'POST',
