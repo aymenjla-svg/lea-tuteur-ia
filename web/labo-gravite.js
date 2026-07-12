@@ -134,8 +134,14 @@ function dessineSurface() {
   const a = parAstre(st.astreId); const solY = H - 34;
   const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, a.ciel[0]); g.addColorStop(1, a.ciel[1]);
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  if (a.id === 'espace' || a.id === 'lune' || a.id === 'mars') { for (const s of etoiles) { ctx.globalAlpha = s.a; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); } ctx.globalAlpha = 1; }
-  if (a.id !== 'espace') { ctx.fillStyle = a.sol; ctx.fillRect(0, solY, W, H - solY); }
+  const nuit = ['espace', 'lune', 'mars', 'mercure'].includes(a.id);
+  if (nuit) { for (const s of etoiles) { const al = s.a * (0.55 + 0.45 * Math.sin(st.tick * 0.05 + s.tw)); ctx.globalAlpha = Math.max(0, al); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s.x, s.y * 0.78, s.r, 0, 7); ctx.fill(); } ctx.globalAlpha = 1; }
+  else if (a.id !== 'espace') { ctx.globalAlpha = 0.85; ctx.fillStyle = '#fff6c8'; ctx.beginPath(); ctx.arc(44, 32, 11, 0, 7); ctx.fill(); ctx.globalAlpha = 0.16; ctx.beginPath(); ctx.arc(44, 32, 22, 0, 7); ctx.fill(); ctx.globalAlpha = 1; }
+  if (a.id !== 'espace') {
+    ctx.fillStyle = a.sol; ctx.fillRect(0, solY, W, H - solY);
+    ctx.fillStyle = 'rgba(255,255,255,.12)'; ctx.fillRect(0, solY, W, 3);
+    ctx.fillStyle = 'rgba(0,0,0,.13)'; for (let i = 0; i < 7; i++) { const rx = (i * 89 + 30) % W; ctx.beginPath(); ctx.ellipse(rx, solY + 14 + (i % 2) * 9, 9 + (i % 3) * 4, 3, 0, 0, 7); ctx.fill(); }
+  }
 
   // pèse-personne
   const gx = W - 74, gy = solY - 4, gr = 40, p = poids(), fs = niceMax(Math.max(p, st.needle, 20));
@@ -146,13 +152,23 @@ function dessineSurface() {
   ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(gx, gy, 3, 0, 7); ctx.fill();
   ctx.fillStyle = '#ffe9a8'; ctx.font = '700 11px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(`0–${fs} N`, gx, gy + 13);
 
-  // objets posés
-  for (const o of st.objets) { ctx.font = o.size + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(o.emoji, o.x, solY - 2); }
-  // objet en chute
+  // objets posés (avec ombre au sol)
+  for (const o of st.objets) {
+    if (a.id !== 'espace') { ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(o.x, solY - 1, o.size * 0.34, 3, 0, 0, 7); ctx.fill(); }
+    ctx.font = o.size + 'px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic'; ctx.fillText(o.emoji, o.x, solY - 2);
+  }
   if (st.falling) { ctx.font = st.falling.size + 'px serif'; ctx.textAlign = 'center'; ctx.fillText(st.falling.emoji, st.falling.x, st.falling.y); }
-  // robot nettoyeur
+  dessinePoufs();
   if (st.robot) dessineRobot(st.robot.x, solY);
   ctx.textAlign = 'left';
+}
+
+function dessinePoufs() {
+  if (!st.poufs || !st.poufs.length) return;
+  const now = performance.now();
+  st.poufs = st.poufs.filter((pf) => now - pf.start < 420);
+  for (const pf of st.poufs) { const e = (now - pf.start) / 420; ctx.globalAlpha = 1 - e; ctx.fillStyle = '#ffffffcc'; for (let k = 0; k < 6; k++) { const an = k / 6 * 6.28; const r = 6 + e * 16; ctx.beginPath(); ctx.arc(pf.x + Math.cos(an) * r, pf.y - Math.abs(Math.sin(an)) * r * 0.5 - e * 6, 2 - e * 1.5, 0, 7); ctx.fill(); } }
+  ctx.globalAlpha = 1;
 }
 
 function dessineRobot(x, solY) {
@@ -194,13 +210,15 @@ function boucle() {
     const gg = parAstre(st.astreId).g;
     if (gg <= 0) { st.falling.y += 0.6; }
     else { st.falling.v += gg * 0.012; st.falling.y += st.falling.v; }
-    if (st.falling.y >= solY - 4) { st.objets.push({ emoji: st.falling.emoji, x: st.falling.x, size: st.falling.size }); st.falling = null; }
+    if (st.falling.y >= solY - 4) { const fx = st.falling.x; st.objets.push({ emoji: st.falling.emoji, x: fx, size: st.falling.size }); st.falling = null; if (parAstre(st.astreId).g > 0) (st.poufs ??= []).push({ x: fx, y: solY, start: performance.now() }); }
     if (st.falling && st.falling.y > H + 40) st.falling = null; // espace : sort de l'écran
   }
-  // robot
+  // robot : balaie et fait « pouf » sur chaque objet ramassé
   if (st.robot) {
     st.robot.x += 3.2;
-    st.objets = st.objets.filter((o) => o.x > st.robot.x + 6);
+    const reste = [];
+    for (const o of st.objets) { if (o.x > st.robot.x + 6) reste.push(o); else (st.poufs ??= []).push({ x: o.x, y: solY, start: performance.now() }); }
+    st.objets = reste;
     if (st.robot.x > W + 40) st.robot = null;
   }
   // aiguille ressort

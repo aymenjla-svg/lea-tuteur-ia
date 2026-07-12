@@ -128,13 +128,16 @@ function dessiner() {
     ctx.beginPath(); ctx.roundRect(p.x - 34, p.y - 20, 68, 40, 8); ctx.fill(); ctx.stroke();
     dessineComposant(p.x, p.y, st.slots[i], st.slots[i].on !== false);
   }
-  // électrons
+  // électrons (avec halo lumineux)
   if (on) {
-    ctx.fillStyle = '#7fe0ff';
     for (let k = 0; k < 16; k++) {
       const pp = (phase + k / 16) % 1; const [x, y] = pointLoop(pp, L, R, T, B);
-      ctx.beginPath(); ctx.arc(x, y, 2.4, 0, 7); ctx.fill();
+      ctx.fillStyle = 'rgba(127,224,255,.28)'; ctx.beginPath(); ctx.arc(x, y, 5, 0, 7); ctx.fill();
+      ctx.fillStyle = '#cdf4ff'; ctx.beginPath(); ctx.arc(x, y, 2.4, 0, 7); ctx.fill();
     }
+    // étincelles autour de l'ampoule allumée
+    const amp = slotXY.find((_, i) => st.slots[i].t === 'ampoule');
+    if (amp) { for (let s = 0; s < 3; s++) { const an = phase * 6.28 * 2 + s * 2.1; ctx.fillStyle = `rgba(255,230,140,${0.5 + 0.5 * Math.sin(phase * 30 + s)})`; ctx.beginPath(); ctx.arc(amp.x + Math.cos(an) * 20, amp.y + Math.sin(an) * 20, 1.6, 0, 7); ctx.fill(); } }
   }
 }
 
