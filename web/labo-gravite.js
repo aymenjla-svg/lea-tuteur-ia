@@ -6,14 +6,19 @@
 
 import { creerLabo, porteLabo, niveau } from './labo-kit.js';
 
+// Système solaire complet. g = valeurs scolaires (N/kg). type = style de rendu.
 const ASTRES = [
-  { id: 'soleil',  nom: 'Soleil',  emoji: '☀️', g: 274,  r: 44, coul: '#ffd24a', ciel: ['#4a2a00', '#ff9a1e'], sol: '#ff7a1e', fait: 'Écrasant : 274 N/kg. Le pèse-personne explose 💥.' },
-  { id: 'venus',   nom: 'Vénus',   emoji: '🟠', g: 8.9,  r: 20, coul: '#e6c15a', ciel: ['#3a2a05', '#b58a2a'], sol: '#c79b3a', fait: 'Presque comme la Terre (8,9).' },
-  { id: 'terre',   nom: 'Terre',   emoji: '🌍', g: 9.8,  r: 21, coul: '#4f9e5e', ciel: ['#1a2a55', '#3f6db0'], sol: '#3a7a4a', fait: 'Ta référence : g ≈ 9,8 N/kg.' },
-  { id: 'lune',    nom: 'Lune',    emoji: '🌙', g: 1.6,  r: 13, coul: '#c8c8cf', ciel: ['#05060f', '#171a2b'], sol: '#8a8a90', fait: '6× plus léger que sur Terre !' },
-  { id: 'mars',    nom: 'Mars',    emoji: '🔴', g: 3.7,  r: 16, coul: '#c96a3c', ciel: ['#2a0f0a', '#7a3a22'], sol: '#a3502f', fait: 'La planète rouge : g ≈ 3,7.' },
-  { id: 'jupiter', nom: 'Jupiter', emoji: '🟤', g: 24.8, r: 34, coul: '#d8a86a', ciel: ['#2a1a0a', '#8a5a2a'], sol: '#b07840', fait: 'La géante : tu y pèses très lourd !' },
-  { id: 'espace',  nom: 'Espace',  emoji: '🌌', g: 0,    r: 16, coul: '#20204a', ciel: ['#000008', '#0a0a1c'], sol: '#0a0a1c', fait: 'Apesanteur : g = 0 → poids nul. Mais la masse reste !' },
+  { id: 'soleil',  nom: 'Soleil',  g: 274,  r: 42, coul: '#ffcf3a', type: 'sun',   ciel: ['#5a2e00', '#ff9a1e'], sol: '#ff7a1e', fait: 'Écrasant : 274 N/kg. Le pèse-personne explose 💥.' },
+  { id: 'mercure', nom: 'Mercure', g: 3.7,  r: 6,  coul: '#9a8f86', type: 'rocky', ciel: ['#15110e', '#6a5a4a'], sol: '#7a6a58', fait: 'Minuscule et grise : g ≈ 3,7.' },
+  { id: 'venus',   nom: 'Vénus',   g: 8.9,  r: 10, coul: '#e6c27a', type: 'rocky', ciel: ['#3a2a05', '#c79a3a'], sol: '#c79b3a', fait: 'Presque comme la Terre (8,9).' },
+  { id: 'terre',   nom: 'Terre',   g: 9.8,  r: 11, coul: '#3f8fd0', type: 'earth', ciel: ['#1a2a55', '#3f6db0'], sol: '#3a7a4a', fait: 'Ta référence : g ≈ 9,8 N/kg.' },
+  { id: 'lune',    nom: 'Lune',    g: 1.6,  r: 5,  coul: '#c8c8cf', type: 'moon',  ciel: ['#05060f', '#171a2b'], sol: '#8a8a90', fait: '6× plus léger que sur Terre !' },
+  { id: 'mars',    nom: 'Mars',    g: 3.7,  r: 8,  coul: '#c6552f', type: 'rocky', ciel: ['#2a0f0a', '#7a3a22'], sol: '#a3502f', fait: 'La planète rouge : g ≈ 3,7 (comme Mercure !).' },
+  { id: 'jupiter', nom: 'Jupiter', g: 24.8, r: 22, coul: '#d8a86a', type: 'gas',   ciel: ['#2a1a0a', '#8a5a2a'], sol: '#b07840', fait: 'La géante : tu y pèses très lourd !' },
+  { id: 'saturne', nom: 'Saturne', g: 10.4, r: 17, coul: '#e3cf9a', type: 'ring',  ciel: ['#2a2410', '#8a7a3a'], sol: '#b0a060', fait: 'Ses anneaux ! g ≈ 10,4.' },
+  { id: 'uranus',  nom: 'Uranus',  g: 8.7,  r: 13, coul: '#a8e0e6', type: 'ice',   ciel: ['#0a2a2e', '#3a8a92'], sol: '#5aa0a6', fait: 'Glacée, bleu-vert : g ≈ 8,7.' },
+  { id: 'neptune', nom: 'Neptune', g: 11.2, r: 13, coul: '#3a6ad0', type: 'ice',   ciel: ['#0a1230', '#2a4a9a'], sol: '#3a5aa0', fait: 'La plus lointaine : g ≈ 11,2.' },
+  { id: 'espace',  nom: 'Espace',  g: 0,    r: 13, coul: '#20204a', type: 'space', ciel: ['#000008', '#0a0a1c'], sol: '#0a0a1c', fait: 'Apesanteur : g = 0 → poids nul. Mais la masse reste !' },
 ];
 const parAstre = (id) => ASTRES.find((a) => a.id === id) || ASTRES[2];
 
@@ -49,43 +54,79 @@ function initCanvas(canvas) {
   cv = canvas;
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const r = cv.getBoundingClientRect();
-  W = r.width || 520; H = 220;
+  W = r.width || 520; H = 250;
   cv.width = W * dpr; cv.height = H * dpr;
   ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  etoiles = Array.from({ length: 70 }, (_, i) => ({ x: ((i * 97) % 100) / 100 * W, y: ((i * 53) % 100) / 100 * H, r: (i % 3 === 0) ? 1.4 : 0.8, a: 0.25 + (i % 5) / 12 }));
-  // positions des astres pour l'écran système solaire
-  const midY = H / 2; bodyXY = [];
-  let x = 40;
-  for (const a of ASTRES) { x += a.r + 14; bodyXY.push({ id: a.id, x, y: midY + (a.id === 'lune' ? -30 : 0), r: a.r }); x += a.r + 14; }
+  etoiles = Array.from({ length: 90 }, (_, i) => ({ x: ((i * 97) % 100) / 100 * W, y: ((i * 53) % 100) / 100 * H, r: (i % 4 === 0) ? 1.5 : 0.8, a: 0.22 + (i % 6) / 14, tw: (i % 7) }));
+  // Système solaire : Soleil à gauche, planètes en ceinture, Lune satellite.
+  const cy = H / 2 - 4; bodyXY = [{ id: 'soleil', x: 2, y: cy, r: 42 }];
+  let x = 82;
+  for (const id of ['mercure', 'venus', 'terre', 'mars', 'jupiter', 'saturne', 'uranus', 'neptune', 'espace']) {
+    const a = parAstre(id); const pad = a.type === 'ring' ? a.r + 10 : a.r;
+    x += 8 + pad; bodyXY.push({ id, x, y: cy, r: a.r }); x += pad + 8;
+  }
+  const terre = bodyXY.find((b) => b.id === 'terre'); bodyXY.push({ id: 'lune', x: terre.x + 15, y: cy - 22, r: 5 });
   cv.onclick = (e) => {
-    const rect = cv.getBoundingClientRect(); const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-    if (st.vue !== 'systeme') return;
-    for (const p of bodyXY) if (Math.hypot(mx - p.x, my - p.y) < p.r + 8) { api.aller(p.id); return; }
+    if (st.vue !== 'systeme' || st.trans) return;
+    const rect = cv.getBoundingClientRect(); const sx = W / rect.width;
+    const mx = (e.clientX - rect.left) * sx, my = (e.clientY - rect.top) * (H / rect.height);
+    let best = null, bd = 1e9;
+    for (const p of bodyXY) { const d = Math.hypot(mx - p.x, my - p.y); if (d < p.r + 10 && d < bd) { bd = d; best = p; } }
+    if (best) api.aller(best.id);
   };
 }
 
 function niceMax(p) { for (const m of [50, 100, 150, 250, 500, 1000, 2500, 5000, 10000, 30000, 100000]) if (p <= m) return m; return 200000; }
 
 /* ------------------------------ Écran système ----------------------------- */
-function dessineSysteme() {
-  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#05060f'); g.addColorStop(1, '#0d1030');
+function dessineSysteme(sansHint) {
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#04040c'); g.addColorStop(1, '#0c1030');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  for (const s of etoiles) { ctx.globalAlpha = s.a; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }
+  for (const s of etoiles) { const a = s.a * (0.55 + 0.45 * Math.sin(st.tick * 0.05 + s.tw)); ctx.globalAlpha = Math.max(0, a); ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, 7); ctx.fill(); }
   ctx.globalAlpha = 1;
-  // ligne d'orbite
-  ctx.strokeStyle = '#ffffff14'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(20, H / 2); ctx.lineTo(W - 20, H / 2); ctx.stroke();
-  ctx.textAlign = 'center';
+  // orbites concentriques depuis le Soleil
+  const sun = bodyXY[0]; ctx.strokeStyle = '#ffffff10'; ctx.lineWidth = 1;
+  for (const p of bodyXY) { if (p.id === 'soleil' || p.id === 'lune') continue; ctx.beginPath(); ctx.arc(sun.x, sun.y, Math.hypot(p.x - sun.x, p.y - sun.y), -0.85, 0.85); ctx.stroke(); }
   for (const p of bodyXY) {
     const a = parAstre(p.id);
-    if (a.id === 'espace') { ctx.fillStyle = '#20204a'; ctx.strokeStyle = '#5a5aa0'; }
-    else { const rg = ctx.createRadialGradient(p.x - p.r / 3, p.y - p.r / 3, 2, p.x, p.y, p.r); rg.addColorStop(0, '#ffffffcc'); rg.addColorStop(0.3, a.coul); rg.addColorStop(1, '#00000088'); ctx.fillStyle = rg; }
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
-    if (a.id === 'soleil') { ctx.fillStyle = '#ffd24a55'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r + 8, 0, 7); ctx.fill(); ctx.fillStyle = '#000'; }
-    ctx.fillStyle = '#dfe6f5'; ctx.font = '700 11px Fredoka, sans-serif'; ctx.fillText(a.nom, p.x, p.y + p.r + 15);
+    if (a.id === 'soleil') dessineSoleil(p.x, p.y, p.r);
+    else dessinePlanete(a, p.x, p.y, p.r, 1);
+    if (p.id !== 'lune' && p.id !== 'soleil') { ctx.fillStyle = '#cbd8ee'; ctx.font = '700 10px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(a.nom, p.x, p.y + p.r + 13); }
   }
-  ctx.fillStyle = '#ffd24a'; ctx.font = '700 13px Fredoka, sans-serif';
-  ctx.fillText('👆 Clique un astre pour t’y poser', W / 2, 20);
+  const terre = bodyXY.find((b) => b.id === 'terre');
+  if (terre) { ctx.strokeStyle = '#ffffff20'; ctx.lineWidth = 1; ctx.beginPath(); ctx.ellipse(terre.x, terre.y, 17, 11, 0, 0, 7); ctx.stroke(); }
+  if (!sansHint) { ctx.fillStyle = '#ffd98a'; ctx.font = '700 12px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.fillText('👆 Clique une planète pour t’y poser', W / 2, 17); }
   ctx.textAlign = 'left';
+}
+
+function dessineSoleil(x, y, r) {
+  const puls = 1 + 0.05 * Math.sin(st.tick * 0.08);
+  const halo = ctx.createRadialGradient(x, y, r * 0.5, x, y, r * 2.5 * puls);
+  halo.addColorStop(0, 'rgba(255,205,70,.5)'); halo.addColorStop(0.5, 'rgba(255,150,30,.16)'); halo.addColorStop(1, 'rgba(255,150,30,0)');
+  ctx.fillStyle = halo; ctx.beginPath(); ctx.arc(x, y, r * 2.5 * puls, 0, 7); ctx.fill();
+  const core = ctx.createRadialGradient(x - r * 0.3, y - r * 0.3, r * 0.2, x, y, r);
+  core.addColorStop(0, '#fff6c8'); core.addColorStop(0.5, '#ffd24a'); core.addColorStop(1, '#ff8a1e');
+  ctx.fillStyle = core; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+}
+
+function dessinePlanete(a, x, y, r, alpha) {
+  ctx.save(); ctx.globalAlpha = alpha;
+  if (a.type === 'ring') { ctx.strokeStyle = '#d8c890'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(x, y, r * 1.95, r * 0.62, -0.35, Math.PI * 0.12, Math.PI * 1.02); ctx.stroke(); }
+  const rg = ctx.createRadialGradient(x - r * 0.34, y - r * 0.34, r * 0.15, x, y, r);
+  rg.addColorStop(0, '#ffffffcc'); rg.addColorStop(0.35, a.coul); rg.addColorStop(1, 'rgba(0,0,0,.5)');
+  ctx.fillStyle = a.type === 'space' ? '#0a0a1c' : rg;
+  ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill();
+  ctx.save(); ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.clip();
+  if (a.type === 'earth') { ctx.fillStyle = '#3f9e5e'; ctx.beginPath(); ctx.ellipse(x - r * 0.2, y + r * 0.12, r * 0.5, r * 0.34, 0.4, 0, 7); ctx.ellipse(x + r * 0.36, y - r * 0.3, r * 0.3, r * 0.22, 0, 0, 7); ctx.fill(); }
+  if (a.type === 'gas' || a.type === 'ring') {
+    for (let i = -2; i <= 2; i++) { ctx.globalAlpha = alpha * 0.45; ctx.fillStyle = i % 2 ? '#00000030' : '#ffffff2a'; ctx.beginPath(); ctx.ellipse(x, y + i * r * 0.32, r, r * 0.15, 0, 0, 7); ctx.fill(); }
+    if (a.type === 'gas') { ctx.globalAlpha = alpha * 0.7; ctx.fillStyle = '#c0432a'; ctx.beginPath(); ctx.ellipse(x + r * 0.3, y + r * 0.24, r * 0.22, r * 0.13, 0, 0, 7); ctx.fill(); }
+    ctx.globalAlpha = alpha;
+  }
+  if (a.type === 'space') { ctx.fillStyle = '#fff'; for (let i = 0; i < 9; i++) { ctx.globalAlpha = alpha * (0.4 + (i % 3) * 0.2); ctx.beginPath(); ctx.arc(x - r + (i * 71 % (2 * r)), y - r + (i * 43 % (2 * r)), 0.9, 0, 7); ctx.fill(); } ctx.globalAlpha = alpha; }
+  ctx.restore();
+  if (a.type === 'ring') { ctx.strokeStyle = '#f0e2b0'; ctx.lineWidth = 3; ctx.beginPath(); ctx.ellipse(x, y, r * 1.95, r * 0.62, -0.35, Math.PI * 1.02, Math.PI * 2.12); ctx.stroke(); }
+  ctx.restore();
 }
 
 /* ------------------------------ Écran surface ----------------------------- */
@@ -132,11 +173,21 @@ function dessineRobot(x, solY) {
 
 function dessiner() {
   if (!ctx) return;
+  if (st.trans) { dessineTransition(); return; }
   if (st.vue === 'systeme') dessineSysteme(); else dessineSurface();
+}
+function dessineTransition() {
+  const t = st.trans.t, f = st.trans.from, a = parAstre(st.trans.id);
+  const s = 1 + t * t * 9;
+  ctx.save(); ctx.translate(f.x, f.y); ctx.scale(s, s); ctx.translate(-f.x, -f.y); dessineSysteme(true); ctx.restore();
+  const cover = Math.min(1, Math.max(0, (t - 0.4) * 1.9));
+  if (cover > 0) { ctx.globalAlpha = cover; const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, a.ciel[0]); g.addColorStop(1, a.ciel[1]); ctx.fillStyle = g; ctx.fillRect(0, 0, W, H); ctx.globalAlpha = 1; }
 }
 
 function boucle() {
   if (!api._open) { raf = 0; return; }
+  st.tick = (st.tick || 0) + 1;
+  if (st.trans) { st.trans.t = Math.min(1, (performance.now() - st.trans.start) / 460); if (st.trans.t >= 1) { const id = st.trans.id; st.trans = null; doLand(id); } dessiner(); raf = requestAnimationFrame(boucle); return; }
   const solY = H - 34;
   // chute
   if (st.falling) {
@@ -173,11 +224,13 @@ function jeter() {
 }
 
 /* --------------------------------- Scène ---------------------------------- */
+function doLand(id) { st.astreId = id; st.vue = 'surface'; st.objets = []; st.falling = null; st.robot = null; st.needle = st.masse * parAstre(id).g; majVue(); }
+
 function majVue() {
   const sys = st.vue === 'systeme';
   $('#lg-ctrl').style.display = sys ? 'none' : '';
   $('#lg-sysline').style.display = sys ? '' : 'none';
-  if (!sys) { $('#lg-fait').textContent = parAstre(st.astreId).emoji + ' ' + parAstre(st.astreId).fait; majObjChips(); }
+  if (!sys) { $('#lg-fait').textContent = parAstre(st.astreId).nom + ' — ' + parAstre(st.astreId).fait; majObjChips(); }
 }
 function majObjChips() {
   document.querySelectorAll('#lg-objets .lk-chip').forEach((b, i) => b.classList.toggle('on', st.objet && OBJETS[i] === st.objet));
@@ -186,7 +239,7 @@ function majObjChips() {
 function scene(stage, _api) {
   api = _api;
   stage.innerHTML = `
-    <canvas class="lk-cv" id="lg-cv"></canvas>
+    <canvas class="lk-cv" id="lg-cv" style="height:250px"></canvas>
     <div id="lg-sysline" class="lk-note" style="margin:8px 12px">🪐 Choisis un astre là-haut : ta masse ne changera pas, mais ton poids, oui&nbsp;!</div>
     <div class="lk-read" id="lg-read">
       <div><div class="k">Masse</div><div class="v a"><span id="lg-M">6</span> kg</div></div>
@@ -216,8 +269,13 @@ function scene(stage, _api) {
   $('#lg-back', stage).addEventListener('click', () => { st.vue = 'systeme'; majVue(); });
 
   api.poids = () => poids(); api.gCourant = () => parAstre(st.astreId).g; api.masse = () => st.masse; api.astreId = () => st.astreId;
-  api.aller = (id) => { st.astreId = id; st.vue = 'surface'; st.objets = []; st.falling = null; st.robot = null; st.needle = poids(); majVue(); };
-  api.voirSysteme = () => { st.vue = 'systeme'; majVue(); };
+  api.aller = (id) => {
+    if (st.trans) return;
+    const from = bodyXY && bodyXY.find((b) => b.id === id);
+    if (from && st.vue === 'systeme' && !document.hidden) { st.trans = { id, t: 0, from, start: performance.now() }; }
+    else doLand(id);
+  };
+  api.voirSysteme = () => { st.trans = null; st.vue = 'systeme'; majVue(); };
   api.setMasse = (m) => { st.masse = m; st.objet = null; if ($('#lg-masse')) { $('#lg-masse').value = m; $('#lg-masse-l').textContent = m + ' kg'; } majObjChips(); };
   api.onOpen = () => { api._open = true; initCanvas($('#lg-cv', stage)); majVue(); if (!raf) raf = requestAnimationFrame(boucle); };
   api.onClose = () => { api._open = false; if (raf) { cancelAnimationFrame(raf); raf = 0; } };
@@ -237,10 +295,10 @@ const MISSIONS = [
     choix: ['augmente', 'diminue', 'reste 6 kg'], check: (i) => i === 2,
     sol: 'La masse ne change JAMAIS d’un astre à l’autre. Seul le poids varie.' },
   { id: 'm4', xp: 25, titre: 'Enquête gravité', ui: 'live',
-    q: 'Un objet de 10 kg pèse environ <b>37 N</b> sur un astre. <b>Va sur cet astre</b> (clique-le dans le système solaire).',
-    hint: 'Reviens au système solaire et clique la bonne planète (37 ÷ 10 = 3,7 N/kg).',
+    q: 'Un objet de 10 kg pèse environ <b>37 N</b> sur un astre. <b>Va sur un astre qui convient</b> (clique-le dans le système solaire).',
+    hint: 'Reviens au système solaire et clique une planète où g ≈ 3,7 (37 ÷ 10 = 3,7 N/kg).',
     prep: (a) => { a.setMasse(10); a.voirSysteme(); }, check: (_r, a) => Math.abs(a.gCourant() - 3.7) < 0.6,
-    sol: '37 ÷ 10 = 3,7 N/kg → c’est Mars.' },
+    sol: '37 ÷ 10 = 3,7 N/kg → Mars… ou Mercure ! Deux astres différents peuvent avoir le même g.' },
   { id: 'm5', xp: 30, titre: 'Mission mystère : 100 N', ui: 'live',
     q: 'Choisis un astre et une <b>masse</b> pour que ton objet pèse <b>exactement 100 N</b> (± 6).',
     hint: 'Ex. : 10 kg sur Terre. Change de planète et ajuste la masse.',
