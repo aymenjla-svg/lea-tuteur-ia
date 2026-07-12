@@ -492,9 +492,26 @@ body::after {
 .salle-deco .p1 { left: 14px; } .salle-deco .p2 { left: 44px; }
 .salle-deco .poster { top: 24px; left: 50%; transform: translateX(-20px); width: 42px; height: 32px; border: 3px solid #caa25a; border-radius: 3px; background: #ffffff; display: grid; place-items: center; color: var(--c); }
 .salle-deco .poster .poster-svg { width: 32px; height: 24px; }
-.salle-deco .mur-obj { top: 30px; font-size: 1.15rem; }
-.salle-deco .mur-obj.o1 { left: 80px; } .salle-deco .mur-obj.o2 { right: 52px; }
-.salle-deco .horloge { top: 22px; right: 14px; font-size: 1.5rem; }
+/* Objets muraux : ENCADRÉS et accrochés au mur (petites affiches/vignettes),
+   pour qu'ils ne « flottent » plus. Même esprit de cadre que les portraits. */
+.salle-deco .mur-obj {
+  top: 28px; width: 30px; height: 30px; display: grid; place-items: center;
+  font-size: 1rem; line-height: 1;
+  background: #f9f2e2; border: 3px solid #caa25a; border-radius: 4px;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+.salle-deco .mur-obj::before { /* clou d'accroche */
+  content: ""; position: absolute; left: 50%; top: -8px; transform: translateX(-50%);
+  width: 4px; height: 4px; border-radius: 50%; background: #6a4a30;
+  box-shadow: 0 -3px 0 -1px #8a6a4a; /* petite tige de clou */
+}
+.salle-deco .mur-obj.o1 { left: 78px; } .salle-deco .mur-obj.o2 { right: 50px; }
+/* Horloge : suspendue à un clou plutôt que posée dans le vide. */
+.salle-deco .horloge { top: 24px; right: 14px; font-size: 1.5rem; }
+.salle-deco .horloge::before {
+  content: ""; position: absolute; left: 50%; top: -5px; transform: translateX(-50%);
+  width: 3.5px; height: 3.5px; border-radius: 50%; background: #6a4a30;
+}
 /* La paillasse est posée sur le sol, sous le tableau ; le prof la jouxte à droite. */
 .salle-deco .paillasse { position: absolute; left: 8px; right: 62px; bottom: 2px; height: 124px; filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.35)); }
 @media (max-width: 480px) { .scene { padding: 58px 14px 128px; } .salle-deco .paillasse { right: 52px; height: 106px; } }
