@@ -410,10 +410,29 @@ function objetsMatiere(id) {
       <circle cx="72" cy="34" r="7" fill="#f5b400" stroke="#c8902c" stroke-width="1.4"/><circle cx="69.5" cy="31.5" r="2.4" fill="#fff" opacity=".7"/>
       <circle cx="154" cy="34" r="12" fill="#0d2740" stroke="url(#metal)" stroke-width="2"/><rect x="150" y="18" width="8" height="4" rx="1" fill="url(#metal)"/><line x1="154" y1="34" x2="154" y2="26" stroke="#a855f7" stroke-width="2"/><circle cx="154" cy="34" r="1.6" fill="#a855f7"/>
       <rect x="196" y="40" width="100" height="8" rx="1" fill="#ffd24a" stroke="#c9a52f" stroke-width="1"/><rect x="196" y="40.6" width="100" height="1.6" fill="#fff" opacity=".5"/><g stroke="#c9a52f" stroke-width="1">${Array.from({ length: 10 }, (_, i) => `<line x1="${202 + i * 10}" y1="40" x2="${202 + i * 10}" y2="44"/>`).join('')}</g>` : `
-      <rect x="30" y="30" width="12" height="18" rx="2" fill="url(#metal)"/><path d="M42 32 L54 25 V48 L42 46 Z" fill="url(#metal)"/><path d="M31 31 v16" stroke="#fff" stroke-width="1.4" opacity=".5"/><g stroke="#ffd54a" stroke-width="1.4" fill="none" opacity=".9"><path d="M60 34 q6 6 0 12"/><path d="M65 30 q10 10 0 20"/></g>
-      <path d="M110 48 V34 M110 34 q0 -14 -8 -14 M110 34 q0 -14 8 -14" fill="none" stroke="url(#metal)" stroke-width="2.6"/>
-      <path d="M168 48 L182 24 L196 48 Z" fill="url(#glass)" stroke="#bcd4e6"/><path d="M172 46 L182 30 L184 44 Z" fill="#fff" opacity=".18"/><path d="M150 40 l22 -5" stroke="#fff" stroke-width="1.4" opacity=".7"/><g stroke-width="1.5" fill="none"><path d="M198 34 l16 -6" stroke="#ff5d7d"/><path d="M198 39 l18 0" stroke="#ffd24a"/><path d="M198 44 l16 6" stroke="#43c463"/></g>
-      <rect x="242" y="24" width="44" height="24" rx="3" fill="#0d2740" stroke="url(#metal)" stroke-width="1.4"/><path d="M247 37 q5 -7 10 0 t10 0 t10 0" fill="none" stroke="#37e0ff" stroke-width="1.4"/>`;
+      <!-- mégaphone : cône métal évasé + poignée + ondes sonores -->
+      <path d="M26 33 L44 29 V43 L26 40 Z" fill="url(#metal)" stroke="#5f6772" stroke-width="1"/>
+      <path d="M44 26 L62 21 V47 L44 46 Z" fill="url(#metal)" stroke="#5f6772" stroke-width="1"/>
+      <path d="M44 26 L62 21" stroke="#fff" stroke-width="1" opacity=".5"/><ellipse cx="61" cy="34" rx="2.4" ry="13" fill="#0d2740" opacity=".45"/>
+      <path d="M38 43 q-1 6 6 5" fill="none" stroke="#5f6772" stroke-width="2.4"/>
+      <g stroke="#ffd54a" stroke-width="1.7" fill="none" opacity=".92" stroke-linecap="round"><path d="M70 30 q5 6 0 12"/><path d="M76 26 q9 10 0 20"/><path d="M82 22 q13 14 0 28"/></g>
+      <!-- diapason : U métal massif sur socle, vibrations -->
+      <rect x="98" y="45" width="16" height="3" rx="1.4" fill="url(#metal)" stroke="#5f6772" stroke-width=".6"/>
+      <rect x="104" y="33" width="4" height="13" fill="url(#metal)"/>
+      <path d="M101 33 V23 a5 5 0 0 1 10 0 V33" fill="none" stroke="url(#metal)" stroke-width="3.4" stroke-linecap="round"/>
+      <path d="M102.4 32 V25" stroke="#fff" stroke-width="1" opacity=".55"/>
+      <g stroke="#37e0ff" stroke-width="1.2" fill="none" opacity=".7"><path d="M96 26 q-3 4 0 8"/><path d="M116 26 q3 4 0 8"/></g>
+      <!-- prisme : lumière blanche dispersée en arc-en-ciel -->
+      <path d="M150 48 L172 21 L194 48 Z" fill="url(#glass)" stroke="#bcd4e6" stroke-width="1.2"/>
+      <path d="M157 46 L172 27 L175 44 Z" fill="#fff" opacity=".16"/>
+      <path d="M132 40 L162 34" stroke="#fff" stroke-width="2.2" opacity=".85" stroke-linecap="round"/>
+      <g stroke-width="1.9" fill="none" stroke-linecap="round" opacity=".95"><path d="M181 37 L214 27" stroke="#ff5d7d"/><path d="M181 38 L216 33" stroke="#ff9a3c"/><path d="M181 39 L217 39" stroke="#ffd24a"/><path d="M181 40 L216 45" stroke="#43c463"/><path d="M181 41 L213 48" stroke="#4aa8ff"/></g>
+      <!-- oscilloscope : boîtier, écran quadrillé + sinus, boutons -->
+      <rect x="242" y="26" width="46" height="22" rx="3" fill="#22334e" stroke="url(#metal)" stroke-width="1.2"/>
+      <rect x="245" y="29" width="30" height="16" rx="1.5" fill="#062033"/>
+      <g stroke="#0e3a52" stroke-width=".6"><path d="M255 29 V45"/><path d="M265 29 V45"/><path d="M245 37 H275"/></g>
+      <path d="M246 37 q4 -6 8 0 t8 0 t8 0" fill="none" stroke="#37e0ff" stroke-width="1.6"/>
+      <circle cx="281" cy="33" r="2.3" fill="url(#metal)" stroke="#5f6772" stroke-width=".6"/><circle cx="281" cy="41" r="2.3" fill="url(#metal)" stroke="#5f6772" stroke-width=".6"/>`;
     case 'poids': return `
       <!-- balance à fléau : socle PLEIN posé sur le comptoir (les plateaux ne
            flottent plus, ils pendent d'un fléau clairement soutenu) -->
@@ -513,6 +532,7 @@ function construireModules() {
     carte.innerHTML =
       `<div class="porte-cadre">
          <span class="torche g"></span><span class="torche d"></span>
+         <span class="porte-tag">📚 COURS</span>
          <span class="porte-num">${num}</span>
          ${flammes}
          ${battant}

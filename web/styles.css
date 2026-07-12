@@ -366,6 +366,8 @@ body::after {
   box-shadow: 0 12px 30px rgba(6, 20, 48, 0.28); transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease; }
 .porte:not(.verrouille):hover .porte-cadre { transform: translateY(-6px); box-shadow: 0 20px 48px color-mix(in srgb, var(--c) 40%, rgba(6, 20, 48, 0.3)); border-color: color-mix(in srgb, var(--c) 55%, var(--border)); }
 .porte-num { position: absolute; top: 10px; right: 15px; font-family: var(--round); font-weight: 700; font-size: 1.1rem; color: #fff; opacity: 0.3; z-index: 3; }
+/* Étiquette « COURS » (haut-gauche), pendant du « LABO » des labos. */
+.porte-tag { position: absolute; top: 9px; left: 13px; z-index: 3; font-family: var(--round); font-weight: 700; font-size: 0.56rem; letter-spacing: 0.15em; color: var(--c); border: 1.5px solid color-mix(in srgb, var(--c) 55%, transparent); border-radius: 999px; padding: 2px 7px; background: #0b1428cc; }
 .porte-battant { position: relative; height: 152px; border-radius: 80px 80px 8px 8px; overflow: hidden;
   background: linear-gradient(180deg, color-mix(in srgb, var(--c) 30%, transparent), color-mix(in srgb, var(--c) 12%, rgba(6, 20, 48, 0.25)));
   border: 1.5px solid color-mix(in srgb, var(--c) 45%, var(--border)); border-bottom: none;
@@ -400,7 +402,9 @@ body::after {
 .porte:focus-visible .porte-cadre { box-shadow: 0 0 0 3px var(--or), 0 12px 30px rgba(6, 20, 48, 0.28); }
 
 /* Flammes de maîtrise : une allumée par étoile (0–3) sur le linteau */
-.porte-flammes { position: absolute; top: 8px; left: 14px; display: flex; gap: 3px; z-index: 3; }
+/* Flammes de maîtrise déplacées en BAS-DROITE (pour libérer le haut-gauche pris
+   par l'étiquette COURS) — elles ne chevauchent plus rien. */
+.porte-flammes { position: absolute; right: 12px; bottom: 12px; display: flex; gap: 3px; z-index: 3; }
 .porte-flammes span { font-size: 0.8rem; filter: grayscale(1) brightness(0.6); opacity: 0.5; transition: filter 0.3s, opacity 0.3s; }
 .porte-flammes span.on { filter: drop-shadow(0 0 5px var(--or)); opacity: 1; animation: flammeN 1.5s ease-in-out infinite; }
 

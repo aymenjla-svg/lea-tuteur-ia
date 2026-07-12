@@ -9,6 +9,7 @@ import { lireA11y } from './accessibilite.js';
 
 const $ = (s, r = document) => r.querySelector(s);
 const LEA = personaParId('persona-lea');
+const reduireMouvement = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 const CLE = 'lea.visite.v1';
 const TETE = 'avatars/persona-lea.png';
 
@@ -188,32 +189,50 @@ function placer() {
   const etp = actives[etape];
   const cible = cibleDe(etp);
   const hole = $('.lv-hole', sur), car = $('.lv-caravane', sur);
-  if (!cible) { hole.style.opacity = '0'; centrer(car); return; }
-  // Défilement INSTANTANÉ (pas 'smooth') : sinon on mesure la position pendant
-  // que la page bouge encore et la bulle atterrit hors de l'écran.
-  cible.scrollIntoView({ block: 'center', behavior: 'auto' });
   clearTimeout(poseTimer);
-  poseTimer = setTimeout(() => {
-    const r = cible.getBoundingClientRect(), pad = 10;
-    const vw = window.innerWidth, vh = window.innerHeight;
-    hole.style.opacity = '1';
-    hole.style.left = (r.left - pad) + 'px';
-    hole.style.top = (r.top - pad) + 'px';
-    hole.style.width = (r.width + pad * 2) + 'px';
-    hole.style.height = (r.height + pad * 2) + 'px';
-    // La caravane (tête + bulle) se pose sous la zone, sinon au-dessus —
-    // et TOUJOURS bornée à l'écran pour que la bulle reste visible.
-    const carW = Math.min(342, vw - 24);
-    const left = Math.max(12, Math.min(r.left + r.width / 2 - carW / 2, vw - carW - 12));
-    car.style.transform = 'none';
-    car.style.width = carW + 'px';
-    car.style.left = left + 'px';
-    const carH = car.offsetHeight || 190;
-    const bas = r.bottom + pad + 14;
-    let top = (bas + carH < vh - 12) ? bas : (r.top - pad - 14 - carH);
-    top = Math.max(12, Math.min(top, vh - carH - 12));
-    car.style.top = top + 'px';
-  }, 130);
+  if (!cible) { hole.style.opacity = '0'; centrer(car); return; }
+  // On DÉFILE en douceur jusqu'à la rubrique (l'élève suit des yeux), on masque
+  // le halo le temps du défilement, puis on place tête + bulle une fois la page
+  // STABILISÉE — ainsi la bulle n'atterrit jamais hors de l'écran.
+  hole.style.opacity = '0';
+  cible.scrollIntoView({ block: 'center', behavior: reduireMouvement ? 'auto' : 'smooth' });
+  attendreScrollStable(() => positionner(cible, hole, car));
+}
+
+// Rappelle `cb` quand le défilement s'est arrêté (position stable ~3 lectures),
+// avec un plafond de sécurité. Robuste (pas d'événement 'scrollend' partout).
+function attendreScrollStable(cb) {
+  let last = window.scrollY, stables = 0, tours = 0;
+  const tick = () => {
+    const y = window.scrollY;
+    stables = Math.abs(y - last) < 1 ? stables + 1 : 0;
+    last = y; tours++;
+    if (stables >= 3 || tours > 70) { cb(); return; }
+    poseTimer = setTimeout(tick, 28);
+  };
+  poseTimer = setTimeout(tick, 28);
+}
+
+function positionner(cible, hole, car) {
+  const r = cible.getBoundingClientRect(), pad = 10;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  hole.style.opacity = '1';
+  hole.style.left = (r.left - pad) + 'px';
+  hole.style.top = (r.top - pad) + 'px';
+  hole.style.width = (r.width + pad * 2) + 'px';
+  hole.style.height = (r.height + pad * 2) + 'px';
+  // La caravane (tête + bulle) se pose sous la zone, sinon au-dessus —
+  // et TOUJOURS bornée à l'écran pour que la bulle reste visible.
+  const carW = Math.min(342, vw - 24);
+  const left = Math.max(12, Math.min(r.left + r.width / 2 - carW / 2, vw - carW - 12));
+  car.style.transform = 'none';
+  car.style.width = carW + 'px';
+  car.style.left = left + 'px';
+  const carH = car.offsetHeight || 190;
+  const bas = r.bottom + pad + 14;
+  let top = (bas + carH < vh - 12) ? bas : (r.top - pad - 14 - carH);
+  top = Math.max(12, Math.min(top, vh - carH - 12));
+  car.style.top = top + 'px';
 }
 
 function centrer(car) {
@@ -272,7 +291,7 @@ function injecterBouton() {
   const accueil = $('#accueil'); if (!accueil) return;
   const btn = document.createElement('button');
   btn.id = 'lv-replay'; btn.className = 'lv-replay'; btn.type = 'button';
-  btn.innerHTML = '🧭 Visite guidée';
+  btn.innerHTML = '✨ Visite guidée';
   btn.addEventListener('click', lancerVisite);
   // En HAUT : dans le héros, juste sous le sélecteur de niveau.
   const seg = accueil.querySelector('#niveauSeg');
@@ -292,6 +311,8 @@ function autoLancer() {
   obs.observe(onb, { attributes: true, attributeFilter: ['hidden'] });
 }
 
-function init() { injecterBouton(); autoLancer(); }
+// On injecte les styles TOUT DE SUITE (pas seulement à l'ouverture de la visite)
+// pour que le bouton de l'accueil soit stylé dès le départ, avant tout clic.
+function init() { injecterStyles(); injecterBouton(); autoLancer(); }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
 else init();
