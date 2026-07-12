@@ -281,6 +281,24 @@ body::after {
 
 .sec-head { display: flex; align-items: center; justify-content: space-between; margin: 0 4px 14px; }
 .sec-count { color: var(--txt2); font-size: 0.8rem; }
+
+/* Titres de section mis en valeur (Les cours / Les labos) */
+.sec-titre { display: flex; align-items: center; gap: 12px; margin: 20px 4px 16px; padding-bottom: 12px;
+  border-bottom: 2px solid transparent; border-image: linear-gradient(90deg, color-mix(in srgb, var(--st1) 60%, transparent), transparent 78%) 1; }
+.sec-titre.labos-head { margin-top: 34px; }
+.sec-titre.t-cours { --st1: #e6b24a; --st2: #c4692a; }
+.sec-titre.t-labos { --st1: #19c8d4; --st2: #3f6ad0; }
+.sec-ico { flex: 0 0 auto; width: 46px; height: 46px; border-radius: 14px; display: grid; place-items: center; font-size: 1.55rem;
+  background: linear-gradient(135deg, var(--st1), var(--st2));
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--st1) 42%, transparent), inset 0 0 0 1.5px rgba(255, 255, 255, 0.18); }
+.sec-titre .sec-txt { flex: 1; min-width: 0; }
+.sec-h { font-family: var(--round); font-size: 1.42rem; font-weight: 700; color: #fff; margin: 0; line-height: 1.05; }
+.sec-h .accent { background: linear-gradient(90deg, var(--st1), var(--st2)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sec-titre .sec-sub { margin: 3px 0 0; color: var(--txt2); font-size: 0.82rem; line-height: 1.3; }
+.sec-titre .sec-count { flex: 0 0 auto; font-family: var(--round); font-weight: 700; font-size: 0.74rem; color: #fff;
+  background: var(--panel); border: 1.5px solid color-mix(in srgb, var(--st1) 45%, var(--border)); border-radius: 999px; padding: 6px 12px; backdrop-filter: blur(10px); white-space: nowrap; }
+@media (max-width: 460px) { .sec-h { font-size: 1.24rem; } .sec-titre .sec-sub { font-size: 0.76rem; } .sec-ico { width: 40px; height: 40px; font-size: 1.35rem; } }
+
 .missions { display: grid; grid-template-columns: repeat(auto-fill, minmax(215px, 1fr)); gap: 15px; }
 
 .mission {
