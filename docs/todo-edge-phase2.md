@@ -1,4 +1,19 @@
-# Phase 2 — modifications Edge à faire ensemble (demain)
+# Phase 2 — modifications Edge
+
+> ✅ **IMPLÉMENTÉ** dans `supabase/functions/tuteur/index.ts` (interfaces + prompt
+> `systeme()` mode « enseigner » / intérêts / devoirs + support **vision** dans
+> `appelLLM`). **Il ne reste qu'à REDÉPLOYER la fonction `tuteur`** (dashboard
+> Supabase → Deploy, ou `supabase functions deploy tuteur`).
+>
+> Options (secrets) éventuelles :
+> - `LLM_VISION_MODEL` : modèle vision pour la photo d'énoncé (ex. `gpt-4o-mini`
+>   en OpenAI, `claude-3-5-sonnet-latest` en Anthropic). Le texte marche sans.
+>
+> Le détail ci-dessous reste comme documentation de ce qui a été fait.
+
+---
+
+# (Historique) Phase 2 — modifications Edge à faire ensemble
 
 > Ces features ont **leur front déjà prêt** (ou presque) ; il ne manque qu'un
 > ajout dans la fonction Edge `supabase/functions/tuteur/index.ts`, **à
