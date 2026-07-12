@@ -41,41 +41,59 @@ function partir() {
 function laneY(i) { return i === 0 ? H * 0.42 : H * 0.72; }
 
 function dessineLane(c, i, mL, mR) {
-  const y = laneY(i);
-  // route
+  const y = laneY(i), accent = i === 0 ? '#7fd8ff' : '#ffb38a';
+  // route + ombre
   ctx.fillStyle = '#242c44'; ctx.fillRect(mL, y - 14, mR - mL, 28);
-  ctx.strokeStyle = '#ffffff44'; ctx.setLineDash([10, 8]); ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(mL, y); ctx.lineTo(mR, y); ctx.stroke(); ctx.setLineDash([]);
+  ctx.fillStyle = '#00000030'; ctx.fillRect(mL, y + 8, mR - mL, 6);
+  // ligne médiane (défile quand ça roule)
+  ctx.strokeStyle = '#ffffff44'; ctx.setLineDash([12, 10]); ctx.lineDashOffset = st.run ? -(st.tick * 3 % 22) : 0; ctx.lineWidth = 2;
+  ctx.beginPath(); ctx.moveTo(mL, y); ctx.lineTo(mR, y); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
   // arrivée damier
   for (let r = 0; r < 4; r++) for (let cc = 0; cc < 2; cc++) { ctx.fillStyle = (r + cc) % 2 ? '#fff' : '#111'; ctx.fillRect(mR + cc * 6, y - 14 + r * 7, 6, 7); }
-  // mobile
-  const x = mL + Math.min(1, c.d / PISTE) * (mR - mL);
-  ctx.font = '24px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(c.emoji, x, y - 2);
+
+  const frac = Math.min(1, c.d / PISTE), x = mL + frac * (mR - mL);
+  const moving = st.run && c.d < PISTE, spd = vms(c);
+  // lignes de vitesse derrière le mobile
+  if (moving && spd > 6) { ctx.strokeStyle = accent + 'aa'; ctx.lineWidth = 2; const n = Math.min(4, Math.round(spd / 6)); for (let k = 0; k < n; k++) { const lx = x - 15 - k * 6; ctx.beginPath(); ctx.moveTo(lx, y - 6 + k * 3); ctx.lineTo(lx - Math.min(20, spd * 0.6), y - 6 + k * 3); ctx.stroke(); } }
+  // poussière au sol
+  if (moving && spd > 3) { for (let k = 0; k < 3; k++) { ctx.fillStyle = `rgba(255,255,255,${0.18 - k * 0.05})`; const px = x - 12 - ((st.tick * 2 + k * 9) % 22); ctx.beginPath(); ctx.arc(px, y + 8, 2 + k, 0, 7); ctx.fill(); } }
+  // mobile — RETOURNÉ pour avancer vers la droite ; petit rebond pour les piétons
+  const bob = moving && /🏃|🚶|🐌/.test(c.emoji) ? Math.abs(Math.sin(st.tick * 0.35)) * 2.5 : 0;
+  ctx.save(); ctx.translate(x, y - 2 - bob); ctx.scale(-1, 1); ctx.font = '24px serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(c.emoji, 0, 0); ctx.restore();
   ctx.textBaseline = 'alphabetic'; ctx.textAlign = 'left';
-  // libellé vitesse
-  ctx.fillStyle = i === 0 ? '#7fd8ff' : '#ffb38a'; ctx.font = '700 11px Fredoka, sans-serif';
+  // libellé
+  ctx.fillStyle = accent; ctx.font = '700 11px Fredoka, sans-serif';
   ctx.fillText(`${c.vkmh} km/h · ${c.d.toFixed(0)} m · ${c.t.toFixed(1)} s`, mL, y - 20);
 }
 
 function dessiner() {
   if (!ctx) return;
   const mL = 40, mR = W - 46;
-  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#2a4a8a'); g.addColorStop(1, '#0e1c3a');
+  const g = ctx.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#3a5aa0'); g.addColorStop(1, '#0e1c3a');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  ctx.fillStyle = '#ffffff33'; for (const n of nuages) { ctx.beginPath(); ctx.ellipse(n.x, n.y, 16, 7, 0, 0, 7); ctx.ellipse(n.x + 12, n.y + 2, 12, 6, 0, 0, 7); ctx.fill(); }
-  ctx.fillStyle = '#7fe0a8'; ctx.font = '700 11px Fredoka, sans-serif'; ctx.textAlign = 'right'; ctx.fillText('100 m 🏁', mR + 4, 14); ctx.textAlign = 'left';
+  // soleil
+  ctx.globalAlpha = 0.85; ctx.fillStyle = '#ffe08a'; ctx.beginPath(); ctx.arc(W - 66, 28, 15, 0, 7); ctx.fill(); ctx.globalAlpha = 1;
+  // nuages dérivants
+  ctx.fillStyle = '#ffffff30'; for (const n of nuages) { const nx = ((n.x + st.tick * 0.12) % (W + 60)) - 30; ctx.beginPath(); ctx.ellipse(nx, n.y, 16, 7, 0, 0, 7); ctx.ellipse(nx + 12, n.y + 2, 12, 6, 0, 0, 7); ctx.fill(); }
+  // herbe en bas
+  ctx.fillStyle = '#1e6a4a'; ctx.fillRect(0, H - 14, W, 14);
+  ctx.fillStyle = '#7fe0a8'; ctx.font = '700 11px Fredoka, sans-serif'; ctx.textAlign = 'right'; ctx.fillText('100 m 🏁', mR + 4, 12); ctx.textAlign = 'left';
   dessineLane(st.A, 0, mL, mR);
   dessineLane(st.B, 1, mL, mR);
-  if (st.fini) {
-    ctx.fillStyle = '#000a'; ctx.fillRect(W / 2 - 110, H / 2 - 20, 220, 40);
-    ctx.fillStyle = '#ffd24a'; ctx.font = '700 17px Fredoka, sans-serif'; ctx.textAlign = 'center';
-    ctx.fillText(st.fini, W / 2, H / 2 + 6); ctx.textAlign = 'left';
-  }
+  if (st.fini) dessineFini();
+}
+
+function dessineFini() {
+  for (let k = 0; k < 26; k++) { const cx = (k * 53) % W, cy = ((st.tick * 3 + k * 37) % (H + 20)) - 10; ctx.fillStyle = ['#ffd24a', '#7fd8ff', '#ff8fae', '#7fe0a8'][k % 4]; ctx.save(); ctx.translate(cx, cy); ctx.rotate(k); ctx.fillRect(-2, -3, 4, 6); ctx.restore(); }
+  ctx.fillStyle = '#000000aa'; ctx.beginPath(); ctx.roundRect(W / 2 - 108, H / 2 - 21, 216, 42, 12); ctx.fill();
+  ctx.fillStyle = '#ffd24a'; ctx.font = '700 18px Fredoka, sans-serif'; ctx.textAlign = 'center'; ctx.fillText(st.fini, W / 2, H / 2 + 6); ctx.textAlign = 'left';
 }
 
 function pas(c, dt) { if (c.d < PISTE) { c.t += dt; c.d = vms(c) * c.t; if (c.d >= PISTE) { c.d = PISTE; c.t = PISTE / vms(c); } } }
 
 function boucle(now) {
   if (!api._open) { raf = 0; return; }
+  st.tick = (st.tick || 0) + 1;
   if (st.run) {
     const dt = Math.min(0.05, (now - st.last) / 1000); st.last = now;
     pas(st.A, dt); pas(st.B, dt);
