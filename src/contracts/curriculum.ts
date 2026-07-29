@@ -84,12 +84,35 @@ export interface ParametreTemplate {
   readonly domaine: string;
 }
 
+/**
+ * Sous-étape d'une DÉCOMPOSITION GUIDÉE (P1 : étayage à la demande). Révélée
+ * seulement si l'élève bloque : on déroule l'enchaînement une étape à la fois,
+ * chacune vérifiée, sans jamais énoncer le résultat final (l'élève le calcule).
+ */
+export interface SousEtapeGuidee {
+  readonly enonce: string;
+  /** Valeur numérique attendue à cette sous-étape. */
+  readonly attendu: number;
+  /** Tolérance absolue (0 = exact). */
+  readonly tolerance?: number;
+  /** Unité de la sous-étape (pilote les pastilles côté UI). */
+  readonly unite?: string;
+  /** Coup de pouce ciblé sur cette sous-étape (jamais le résultat). */
+  readonly indice: string;
+}
+
 /** Étape d'un exercice à étapes (D5 : exercices à étapes). */
 export interface EtapeTemplate {
   readonly ordre: number;
   readonly question: Question;
   /** Indice progressif lié à l'étape (jamais la solution d'emblée). */
   readonly indice?: string;
+  /**
+   * Décomposition en sous-étapes, révélée UNIQUEMENT si l'élève bloque
+   * (étayage « on fait ensemble »). L'énoncé principal reste posé en une seule
+   * question ; on ne déroule les sous-étapes que sur demande d'aide/blocage.
+   */
+  readonly decomposition?: readonly SousEtapeGuidee[];
 }
 
 /**
@@ -105,6 +128,8 @@ export interface ExerciceTemplate extends Aggregate {
   readonly parametres: readonly ParametreTemplate[];
   readonly etapes: readonly EtapeTemplate[];
   readonly representations: readonly Representation[];
+  /** Niveau de difficulté 1..4 (cadre BO). Absent = niveau moyen implicite. */
+  readonly niveau?: number;
 }
 
 /** Explication d'un objectif, déclinée par modalité (§5 : `explications`). */
@@ -123,6 +148,8 @@ export interface Explication extends Aggregate {
 /** Accès en lecture au DAG curriculaire. Implémentation remplaçable (P3). */
 export interface Curriculum {
   obtenirObjectif(id: ObjectifId): Promise<Objectif | null>;
+  /** Tous les objectifs d'un référentiel (pour le parcours / planification). */
+  objectifs(referentiel_id: ReferentielId): Promise<readonly Objectif[]>;
   /** Prérequis directs d'un objectif (arêtes entrantes du DAG). */
   prerequisDirects(id: ObjectifId): Promise<readonly Objectif[]>;
   /** Objectifs dont `id` est prérequis (arêtes sortantes — la suite). */

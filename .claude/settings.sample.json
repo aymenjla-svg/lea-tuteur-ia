@@ -1,0 +1,15 @@
+{
+  "_comment": "Modèle NON ACTIF. Pour l'activer dans les sessions Claude Code (web notamment), copie ce fichier en .claude/settings.json. Le hook installe les dépendances au démarrage pour que `npm test` / `npm run typecheck` fonctionnent d'emblée.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "npm install --no-audit --no-fund --silent"
+          }
+        ]
+      }
+    ]
+  }
+}

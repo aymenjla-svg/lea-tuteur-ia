@@ -92,6 +92,12 @@ export interface ContexteSession {
   readonly eleve_id: EleveId;
   readonly persona_id: PersonaId;
   readonly objectif_initial: ObjectifId;
+  /**
+   * Difficulté visée (1 = facile … 4 = difficile), dérivée de la classe (6ᵉ→3ᵉ).
+   * Le Planificateur privilégie les exercices proches de ce niveau (D5, cadre
+   * BO à 4 niveaux). Absent → pas de préférence (toute la banque).
+   */
+  readonly niveau_cible?: number;
 }
 
 /**

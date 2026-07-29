@@ -25,6 +25,13 @@ interface QuestionBase {
   readonly modalite: Modalite;
 }
 
+/** Piège : une mauvaise réponse attendue, reliée à une erreur-type (R1). */
+export interface PiegeNumeric {
+  readonly valeur: number;
+  readonly tolerance?: number;
+  readonly erreur_type_id: string;
+}
+
 /** Réponse numérique avec tolérance (ex. arrondis, unités). */
 export interface QuestionNumeric extends QuestionBase {
   readonly kind: 'numeric';
@@ -34,6 +41,8 @@ export interface QuestionNumeric extends QuestionBase {
     readonly tolerance: number;
     readonly unite?: string;
   };
+  /** Distracteurs prof-authored → diagnostic d'erreur-type (D2/§6). */
+  readonly pieges?: readonly PiegeNumeric[];
 }
 
 /** Équivalence symbolique (ex. `2(x+1)` ≡ `2x+2`). */
@@ -46,10 +55,17 @@ export interface QuestionSymbolic extends QuestionBase {
   };
 }
 
+/** Option de QCM ; un distracteur peut pointer vers une erreur-type (R1). */
+export interface OptionQcm {
+  readonly id: string;
+  readonly libelle: string;
+  readonly erreur_type_id?: string;
+}
+
 /** QCM — une ou plusieurs bonnes réponses. */
 export interface QuestionQcm extends QuestionBase {
   readonly kind: 'qcm';
-  readonly options: readonly { readonly id: string; readonly libelle: string }[];
+  readonly options: readonly OptionQcm[];
   readonly bonnes_reponses: readonly string[];
   readonly choix_multiple: boolean;
 }
@@ -59,13 +75,22 @@ export interface QuestionQcm extends QuestionBase {
  * sémantique peut s'appuyer sur le LLM, mais le Verifier reste l'autorité
  * qui émet le `Verdict` (le LLM ne valide jamais directement).
  */
+export interface CritereLibre {
+  readonly id: string;
+  readonly description: string;
+  readonly requis: boolean;
+  /**
+   * Mots-clés attendus (tous présents ⇒ critère satisfait). Permet une
+   * correction DÉTERMINISTE en Phase 2 ; une évaluation sémantique LLM pourra
+   * s'y substituer plus tard sans changer le contrat (le Verifier reste seul
+   * juge — §1.1).
+   */
+  readonly mots_cles?: readonly string[];
+}
+
 export interface QuestionLibre extends QuestionBase {
   readonly kind: 'libre';
-  readonly criteres: readonly {
-    readonly id: string;
-    readonly description: string;
-    readonly requis: boolean;
-  }[];
+  readonly criteres: readonly CritereLibre[];
 }
 
 export type Question =
@@ -90,7 +115,9 @@ export interface ReponseEleve {
 /* Verdict — seul le Verifier peut en produire un                             */
 /* ------------------------------------------------------------------------- */
 
-declare const __verdict: unique symbol;
+// Symbole RÉEL (pas `declare`) : il sert de marque en position de valeur dans
+// `creerVerdict`. Non exporté → privé au module, donc infalsifiable ailleurs.
+const __verdict: unique symbol = Symbol('verdict');
 
 /**
  * Résultat de vérification. La marque `[__verdict]` est inaccessible hors de
@@ -116,4 +143,27 @@ export interface Verifier {
   /** Familles supportées par cette implémentation. */
   readonly kinds: readonly VerifierKind[];
   verifier(question: Question, reponse: ReponseEleve): Promise<Verdict>;
+}
+
+/* ------------------------------------------------------------------------- */
+/* Constructeur de Verdict — co-localisé avec le type (smart constructor)      */
+/* ------------------------------------------------------------------------- */
+
+/** Données nécessaires pour sceller un Verdict (la marque est ajoutée ici). */
+export interface DonneesVerdict {
+  readonly correct: boolean;
+  readonly criteres_satisfaits: readonly string[];
+  readonly erreur_type_id?: string;
+  readonly diagnostic?: string;
+}
+
+/**
+ * Seul moyen de produire un `Verdict` (§1.1). Volontairement défini DANS ce
+ * module : la marque `[__verdict]` y est privée, donc aucun autre fichier ne
+ * peut forger un Verdict sans passer par ce constructeur. Le baril public
+ * (`export type *`) n'exporte pas cette fonction — seules les implémentations
+ * de `Verifier` l'importent directement.
+ */
+export function creerVerdict(donnees: DonneesVerdict): Verdict {
+  return { [__verdict]: true, ...donnees };
 }

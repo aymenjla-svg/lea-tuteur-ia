@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LÉA — Physique</title>
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="doodles" aria-hidden="true">
+      <span class="dood d1">🚀</span><span class="dood d2">🪐</span>
+      <span class="dood d3">🧪</span><span class="dood d4">⚛️</span>
+      <span class="dood d5">🛰️</span><span class="dood d6">✨</span>
+    </div>
+    <main class="app">
+      <!-- ============================ ACCUEIL ============================ -->
+      <section id="accueil" class="accueil">
+        <header class="hud-top">
+          <div class="logo">LÉA<svg class="logo-tube" viewBox="0 0 28 28" aria-hidden="true"><g transform="rotate(24 14 14)"><rect x="10.5" y="3" width="7" height="20" rx="3.5" fill="rgba(255,255,255,.22)" stroke="#fff" stroke-width="1.4"/><path d="M10.5 14 h7 v5.5 a3.5 3.5 0 0 1 -7 0 z" fill="#ffc23c"/><circle class="bub bb1" cx="14" cy="17" r="1.1" fill="#fff"/><circle class="bub bb2" cx="15.2" cy="18" r="0.8" fill="#fff"/><circle class="bub bb3" cx="12.9" cy="18.4" r="0.7" fill="#fff"/></g></svg></div>
+          <div class="stats" id="stats"></div>
+          <button id="a11yBtn" class="a11y-btn" type="button" aria-label="Accessibilité et avis" title="Accessibilité et avis">Aa</button>
+        </header>
+
+        <div class="hero">
+          <div class="salle-profs" id="salleProfs" aria-label="La salle des profs — choisis ton prof"></div>
+          <div class="hero-txt">
+            <div id="accueilSalut" class="salut" hidden></div>
+            <span class="eyebrow">Physique · Cycle 4</span>
+            <h1 class="hero-h" id="heroH">Prêt·e pour l'expérience&nbsp;?</h1>
+            <div class="classe-seg" id="niveauSeg" role="tablist"></div>
+            <button id="continuer" class="btn-neon" type="button" hidden></button>
+            <button id="ouvrirProfs" class="link" type="button" hidden></button>
+          </div>
+        </div>
+
+        <div id="profPicker" class="prof-picker" hidden>
+          <span class="eyebrow">Choisis ton prof</span>
+          <div id="profChips" class="pp-chips"></div>
+        </div>
+
+        <div class="sec-titre t-cours">
+          <span class="sec-ico">📚</span>
+          <div class="sec-txt">
+            <h2 class="sec-h">Les <span class="accent">cours</span></h2>
+            <p class="sec-sub">La cour de l'école — une porte par notion</p>
+          </div>
+          <span class="sec-count" id="modCount"></span>
+        </div>
+        <div id="modulesGrille" class="missions"></div>
+
+        <div class="sec-titre t-labos labos-head">
+          <span class="sec-ico">🔬</span>
+          <div class="sec-txt">
+            <h2 class="sec-h">Les <span class="accent">labos</span></h2>
+            <p class="sec-sub">Expérimente, joue et comprends — un labo par notion</p>
+          </div>
+          <span class="sec-count" id="labosCount"></span>
+        </div>
+        <div id="labosGrille" class="labos-grille"></div>
+
+        <p class="note"><a href="dashboard.html">Tableau de bord éducateur →</a></p>
+      </section>
+
+      <!-- ============================= LEÇON ============================= -->
+      <section id="lecon" class="lecon" hidden>
+        <header class="hud">
+          <button id="retour" type="button" class="hud-retour" aria-label="Retour au sommaire">←</button>
+          <div class="hud-centre">
+            <div class="hud-titre" id="hudTitre"></div>
+            <div class="hud-barre-fond"><div id="barre" class="hud-barre"></div></div>
+          </div>
+          <span id="pct" class="hud-pct">0&nbsp;%</span>
+          <button id="voix" type="button" class="icone-btn" hidden aria-pressed="false" title="Activer la voix" aria-label="Activer la voix">🔊</button>
+        </header>
+
+        <div class="fig-label" id="figLabel">◦ Salle d'expérience — en direct</div>
+        <section id="scene" class="scene" aria-hidden="true">
+          <div id="salleDeco" class="salle-deco" aria-hidden="true"></div>
+          <div class="tableau">
+            <span id="tableauFormule" class="tableau-formule"></span>
+            <div id="coursTitre" class="cours-titre" hidden></div>
+            <div id="figureHost" class="figure-host" hidden></div>
+            <ul id="coursPoints" class="cours-points" hidden></ul>
+            <div id="tableauTexte" class="tableau-texte"></div>
+          </div>
+          <div id="avatarHost" class="avatar-host"></div>
+        </section>
+
+        <div id="soustitre" class="soustitre" aria-live="polite"></div>
+
+        <div id="bilan" class="bilan" hidden aria-live="polite"></div>
+
+        <form id="form" class="saisie" autocomplete="off">
+          <div id="unites" class="unites" role="group" aria-label="Unité de la réponse" hidden></div>
+          <div class="saisie-ligne">
+            <div class="champ">
+              <input id="reponse" name="reponse" type="text" inputmode="decimal" placeholder="Ta réponse…" aria-label="Ta réponse" />
+              <span id="uniteBadge" class="unite-badge" hidden></span>
+            </div>
+            <button id="micro" type="button" class="micro-btn" hidden title="Répondre à la voix" aria-label="Répondre à la voix">🎤</button>
+            <button id="envoyer" type="submit">Envoyer</button>
+          </div>
+          <div id="pave" class="pave" aria-label="Pavé numérique">
+            <button type="button" class="pk pk-util" data-act="clear" aria-label="Tout effacer">C</button>
+            <button type="button" class="pk pk-util" data-act="sign" aria-label="Changer de signe">±</button>
+            <button type="button" class="pk pk-util" data-act="back" aria-label="Effacer un caractère">⌫</button>
+            <button type="button" class="pk" data-k="7">7</button>
+            <button type="button" class="pk" data-k="8">8</button>
+            <button type="button" class="pk" data-k="9">9</button>
+            <button type="button" class="pk" data-k="4">4</button>
+            <button type="button" class="pk" data-k="5">5</button>
+            <button type="button" class="pk" data-k="6">6</button>
+            <button type="button" class="pk" data-k="1">1</button>
+            <button type="button" class="pk" data-k="2">2</button>
+            <button type="button" class="pk" data-k="3">3</button>
+            <button type="button" class="pk pk-comma" data-k=",">,</button>
+            <button type="button" class="pk pk-zero" data-k="0">0</button>
+          </div>
+        </form>
+
+        <div id="qcmZone" class="qcm-zone" hidden role="group" aria-label="Choix de réponse"></div>
+
+        <nav id="coursNav" class="cours-nav" hidden aria-label="Navigation du cours">
+          <button id="coursPrec" type="button" class="cnav-btn">← Précédent</button>
+          <div id="coursDots" class="cours-dots" aria-hidden="true"></div>
+          <button id="coursSuivant" type="button" class="cnav-btn cnav-suivant">Suivant →</button>
+        </nav>
+
+        <div class="actions-sec">
+          <button id="leverMain" type="button" class="secondaire" title="Poser une question à Léa" hidden>✋ Lever la main</button>
+          <button id="perdu" type="button" class="secondaire" title="Demander de l'aide" hidden>Je suis perdu·e</button>
+          <button id="revoirCours" type="button" class="secondaire" hidden>Revoir le cours</button>
+          <button id="rejouer" type="button" class="rejouer" hidden>Recommencer</button>
+        </div>
+
+        <p class="note">Répétition illimitée, sans jugement. La vidéo ne quitte jamais l'appareil.</p>
+
+        <!-- Micro « toujours prêt » : l'élève parle à Léa quand il veut, comme
+             en classe (pas besoin d'ouvrir une fenêtre). -->
+        <button id="parleLea" type="button" class="parle-lea" hidden aria-label="Parler à Léa">
+          <span class="pl-ico">🎤</span><span class="pl-txt">Parle à Léa</span>
+        </button>
+      </section>
+    </main>
+
+    <!-- Modale accessibilité -->
+    <div id="a11yModale" class="modale" hidden>
+      <div class="modale-carte" role="dialog" aria-modal="true" aria-label="Accessibilité">
+        <h2>Accessibilité</h2>
+        <div class="a11y-groupe">
+          <div class="a11y-lib">Taille du texte</div>
+          <div class="a11y-seg" id="segTaille">
+            <button type="button" data-taille="petit">A−</button>
+            <button type="button" data-taille="normal">A</button>
+            <button type="button" data-taille="grand">A+</button>
+          </div>
+        </div>
+        <div class="a11y-groupe">
+          <button type="button" class="a11y-toggle" id="tgLecture" data-cle="lecture">
+            <span>Lecture facilitée</span><span class="etat">Non</span>
+          </button>
+        </div>
+        <div class="a11y-groupe">
+          <button type="button" class="a11y-toggle" id="tgContraste" data-cle="contraste">
+            <span>Contraste élevé</span><span class="etat">Non</span>
+          </button>
+        </div>
+        <div class="a11y-groupe">
+          <div class="a11y-lib">Vitesse de la voix</div>
+          <div class="a11y-seg" id="segVitesse">
+            <button type="button" data-vitesse="0.9" title="Posée">🐢</button>
+            <button type="button" data-vitesse="1">Normale</button>
+            <button type="button" data-vitesse="1.15">Rapide</button>
+            <button type="button" data-vitesse="1.3" title="Très rapide">⚡</button>
+          </div>
+        </div>
+        <div class="a11y-lib">Prof</div>
+        <div class="modale-liens">
+          <a href="guide.html">Guide de test</a>
+          <button type="button" id="ouvrirAvis">Donner mon avis</button>
+        </div>
+        <div class="a11y-lib">Tuteur IA (« lever la main »)</div>
+        <div class="tuteur-cfg">
+          <input id="tuteurUrl" type="url" inputmode="url" placeholder="https://…functions.supabase.co/tuteur" aria-label="URL de la fonction tuteur" />
+        </div>
+        <div class="tuteur-cfg">
+          <input id="tuteurKey" type="text" placeholder="Clé anon (si demandée) — facultatif" aria-label="Clé anon Supabase (facultatif)" />
+          <button type="button" id="tuteurSave">Connecter</button>
+          <button type="button" id="tuteurTest">Tester</button>
+        </div>
+        <p id="tuteurEtat" class="fb-note"></p>
+        <button type="button" class="modale-fermer" data-fermer="a11yModale">Fermer</button>
+      </div>
+    </div>
+
+    <!-- Modale avis / feedback -->
+    <div id="avisModale" class="modale" hidden>
+      <div class="modale-carte" role="dialog" aria-modal="true" aria-label="Donner mon avis">
+        <h2>Ton avis compte</h2>
+        <textarea id="avisTexte" class="fb-zone" placeholder="Ce qui marche, ce qui bloque, tes idées…"></textarea>
+        <p class="fb-note">Enregistré sur cet appareil. Utilise « Copier » pour transmettre tous les retours.</p>
+        <div class="modale-liens">
+          <button type="button" id="avisEnregistrer">Enregistrer</button>
+          <button type="button" id="avisCopier">Copier tout</button>
+        </div>
+        <button type="button" class="modale-fermer" data-fermer="avisModale">Fermer</button>
+      </div>
+    </div>
+
+    <!-- Modale « lever la main » : question libre à Léa (ancrée au programme) -->
+    <div id="mainModale" class="modale" hidden>
+      <div class="modale-carte modale-main" role="dialog" aria-modal="true" aria-label="Poser une question à Léa">
+        <h2>✋ Pose ta question à Léa</h2>
+        <p id="mainInfo" class="fb-note">Sur le cours en physique. Léa peut aussi dessiner au tableau.</p>
+        <div id="mainFil" class="main-fil" aria-live="polite"></div>
+        <form id="mainForm" class="main-saisie" autocomplete="off">
+          <input id="mainQuestion" type="text" placeholder="Ta question…" aria-label="Ta question" />
+          <button id="mainMic" type="button" class="micro-btn" hidden title="Poser à la voix" aria-label="Poser ta question à la voix">🎤</button>
+          <button type="submit" id="mainEnvoyer">Demander</button>
+        </form>
+        <button type="button" class="modale-fermer" data-fermer="mainModale">Fermer</button>
+      </div>
+    </div>
+
+    <!-- Accueil interactif « l'École de Léa » : Léa se présente et apprend à
+         connaître l'élève (premier passage). -->
+    <div id="onboarding" class="onb" hidden>
+      <div class="onb-ciel" aria-hidden="true"><span>✨</span><span>🪐</span><span>⚛️</span><span>🚀</span><span>🌟</span></div>
+      <div class="onb-carte" role="dialog" aria-modal="true" aria-label="Bienvenue">
+        <div class="onb-avatar" id="onbAvatar"></div>
+        <p class="onb-msg" id="onbMsg" aria-live="polite"></p>
+        <div class="onb-zone" id="onbZone"></div>
+        <button id="onbNext" class="onb-next" type="button">Continuer</button>
+        <div class="onb-dots" id="onbDots" aria-hidden="true"></div>
+      </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="lea-engine.js"></script>
+    <script src="app.js" type="module"></script>
+    <script src="revision.js" type="module"></script>
+    <script src="defi.js" type="module"></script>
+    <script src="interets.js" type="module"></script>
+    <script src="progres.js" type="module"></script>
+    <script src="labo-gravite.js" type="module"></script>
+    <script src="labo-circuit.js" type="module"></script>
+    <script src="labo-densite.js" type="module"></script>
+    <script src="labo-vitesse.js" type="module"></script>
+    <script src="labo-energie.js" type="module"></script>
+    <script src="labo-signaux.js" type="module"></script>
+    <script src="devoirs.js" type="module"></script>
+    <script src="enseigner.js" type="module"></script>
+    <script src="visite.js" type="module"></script>
+  </body>
+</html>

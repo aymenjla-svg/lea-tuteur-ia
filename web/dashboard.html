@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Léa — tableau de bord éducateur</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .app { max-width: 780px; padding: 22px 18px 60px; }
+      .db-tete { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px; flex-wrap: wrap; }
+      .db-tete h1 { font-family: var(--round); font-size: 1.5rem; color: #fff; margin: 0; }
+      .db-actions { display: flex; gap: 8px; }
+      .db-btn { font-family: var(--round); font-weight: 700; font-size: 0.85rem; padding: 9px 15px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--panel); color: #fff; cursor: pointer; }
+      .db-btn:hover { background: var(--panel-2); }
+      .db-sub { color: var(--txt2); font-size: 0.9rem; margin: 0 0 18px; }
+
+      .cartes { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 12px; }
+      .carte { background: var(--panel); border: 1.5px solid var(--border); border-radius: var(--rad); padding: 16px; text-align: center; backdrop-filter: blur(10px); }
+      .carte .val { font-family: var(--round); font-size: 1.7rem; font-weight: 700; color: var(--accent); }
+      .carte .lib { font-size: 0.78rem; color: var(--txt2); margin-top: 4px; }
+
+      .bloc h2 { font-family: var(--round); font-size: 1.05rem; color: #fff; margin: 26px 0 12px; }
+
+      .notion { background: var(--panel); border: 1.5px solid var(--border); border-radius: var(--rad); padding: 14px 16px; margin-bottom: 10px; backdrop-filter: blur(10px); }
+      .notion.a-revoir { border-color: rgba(255, 190, 90, 0.55); }
+      .notion-tete { display: flex; justify-content: space-between; align-items: baseline; }
+      .notion-nom { font-family: var(--round); font-weight: 600; color: #fff; }
+      .notion-m { font-family: var(--round); font-weight: 700; color: var(--accent); }
+      .notion-det { font-size: 0.85rem; color: var(--txt2); margin-top: 8px; line-height: 1.4; }
+      .notion-det b { color: #ffd98a; font-weight: 700; }
+
+      .jauge { height: 10px; background: rgba(255, 255, 255, 0.12); border-radius: 999px; overflow: hidden; margin-top: 8px; }
+      .jauge > span { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), var(--ok)); border-radius: 999px; }
+
+      .liste { display: flex; flex-direction: column; gap: 8px; }
+      .ligne { display: flex; align-items: center; gap: 10px; font-size: 0.9rem; color: var(--txt); }
+      .ligne .nom { flex: 0 0 210px; }
+      .ligne .n { flex: 0 0 40px; text-align: right; color: var(--txt2); font-size: 0.82rem; }
+      .vide { color: var(--txt2); font-size: 0.9rem; }
+
+      .soul-profs { display: flex; gap: 8px; flex-wrap: wrap; }
+      .soul-prof { display: flex; align-items: center; gap: 7px; font-family: var(--round); font-weight: 600; font-size: 0.9rem; padding: 8px 13px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--panel); color: #fff; cursor: pointer; }
+      .soul-prof.actif { border-color: var(--accent); box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--accent) 45%, transparent); }
+      .soul-prof .dot { width: 13px; height: 13px; border-radius: 50%; }
+      .soul-prof .perso { color: #ffd98a; }
+      .soul-zone { width: 100%; margin-top: 12px; min-height: 150px; line-height: 1.5; }
+      .pv-tabs { display: flex; gap: 8px; margin-bottom: 14px; }
+      .pv-tab { font-family: var(--round); font-weight: 700; font-size: 0.9rem; padding: 9px 16px; border-radius: 999px; border: 1.5px solid var(--border); background: var(--panel); color: var(--txt2); cursor: pointer; }
+      .pv-tab.actif { color: #fff; border-color: var(--accent); background: color-mix(in srgb, var(--accent) 22%, var(--panel)); }
+      .pv-panneau[hidden] { display: none; }
+
+      .apercu { margin-top: 20px; padding-top: 16px; border-top: 1.5px dashed var(--border); }
+      .apercu h3 { font-family: var(--round); font-size: 0.98rem; color: #fff; margin: 0 0 6px; }
+      .apercu-ligne { display: flex; gap: 8px; flex-wrap: wrap; }
+      .apercu-ligne input { flex: 1 1 240px; min-width: 200px; padding: 10px 14px; border-radius: 12px; }
+      .apercu-rep { margin-top: 12px; background: var(--panel); border: 1.5px solid var(--border); border-radius: var(--rad); padding: 14px 16px; color: var(--txt); line-height: 1.5; white-space: pre-wrap; }
+      .apercu-rep[hidden] { display: none; }
+      .apercu-rep .src { display: block; margin-top: 8px; font-size: 0.78rem; color: var(--txt2); }
+    </style>
+  </head>
+  <body>
+    <div class="doodles" aria-hidden="true">
+      <span class="dood d3">🧪</span><span class="dood d4">⚛️</span><span class="dood d6">✨</span>
+    </div>
+    <main class="app">
+      <header class="db-tete">
+        <h1>Tableau de bord</h1>
+        <div class="db-actions">
+          <button id="rafraichir" class="db-btn" type="button">Rafraîchir</button>
+          <button id="reset" class="db-btn" type="button">Réinitialiser</button>
+        </div>
+      </header>
+      <p class="db-sub">Suivi de l’activité sur cet appareil. Aucune donnée ne quitte le navigateur.</p>
+
+      <section class="cartes" id="cartes" aria-live="polite"></section>
+
+      <section class="bloc">
+        <h2>Par notion</h2>
+        <div id="notions"></div>
+      </section>
+
+      <section class="bloc">
+        <h2>Erreurs les plus fréquentes</h2>
+        <div class="liste" id="erreurs"></div>
+      </section>
+
+      <section class="bloc">
+        <div class="db-tete" style="margin: 26px 0 6px">
+          <h2 style="margin: 0">Personnalité &amp; valeurs</h2>
+          <button id="pvResetTout" class="db-btn" type="button">Tout réinitialiser</button>
+        </div>
+        <p class="db-sub" style="margin-bottom: 12px"><strong>Personnalise la personnalité des profs et les valeurs de l’école, puis retourne dans l’appli pour voir l’effet.</strong> Tes changements ne valent que sur cet appareil.</p>
+
+        <div class="pv-tabs">
+          <button type="button" class="pv-tab actif" data-cible="pvCharte">🏫 Charte de l’école</button>
+          <button type="button" class="pv-tab" data-cible="pvSoul">🎭 Soul des profs</button>
+        </div>
+
+        <div id="pvCharte" class="pv-panneau">
+          <textarea id="charteTexte" class="fb-zone soul-zone" rows="9" placeholder="Les valeurs de l’école…"></textarea>
+          <p id="charteEtat" class="note"></p>
+          <div class="db-actions" style="margin-top: 8px">
+            <button id="charteSave" class="db-btn" type="button">Enregistrer</button>
+            <button id="charteReset" class="db-btn" type="button">Revenir au défaut</button>
+            <button id="charteExport" class="db-btn" type="button">Copier pour tous</button>
+          </div>
+        </div>
+
+        <div id="pvSoul" class="pv-panneau" hidden>
+          <div class="soul-profs" id="soulProfs"></div>
+          <textarea id="soulTexte" class="fb-zone soul-zone" rows="7" placeholder="Décris la personnalité du prof…"></textarea>
+          <p id="soulEtat" class="note"></p>
+          <div class="db-actions" style="margin-top: 8px">
+            <button id="soulSave" class="db-btn" type="button">Enregistrer</button>
+            <button id="soulReset" class="db-btn" type="button">Revenir au défaut</button>
+            <button id="soulExport" class="db-btn" type="button">Copier pour tous</button>
+          </div>
+        </div>
+
+        <div class="apercu">
+          <h3>Aperçu</h3>
+          <p class="db-sub" style="margin: 0 0 10px">Envoie une question au tuteur avec la charte et le soul de <strong id="apercuProf">Léa</strong> tels qu’ils sont réglés ci-dessus (enregistre d’abord tes modifs).</p>
+          <div class="apercu-ligne">
+            <input id="apercuQ" class="fb-zone" type="text" value="Pourquoi le ciel est bleu ?" placeholder="Une question à tester…" />
+            <button id="apercuGo" class="db-btn" type="button">Tester la réponse</button>
+          </div>
+          <div id="apercuRep" class="apercu-rep" hidden></div>
+        </div>
+      </section>
+
+      <p class="note">v1 mono-appareil · le suivi par classe (comptes élèves) viendra avec le backend.</p>
+      <p class="note"><a href="index.html">← Retour à la séance</a></p>
+    </main>
+    <script src="dashboard.js" type="module"></script>
+    <script src="progres-dash.js" type="module"></script>
+  </body>
+</html>

@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" href="data:," />
+    <title>Léa — guide de test (prof)</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@600;700&family=Lexend:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+    <style>
+      .app { max-width: 760px; padding: 24px 18px 60px; }
+      .guide h1 { font-family: var(--round); font-size: 1.6rem; color: #fff; margin: 0 0 4px; }
+      .guide .intro { color: var(--txt2); margin: 0 0 20px; line-height: 1.5; }
+      .bloc { background: var(--panel); border: 1.5px solid var(--border); border-radius: var(--rad); padding: 16px 18px; margin-bottom: 14px; backdrop-filter: blur(10px); }
+      .bloc h2 { font-family: var(--round); font-size: 1.1rem; color: #fff; margin: 0 0 10px; }
+      .bloc ol, .bloc ul { margin: 0; padding-left: 20px; color: var(--txt); line-height: 1.6; }
+      .bloc li { margin-bottom: 6px; }
+      .bloc li b { color: #ffd98a; }
+      .etape { color: var(--accent); font-weight: 700; }
+    </style>
+  </head>
+  <body>
+    <div class="doodles" aria-hidden="true">
+      <span class="dood d3">🧪</span><span class="dood d4">⚛️</span><span class="dood d6">✨</span>
+    </div>
+    <main class="app guide">
+      <h1>Guide de test — Léa</h1>
+      <p class="intro">Merci de tester Léa, un prof de physique incarné pour le cycle 4.
+        Comptez 10–15 minutes. Le but n’est pas de « réussir » mais de repérer ce qui aide
+        vraiment l’élève et ce qui accroche.</p>
+
+      <div class="bloc">
+        <h2>Le parcours à essayer</h2>
+        <ol>
+          <li>Choisissez une <b>classe</b> (6ᵉ→3ᵉ) et un <b>prof</b> sur l’accueil.</li>
+          <li>Ouvrez un <b>module</b> : d’abord le <span class="etape">cours animé</span>
+            (avancez scène par scène), puis le <span class="etape">mini-exercice</span>.</li>
+          <li>Passez à la <span class="etape">série d’exercices</span>. Répondez au clavier
+            ou au pavé ; l’unité peut être choisie via les pastilles.</li>
+          <li>Sur un calcul, cliquez <b>« Je suis perdu·e »</b> : le prof déroule
+            l’enchaînement <b>pas à pas</b> sans donner la réponse.</li>
+          <li>Terminez un module pour voir le <b>bilan de séance</b>, puis ouvrez le
+            <b>tableau de bord</b> (lien en bas de l’accueil).</li>
+        </ol>
+      </div>
+
+      <div class="bloc">
+        <h2>Ce qu’on aimerait que vous observiez</h2>
+        <ul>
+          <li>Les <b>explications et schémas</b> du cours sont-ils justes et clairs ?</li>
+          <li>Le <b>guidage pas à pas</b> aide-t-il sans « donner » la réponse ?</li>
+          <li>Le niveau et la <b>formulation des énoncés</b> conviennent-ils au cycle 4 ?</li>
+          <li>Les <b>diagnostics d’erreur</b> (ex. « multiplier au lieu de diviser ») sont-ils pertinents ?</li>
+          <li>Le <b>tableau de bord</b> vous serait-il utile en classe ?</li>
+          <li>Rythme, ton du prof, lisibilité : qu’ajusteriez-vous ?</li>
+        </ul>
+      </div>
+
+      <div class="bloc">
+        <h2>Accessibilité</h2>
+        <ul>
+          <li>Bouton <b>« Aa »</b> en haut : taille du texte, <b>lecture facilitée</b>
+            (espacement), <b>contraste élevé</b>.</li>
+          <li>Le <b>haut-parleur 🔊</b> lit les consignes à voix haute.</li>
+        </ul>
+      </div>
+
+      <div class="bloc">
+        <h2>Donner votre avis</h2>
+        <p style="color: var(--txt); line-height: 1.6; margin: 0;">
+          Bouton <b>« Aa » → « Donner mon avis »</b> : notez vos remarques à chaud.
+          Elles sont gardées sur l’appareil ; « Copier tout » permet de les transmettre.</p>
+      </div>
+
+      <p class="note"><a href="index.html">← Commencer le test</a></p>
+    </main>
+    <script type="module">
+      import { appliquerA11y } from './accessibilite.js';
+      appliquerA11y();
+    </script>
+  </body>
+</html>

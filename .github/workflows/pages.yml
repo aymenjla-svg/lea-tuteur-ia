@@ -1,0 +1,55 @@
+# Déploie le visu statique de Léa (palier 2D/SVG) sur GitHub Pages.
+#
+# Le moteur pédagogique déterministe est bundlé pour le navigateur (esbuild) :
+# la démo tourne 100% côté client, sans backend ni base (en mémoire dans
+# l'onglet). Même moteur que l'API HTTP (R6) — seul le transport change.
+#
+# Prérequis côté repo : Settings → Pages → Source = "GitHub Actions".
+# Repo privé : Pages nécessite un plan payant, sinon rendre le repo public.
+name: pages
+
+on:
+  push:
+    branches: [claude/jada-conversation-continue-tp87yb]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Un seul déploiement à la fois ; on n'annule pas un déploiement en cours.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - name: Bundler le moteur pour le navigateur
+        run: npm run build:web
+      - name: Assembler le site
+        run: |
+          mkdir -p _site
+          cp web/*.html web/*.css web/*.js _site/
+          cp -r web/avatars _site/avatars
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploiement.outputs.page_url }}
+    steps:
+      - id: deploiement
+        uses: actions/deploy-pages@v4

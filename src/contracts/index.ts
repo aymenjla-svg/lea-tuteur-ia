@@ -11,6 +11,8 @@
 
 export type * from './common.js';
 export type * from './verifier.js';
+export type * from './erreurs.js';
+export type * from './rag.js';
 export type * from './curriculum.js';
 export type * from './learner-model.js';
 export type * from './safety-filter.js';
